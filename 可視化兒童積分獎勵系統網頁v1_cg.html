@@ -3,13 +3,46 @@
 <head>
   <meta charset='UTF-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-  <title>兒童小星星積分獎勵系統</title>
+  <title>小星星積分獎勵系統</title>
   <style>
+    :root {
+      --bg-gradient-start: #fce3ff;
+      --bg-gradient-end: #e3f2ff;
+      --accent: #ffb300;
+      --accent-soft: #ffcf4a;
+      --accent-soft2: #ffd54f;
+      --accent-hover: #ffa000;
+      --accent-calendar-bg: #fff3c4;
+      --accent-calendar-hover: #fff7e0;
+    }
+
+    /* 顏色主題：預設(不加 class)，藍色海洋、森林綠 */
+    body.theme-ocean {
+      --bg-gradient-start: #d9f2ff;
+      --bg-gradient-end: #e0e7ff;
+      --accent: #1d4ed8;
+      --accent-soft: #60a5fa;
+      --accent-soft2: #93c5fd;
+      --accent-hover: #1e40af;
+      --accent-calendar-bg: #dbeafe;
+      --accent-calendar-hover: #eff6ff;
+    }
+    body.theme-forest {
+      --bg-gradient-start: #dcfce7;
+      --bg-gradient-end: #bbf7d0;
+      --accent: #15803d;
+      --accent-soft: #4ade80;
+      --accent-soft2: #86efac;
+      --accent-hover: #166534;
+      --accent-calendar-bg: #dcfce7;
+      --accent-calendar-hover: #f0fdf4;
+    }
+
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #fce3ff, #e3f2ff);
+      background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
       color: #222;
     }
     .app-shell {
@@ -35,6 +68,13 @@
     .badge-star {
       font-size: 1.6rem;
     }
+    .header-right {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      justify-content: flex-end;
+    }
     .balance {
       padding: 8px 14px;
       border-radius: 999px;
@@ -48,6 +88,47 @@
     .balance span.star-icon {
       font-size: 1.4rem;
     }
+    .child-switcher {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.7);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .child-switcher label {
+      font-size: 0.8rem;
+      color: #444;
+    }
+    #childSelect {
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #ccc;
+      font-size: 0.85rem;
+      background: #fff;
+    }
+
+    /* 主題切換 */
+    .theme-switcher {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.7);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      font-size: 0.8rem;
+    }
+    #themeSelect {
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #ccc;
+      font-size: 0.8rem;
+      background: #fff;
+    }
+
     .tabs {
       display: flex;
       flex-wrap: wrap;
@@ -73,7 +154,7 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
     .tab-btn.active {
-      background: #ffcf4a;
+      background: var(--accent-soft);
       box-shadow: 0 4px 12px rgba(0,0,0,0.18);
       font-weight: 600;
     }
@@ -164,8 +245,8 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.12);
     }
     .icon-option.selected {
-      background: #ffd54f;
-      box-shadow: 0 0 0 2px #ffb300;
+      background: var(--accent-soft2);
+      box-shadow: 0 0 0 2px var(--accent);
     }
 
     .btn-primary,
@@ -184,11 +265,11 @@
       white-space: nowrap;
     }
     .btn-primary {
-      background: #ffb300;
+      background: var(--accent);
       color: #222;
       font-weight: 600;
     }
-    .btn-primary:hover { background: #ffa000; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.18); }
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.18); }
     .btn-secondary {
       background: #e0e7ff;
       color: #222;
@@ -299,14 +380,14 @@
       opacity: 0.28;
     }
     .calendar-day:hover {
-      background: #fff7e0;
+      background: var(--accent-calendar-hover);
       transform: translateY(-1px);
       box-shadow: 0 2px 6px rgba(0,0,0,0.12);
     }
     .calendar-day.selected {
-      border-color: #ffb300;
-      box-shadow: 0 0 0 2px rgba(255,179,0,0.4);
-      background: #fff3c4;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
+      background: var(--accent-calendar-bg);
     }
     .calendar-day.today::after {
       content: '';
@@ -427,9 +508,30 @@
       100% { transform: scale(1); }
     }
 
+    /* footer 作者區 */
+    .app-footer {
+      margin-top: 18px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(0,0,0,0.1);
+      text-align: center;
+      font-size: 0.8rem;
+      color: #666;
+    }
+    .app-footer a {
+      color: #666;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .app-footer a:hover {
+      text-decoration: underline;
+    }
+
     @media (max-width: 900px) {
       .layout-two {
         flex-direction: column;
+      }
+      .header-right {
+        justify-content: flex-start;
       }
     }
     @media (max-width: 600px) {
@@ -438,6 +540,11 @@
       }
       .app-title { font-size: 1.3rem; }
       .calendar-grid { font-size: 0.75rem; }
+      .child-switcher,
+      .theme-switcher {
+        width: 100%;
+        justify-content: space-between;
+      }
     }
   </style>
 </head>
@@ -448,10 +555,26 @@
         <span class='badge-star'>🌟</span>
         <span>小星星兒童積分獎勵系統</span>
       </div>
-      <div class='balance'>
-        <span class='star-icon'>⭐</span>
-        <span>目前可用星星：</span>
-        <span id='totalStars'>0</span>
+      <div class='header-right'>
+        <div class='child-switcher'>
+          <label for='childSelect'>小朋友：</label>
+          <select id='childSelect'></select>
+          <button type='button' id='addChildBtn' class='btn-secondary'>＋ 新增</button>
+          <button type='button' id='editChildBtn' class='btn-ghost'>管理</button>
+        </div>
+        <div class="theme-switcher">
+          <span>主題：</span>
+          <select id="themeSelect">
+            <option value="default">柔和星空</option>
+            <option value="ocean">藍色海洋</option>
+            <option value="forest">森林綠</option>
+          </select>
+        </div>
+        <div class='balance'>
+          <span class='star-icon'>⭐</span>
+          <span>目前可用星星：</span>
+          <span id='totalStars'>0</span>
+        </div>
       </div>
     </header>
 
@@ -468,7 +591,7 @@
           <div class='column'>
             <div class='column-header'>
               <div class='column-title'>📝 每日任務管理</div>
-              <div class='hint-text'>點擊任務卡片 = 幫孩子加星星</div>
+              <div class='hint-text'>點擊任務卡片 = 幫目前選擇的小朋友加星星</div>
             </div>
             <form id='taskForm'>
               <div class='form-row'>
@@ -500,7 +623,7 @@
           <div class='column'>
             <div class='column-header'>
               <div class='column-title'>📅 星星日曆</div>
-              <div class='hint-text'>可切換月份、查看歷史星星紀錄</div>
+              <div class='hint-text'>可切換月份、查看此小朋友的歷史星星紀錄</div>
             </div>
             <div class='calendar-header'>
               <button type='button' class='btn-secondary' id='prevMonth'>← 上一個月</button>
@@ -522,7 +645,7 @@
           <div class='column'>
             <div class='column-header'>
               <div class='column-title'>🧰 獎勵池管理</div>
-              <div class='hint-text'>設定可以兌換的獎品與所需星星</div>
+              <div class='hint-text'>設定可以兌換的獎品與所需星星（共用）</div>
             </div>
             <form id='rewardForm'>
               <div class='form-row'>
@@ -556,7 +679,7 @@
               <div class='column-title'>🏪 孩子的獎勵超市</div>
               <div class='hint-text'>點擊獎品兌換星星，不會跳出視窗</div>
             </div>
-            <div>目前星星：<strong id='shopStars'>0</strong> 顆</div>
+            <div>目前星星（此小朋友）：<strong id='shopStars'>0</strong> 顆</div>
             <div class='status-bar' id='shopStatus'></div>
             <div class='shop-grid' id='rewardShop'></div>
           </div>
@@ -567,14 +690,21 @@
       <section class='tab-page' data-page='history'>
         <div class='column'>
           <div class='column-header'>
-            <div class='column-title'>📘 兌換紀錄</div>
-            <button type='button' id='clearHistory' class='btn-danger'>清除全部紀錄</button>
+            <div class='column-title'>📘 兌換紀錄（依照目前選擇的小朋友）</div>
+            <div style="display:flex; gap:6px;">
+              <button type='button' id='exportExcel' class='btn-secondary'>⬇️ 匯出 Excel 報表</button>
+              <button type='button' id='clearHistory' class='btn-danger'>清除全部紀錄</button>
+            </div>
           </div>
-          <div class='hint-text'>記錄每一次星星兌換的日期、時間與獎品內容。</div>
+          <div class='hint-text'>記錄此小朋友每一次星星兌換的日期、時間與獎品內容。</div>
           <div class='history-list' id='historyList'></div>
         </div>
       </section>
     </main>
+
+    <footer class="app-footer">
+      Designed by：<a href="https://vartanliu.blogspot.com/" target="_blank" rel="noopener noreferrer">Vartan Liu</a>
+    </footer>
   </div>
 
   <script>
@@ -598,6 +728,12 @@
       '🎬','🛝','🏖️','🛤️','💤'
     ];
 
+    // 多小孩資料
+    var kids = [];
+    var kidData = {}; // kidId -> { totalStars, calendarStars, redemptionHistory }
+    var selectedKidId = null;
+
+    // 共用變數（會依照目前小朋友切換內容）
     var tasks = [];
     var rewards = [];
     var calendarStars = {}; // dateStr -> { earned: number }
@@ -610,15 +746,59 @@
       rewards: 'kidsRewards',
       calendar: 'kidsCalendarStars',
       total: 'kidsTotalStars',
-      history: 'kidsRedemptionHistory'
+      history: 'kidsRedemptionHistory',
+      kids: 'kidsRewardKids',
+      kidData: 'kidsRewardKidData',
+      selectedKid: 'kidsRewardSelectedKid',
+      theme: 'kidsThemeChoice'
     };
 
+    function generateId() {
+      return 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
+
+    function getCurrentKidData() {
+      if (!selectedKidId) {
+        if (!kids || kids.length === 0) {
+          var kidId = generateId();
+          kids = [{ id: kidId, name: '小星星1號' }];
+          kidData[kidId] = { totalStars: 0, calendarStars: {}, redemptionHistory: [] };
+          selectedKidId = kidId;
+        } else {
+          selectedKidId = kids[0].id;
+        }
+      }
+      if (!kidData[selectedKidId]) {
+        kidData[selectedKidId] = { totalStars: 0, calendarStars: {}, redemptionHistory: [] };
+      }
+      return kidData[selectedKidId];
+    }
+
+    function applyKidToGlobals() {
+      var kd = getCurrentKidData();
+      totalStars = kd.totalStars || 0;
+      calendarStars = kd.calendarStars || {};
+      redemptionHistory = kd.redemptionHistory || [];
+    }
+
+    function persistGlobalsToKid() {
+      var kd = getCurrentKidData();
+      kd.totalStars = totalStars || 0;
+      kd.calendarStars = calendarStars || {};
+      kd.redemptionHistory = redemptionHistory || [];
+      kidData[selectedKidId] = kd;
+    }
+
     function saveAll() {
+      persistGlobalsToKid();
       localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(tasks));
       localStorage.setItem(STORAGE_KEYS.rewards, JSON.stringify(rewards));
       localStorage.setItem(STORAGE_KEYS.calendar, JSON.stringify(calendarStars));
       localStorage.setItem(STORAGE_KEYS.total, String(totalStars));
       localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(redemptionHistory));
+      localStorage.setItem(STORAGE_KEYS.kids, JSON.stringify(kids));
+      localStorage.setItem(STORAGE_KEYS.kidData, JSON.stringify(kidData));
+      localStorage.setItem(STORAGE_KEYS.selectedKid, selectedKidId || '');
     }
 
     function loadAll() {
@@ -628,20 +808,46 @@
         var c = localStorage.getItem(STORAGE_KEYS.calendar);
         var s = localStorage.getItem(STORAGE_KEYS.total);
         var h = localStorage.getItem(STORAGE_KEYS.history);
+        var kidsStr = localStorage.getItem(STORAGE_KEYS.kids);
+        var kidDataStr = localStorage.getItem(STORAGE_KEYS.kidData);
+        var selectedKidStr = localStorage.getItem(STORAGE_KEYS.selectedKid);
+
         tasks = t ? JSON.parse(t) : [];
         rewards = r ? JSON.parse(r) : [];
         calendarStars = c ? JSON.parse(c) : {};
         totalStars = s ? parseInt(s, 10) || 0 : 0;
         redemptionHistory = h ? JSON.parse(h) : [];
+        kids = kidsStr ? JSON.parse(kidsStr) : [];
+        kidData = kidDataStr ? JSON.parse(kidDataStr) : {};
+        selectedKidId = selectedKidStr || null;
       } catch (e) {
         tasks = [];
         rewards = [];
         calendarStars = {};
         totalStars = 0;
         redemptionHistory = [];
+        kids = [];
+        kidData = {};
+        selectedKidId = null;
       }
 
-      // 若沒有任何資料，建立幾個預設
+      // 若沒有小朋友資料，將舊版資料升級成第一位小朋友
+      if (!kids || kids.length === 0) {
+        var kidId = generateId();
+        kids = [{ id: kidId, name: '小星星1號' }];
+        kidData = {};
+        kidData[kidId] = {
+          totalStars: totalStars || 0,
+          calendarStars: calendarStars || {},
+          redemptionHistory: redemptionHistory || []
+        };
+        selectedKidId = kidId;
+      }
+      if (!selectedKidId || !kidData[selectedKidId]) {
+        selectedKidId = kids[0].id;
+      }
+
+      // 若沒有任務與獎勵，建立預設
       if (!tasks || tasks.length === 0) {
         tasks = [
           { id: generateId(), name: '放學先完成作業', icon: '📚', stars: 2 },
@@ -656,10 +862,8 @@
           { id: generateId(), name: '挑一個小玩具', icon: '🧸', cost: 10 }
         ];
       }
-    }
 
-    function generateId() {
-      return 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      applyKidToGlobals();
     }
 
     function formatDate(date) {
@@ -667,13 +871,6 @@
       var m = (date.getMonth() + 1).toString().padStart(2, '0');
       var d = date.getDate().toString().padStart(2, '0');
       return y + '-' + m + '-' + d;
-    }
-
-    function formatDateHuman(date) {
-      var y = date.getFullYear();
-      var m = date.getMonth() + 1;
-      var d = date.getDate();
-      return y + ' / ' + m + ' / ' + d;
     }
 
     function formatDateStrHuman(dateStr) {
@@ -693,6 +890,8 @@
     }
 
     // --------- UI 更新 ---------
+    var currentYear, currentMonth;
+
     function updateStarDisplays() {
       var totalEl = document.getElementById('totalStars');
       var shopEl = document.getElementById('shopStars');
@@ -729,7 +928,6 @@
         });
         container.appendChild(div);
         if (index === 0) {
-          // 預設選第一個
           selectIcon(container, div, 'taskIcon');
         }
       });
@@ -772,7 +970,6 @@
         var main = document.createElement('div');
         main.className = 'item-main';
         main.addEventListener('click', function(ev) {
-          // 若點擊的是編輯/刪除按鈕就不要加星星
           if (ev.target.closest('.small-btn')) return;
           handleTaskEarn(task, main);
         });
@@ -827,7 +1024,6 @@
 
     function handleTaskEarn(task, element) {
       if (!selectedDateStr) {
-        // 若尚未選日期，就預設今天
         var today = new Date();
         selectedDateStr = formatDate(today);
       }
@@ -845,7 +1041,6 @@
       document.getElementById('taskName').value = task.name;
       document.getElementById('taskStars').value = task.stars;
       document.getElementById('taskEditingId').value = task.id;
-      // 設定 icon 選擇
       var container = document.getElementById('taskIconChoices');
       var options = container.querySelectorAll('.icon-option');
       options.forEach(function(opt) {
@@ -1049,18 +1244,15 @@
 
     function flashClick(element) {
       element.classList.remove('icon-clicked');
-      // 觸發重播動畫
       void element.offsetWidth;
       element.classList.add('icon-clicked');
     }
 
     // --------- 日曆 ---------
-    var currentYear, currentMonth;
-
     function initCalendar() {
       var today = new Date();
       currentYear = today.getFullYear();
-      currentMonth = today.getMonth(); // 0-based
+      currentMonth = today.getMonth();
       selectedDateStr = formatDate(today);
       renderCalendar(currentYear, currentMonth);
       updateSelectedDateInfo();
@@ -1087,14 +1279,12 @@
       var daysInMonth = new Date(year, month + 1, 0).getDate();
       var prevMonthDays = new Date(year, month, 0).getDate();
 
-      // 前一個月的空格
       for (var i = 0; i < startingWeekday; i++) {
         var dayNum = prevMonthDays - startingWeekday + 1 + i;
         var dateStrPrev = formatDate(new Date(year, month - 1, dayNum));
         grid.appendChild(createDayCell(dayNum, dateStrPrev, true));
       }
 
-      // 當月
       for (var d = 1; d <= daysInMonth; d++) {
         var dateStr = formatDate(new Date(year, month, d));
         grid.appendChild(createDayCell(d, dateStr, false));
@@ -1182,6 +1372,140 @@
       });
     }
 
+    // --------- 小朋友切換 UI ---------
+    function renderChildSelect() {
+      var select = document.getElementById('childSelect');
+      if (!select) return;
+      select.innerHTML = '';
+      kids.forEach(function(kid) {
+        var opt = document.createElement('option');
+        opt.value = kid.id;
+        opt.textContent = kid.name;
+        select.appendChild(opt);
+      });
+      select.value = selectedKidId;
+    }
+
+    function switchChild(newId) {
+      if (!newId || newId === selectedKidId) return;
+      persistGlobalsToKid();
+      selectedKidId = newId;
+      applyKidToGlobals();
+      saveAll();
+      renderChildSelect();
+      updateStarDisplays();
+      renderHistory();
+    }
+
+    function addChild() {
+      persistGlobalsToKid();
+      var index = kids.length + 1;
+      var defaultName = '小星星' + index + '號';
+      var name = prompt('請輸入新小朋友的名字：', defaultName);
+      if (!name || !name.trim()) return;
+      var id = generateId();
+      kids.push({ id: id, name: name.trim() });
+      kidData[id] = { totalStars: 0, calendarStars: {}, redemptionHistory: [] };
+      selectedKidId = id;
+      applyKidToGlobals();
+      saveAll();
+      renderChildSelect();
+      updateStarDisplays();
+      renderHistory();
+    }
+
+    function editCurrentChild() {
+      if (!selectedKidId) return;
+      var kid = kids.find(function(k) { return k.id === selectedKidId; });
+      if (!kid) return;
+      var newName = prompt('修改小朋友名字：', kid.name);
+      if (newName && newName.trim()) {
+        kid.name = newName.trim();
+      }
+      if (kids.length > 1) {
+        var shouldDelete = confirm('若要刪除目前這位小朋友及其所有星星與紀錄，請按「確定」（此動作無法復原），若只修改名字請按「取消」。');
+        if (shouldDelete) {
+          delete kidData[selectedKidId];
+          kids = kids.filter(function(k) { return k.id !== selectedKidId; });
+          selectedKidId = kids[0].id;
+        }
+      }
+      applyKidToGlobals();
+      saveAll();
+      renderChildSelect();
+      updateStarDisplays();
+      renderHistory();
+    }
+
+    // --------- 主題切換 ---------
+    function applyTheme(theme) {
+      var body = document.body;
+      body.classList.remove('theme-ocean', 'theme-forest');
+      if (theme === 'ocean') {
+        body.classList.add('theme-ocean');
+      } else if (theme === 'forest') {
+        body.classList.add('theme-forest');
+      }
+      localStorage.setItem(STORAGE_KEYS.theme, theme);
+    }
+
+    // --------- 匯出報表 (CSV 給 Excel 用) ---------
+    function exportExcelReport() {
+      persistGlobalsToKid(); // 先確保 kidData 是最新
+      var rows = [];
+      rows.push(['類型','小朋友','日期','當天星星','獎品名稱','兌換星星','兌換時間']);
+
+      kids.forEach(function(kid) {
+        var data = kidData[kid.id];
+        if (!data) return;
+
+        var cal = data.calendarStars || {};
+        Object.keys(cal).sort().forEach(function(dateStr) {
+          var earned = cal[dateStr].earned || 0;
+          rows.push(['每日星星', kid.name, dateStr, earned, '', '', '']);
+        });
+
+        var hist = data.redemptionHistory || [];
+        hist.forEach(function(rec) {
+          rows.push([
+            '兌換紀錄',
+            kid.name,
+            '',
+            '',
+            rec.name,
+            rec.cost,
+            rec.datetime
+          ]);
+        });
+      });
+
+      if (rows.length === 1) {
+        alert('目前尚無任何資料可匯出。');
+        return;
+      }
+
+      var csvContent = rows.map(function(row) {
+        return row.map(function(field) {
+          if (field == null) field = '';
+          var s = String(field);
+          if (s.search(/[",\n]/) >= 0) {
+            s = '"' + s.replace(/"/g, '""') + '"';
+          }
+          return s;
+        }).join(',');
+      }).join('\r\n');
+
+      var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'kids-stars-report.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
     // --------- 事件與初始化 ---------
     document.addEventListener('DOMContentLoaded', function() {
       loadAll();
@@ -1193,7 +1517,25 @@
       renderHistory();
       initTabs();
       initCalendar();
+      renderChildSelect();
       updateStarDisplays();
+
+      // 主題初始化
+      var savedTheme = localStorage.getItem(STORAGE_KEYS.theme) || 'default';
+      applyTheme(savedTheme);
+      var themeSelect = document.getElementById('themeSelect');
+      if (themeSelect) {
+        themeSelect.value = savedTheme;
+        themeSelect.addEventListener('change', function() {
+          applyTheme(this.value);
+        });
+      }
+
+      document.getElementById('childSelect').addEventListener('change', function() {
+        switchChild(this.value);
+      });
+      document.getElementById('addChildBtn').addEventListener('click', addChild);
+      document.getElementById('editChildBtn').addEventListener('click', editCurrentChild);
 
       document.getElementById('prevMonth').addEventListener('click', function() {
         changeMonth(-1);
@@ -1256,11 +1598,13 @@
       });
 
       document.getElementById('clearHistory').addEventListener('click', function() {
-        if (!confirm('確定要清除所有兌換紀錄嗎？')) return;
+        if (!confirm('確定要清除目前這位小朋友的所有兌換紀錄嗎？')) return;
         redemptionHistory = [];
         saveAll();
         renderHistory();
       });
+
+      document.getElementById('exportExcel').addEventListener('click', exportExcelReport);
     });
   </script>
 </body>
