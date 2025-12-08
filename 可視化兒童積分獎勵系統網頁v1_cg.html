@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang='zh-Hant'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>兒童小星星積分獎勵系統</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #fce3ff, #e3f2ff);
+      color: #222;
+    }
+    .app-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    .app-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .app-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge-star {
+      font-size: 1.6rem;
+    }
+    .balance {
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+    .balance span.star-icon {
+      font-size: 1.4rem;
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      flex: 1 1 120px;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.7);
+      cursor: pointer;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+    }
+    .tab-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    .tab-btn.active {
+      background: #ffcf4a;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+      font-weight: 600;
+    }
+    .tab-page { display: none; }
+    .tab-page.active { display: block; }
+
+    .layout-two {
+      display: flex;
+      gap: 16px;
+      align-items: stretch;
+    }
+    .column {
+      flex: 1 1 0;
+      background: rgba(255,255,255,0.9);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      min-width: 0;
+    }
+    .column-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .column-title {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .hint-text {
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .form-row label {
+      font-size: 0.85rem;
+      color: #444;
+      margin-bottom: 3px;
+      display: block;
+    }
+    .form-group {
+      flex: 1 1 120px;
+      min-width: 120px;
+    }
+    input[type='text'],
+    input[type='number'] {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+    }
+    input[type='number'] {
+      max-width: 100px;
+    }
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+      gap: 4px;
+      max-height: 140px;
+      overflow-y: auto;
+      padding: 6px;
+      background: rgba(248,248,255,0.9);
+      border-radius: 12px;
+      border: 1px solid #e0e0ff;
+    }
+    .icon-option {
+      border-radius: 10px;
+      padding: 6px 0;
+      text-align: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      user-select: none;
+      transition: transform 0.1s, box-shadow 0.1s, background 0.1s;
+      background: white;
+    }
+    .icon-option:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .icon-option.selected {
+      background: #ffd54f;
+      box-shadow: 0 0 0 2px #ffb300;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger,
+    .btn-ghost {
+      border: none;
+      padding: 6px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: #ffb300;
+      color: #222;
+      font-weight: 600;
+    }
+    .btn-primary:hover { background: #ffa000; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.18); }
+    .btn-secondary {
+      background: #e0e7ff;
+      color: #222;
+    }
+    .btn-secondary:hover { background: #c7d2ff; }
+    .btn-danger {
+      background: #f97373;
+      color: white;
+    }
+    .btn-danger:hover { background: #ef4444; }
+    .btn-ghost {
+      background: transparent;
+      color: #555;
+    }
+    .btn-ghost:hover { background: rgba(0,0,0,0.04); }
+
+    .item-list {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .item-card {
+      background: white;
+      border-radius: 12px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .item-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      flex: 1 1 auto;
+    }
+    .item-icon {
+      font-size: 1.6rem;
+      width: 32px;
+      text-align: center;
+    }
+    .item-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .item-name { font-size: 0.95rem; font-weight: 600; }
+    .item-sub { font-size: 0.8rem; color: #666; }
+    .item-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .small-btn {
+      border: none;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      background: #eef2ff;
+      color: #333;
+    }
+    .small-btn:hover { background: #e0e7ff; }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .calendar-title {
+      font-weight: 600;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      width: 100%;
+    }
+    .weekday {
+      font-size: 0.7rem;
+      text-align: center;
+      color: #777;
+    }
+    .calendar-day {
+      background: white;
+      border-radius: 10px;
+      min-height: 42px;
+      padding: 4px 2px;
+      font-size: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1px solid transparent;
+      position: relative;
+      transition: background 0.1s, transform 0.1s, box-shadow 0.1s, border 0.1s;
+    }
+    .calendar-day.other-month {
+      opacity: 0.28;
+    }
+    .calendar-day:hover {
+      background: #fff7e0;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .calendar-day.selected {
+      border-color: #ffb300;
+      box-shadow: 0 0 0 2px rgba(255,179,0,0.4);
+      background: #fff3c4;
+    }
+    .calendar-day.today::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      width: 4px;
+      height: 4px;
+      border-radius: 999px;
+      background: #ef4444;
+    }
+    .day-star-count {
+      font-size: 0.65rem;
+      margin-top: 2px;
+      color: #f59e0b;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .selected-date-info {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .shop-card {
+      background: white;
+      border-radius: 16px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
+    }
+    .shop-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.14);
+      background: #fffaf0;
+    }
+    .shop-icon {
+      font-size: 2rem;
+    }
+    .shop-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .shop-cost {
+      font-size: 0.8rem;
+      color: #f97316;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-bar {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: #555;
+      min-height: 1.2em;
+    }
+
+    .history-list {
+      margin-top: 8px;
+      max-height: 360px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .history-item {
+      background: white;
+      border-radius: 12px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .history-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .history-icon {
+      font-size: 1.4rem;
+    }
+    .history-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 0.85rem;
+    }
+    .history-meta {
+      font-size: 0.75rem;
+      color: #777;
+    }
+
+    .icon-clicked {
+      animation: pop 0.2s ease-out;
+    }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.9); }
+      100% { transform: scale(1); }
+    }
+
+    @media (max-width: 900px) {
+      .layout-two {
+        flex-direction: column;
+      }
+    }
+    @media (max-width: 600px) {
+      .app-header {
+        align-items: flex-start;
+      }
+      .app-title { font-size: 1.3rem; }
+      .calendar-grid { font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class='app-shell'>
+    <header class='app-header'>
+      <div class='app-title'>
+        <span class='badge-star'>🌟</span>
+        <span>小星星兒童積分獎勵系統</span>
+      </div>
+      <div class='balance'>
+        <span class='star-icon'>⭐</span>
+        <span>目前可用星星：</span>
+        <span id='totalStars'>0</span>
+      </div>
+    </header>
+
+    <nav class='tabs'>
+      <button class='tab-btn active' data-tab='tasks'>📅 每日任務與日曆</button>
+      <button class='tab-btn' data-tab='rewards'>🏪 獎勵池與獎勵超市</button>
+      <button class='tab-btn' data-tab='history'>📘 兌換紀錄</button>
+    </nav>
+
+    <main>
+      <!-- 任務 + 日曆 -->
+      <section class='tab-page active' data-page='tasks'>
+        <div class='layout-two'>
+          <div class='column'>
+            <div class='column-header'>
+              <div class='column-title'>📝 每日任務管理</div>
+              <div class='hint-text'>點擊任務卡片 = 幫孩子加星星</div>
+            </div>
+            <form id='taskForm'>
+              <div class='form-row'>
+                <div class='form-group'>
+                  <label for='taskName'>任務名稱</label>
+                  <input id='taskName' type='text' placeholder='例如：放學先寫完作業' required>
+                </div>
+                <div class='form-group' style='max-width:110px;'>
+                  <label for='taskStars'>星星數</label>
+                  <input id='taskStars' type='number' min='1' max='10' value='1' required>
+                </div>
+              </div>
+              <div class='form-row'>
+                <div class='form-group' style='flex:1 1 100%;'>
+                  <label>任務圖標（點選一個）</label>
+                  <div id='taskIconChoices' class='icon-grid'></div>
+                </div>
+              </div>
+              <input type='hidden' id='taskIcon'>
+              <input type='hidden' id='taskEditingId'>
+              <div class='form-row'>
+                <button type='submit' class='btn-primary'>💾 儲存任務</button>
+                <button type='button' id='taskCancelEdit' class='btn-ghost'>取消編輯</button>
+              </div>
+            </form>
+            <div class='item-list' id='taskList'></div>
+          </div>
+
+          <div class='column'>
+            <div class='column-header'>
+              <div class='column-title'>📅 星星日曆</div>
+              <div class='hint-text'>可切換月份、查看歷史星星紀錄</div>
+            </div>
+            <div class='calendar-header'>
+              <button type='button' class='btn-secondary' id='prevMonth'>← 上一個月</button>
+              <div class='calendar-title' id='calendarTitle'></div>
+              <button type='button' class='btn-secondary' id='nextMonth'>下一個月 →</button>
+            </div>
+            <div class='calendar-grid' id='calendarGrid'></div>
+            <div class='selected-date-info'>
+              <div>目前選擇日期：<span id='selectedDateText'>--</span></div>
+              <div>當天獲得星星：<span id='selectedDateStars'>0</span> 顆</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 獎勵池 + 超市 -->
+      <section class='tab-page' data-page='rewards'>
+        <div class='layout-two'>
+          <div class='column'>
+            <div class='column-header'>
+              <div class='column-title'>🧰 獎勵池管理</div>
+              <div class='hint-text'>設定可以兌換的獎品與所需星星</div>
+            </div>
+            <form id='rewardForm'>
+              <div class='form-row'>
+                <div class='form-group'>
+                  <label for='rewardName'>獎品名稱</label>
+                  <input id='rewardName' type='text' placeholder='例如：一起去看電影' required>
+                </div>
+                <div class='form-group' style='max-width:110px;'>
+                  <label for='rewardCost'>需要星星</label>
+                  <input id='rewardCost' type='number' min='1' max='999' value='5' required>
+                </div>
+              </div>
+              <div class='form-row'>
+                <div class='form-group' style='flex:1 1 100%;'>
+                  <label>獎勵圖標（點選一個）</label>
+                  <div id='rewardIconChoices' class='icon-grid'></div>
+                </div>
+              </div>
+              <input type='hidden' id='rewardIcon'>
+              <input type='hidden' id='rewardEditingId'>
+              <div class='form-row'>
+                <button type='submit' class='btn-primary'>💾 儲存獎品</button>
+                <button type='button' id='rewardCancelEdit' class='btn-ghost'>取消編輯</button>
+              </div>
+            </form>
+            <div class='item-list' id='rewardList'></div>
+          </div>
+
+          <div class='column'>
+            <div class='column-header'>
+              <div class='column-title'>🏪 孩子的獎勵超市</div>
+              <div class='hint-text'>點擊獎品兌換星星，不會跳出視窗</div>
+            </div>
+            <div>目前星星：<strong id='shopStars'>0</strong> 顆</div>
+            <div class='status-bar' id='shopStatus'></div>
+            <div class='shop-grid' id='rewardShop'></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 兌換紀錄 -->
+      <section class='tab-page' data-page='history'>
+        <div class='column'>
+          <div class='column-header'>
+            <div class='column-title'>📘 兌換紀錄</div>
+            <button type='button' id='clearHistory' class='btn-danger'>清除全部紀錄</button>
+          </div>
+          <div class='hint-text'>記錄每一次星星兌換的日期、時間與獎品內容。</div>
+          <div class='history-list' id='historyList'></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // --------- 資料模型與常數 ---------
+    var taskIcons = [
+      '📚','✏️','📝','📖','🧠',
+      '🧹','🧺','🧼','🧽','🛏️',
+      '🧸','🍽️','🚮','🐶','🐱',
+      '🚿','🪥','🧴','🌙','😴',
+      '🚲','🏃','🧒','👧','👦'
+    ];
+
+    // 至少 30 個獎勵超市圖標
+    var rewardIcons = [
+      '🏅','🎖️','🎁','🎈','⭐',
+      '🧸','🚗','🚂','🎮','📺',
+      '🍿','🍕','🍦','🍭','🍰',
+      '🎢','🎡','🎠','🎳','🎯',
+      '🎨','📚','🎧','🎤','🎟️',
+      '🐶','🐱','🐼','🚴‍♂️','🏊‍♀️',
+      '🎬','🛝','🏖️','🛤️','💤'
+    ];
+
+    var tasks = [];
+    var rewards = [];
+    var calendarStars = {}; // dateStr -> { earned: number }
+    var totalStars = 0;
+    var redemptionHistory = [];
+    var selectedDateStr = '';
+
+    var STORAGE_KEYS = {
+      tasks: 'kidsTasks',
+      rewards: 'kidsRewards',
+      calendar: 'kidsCalendarStars',
+      total: 'kidsTotalStars',
+      history: 'kidsRedemptionHistory'
+    };
+
+    function saveAll() {
+      localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(tasks));
+      localStorage.setItem(STORAGE_KEYS.rewards, JSON.stringify(rewards));
+      localStorage.setItem(STORAGE_KEYS.calendar, JSON.stringify(calendarStars));
+      localStorage.setItem(STORAGE_KEYS.total, String(totalStars));
+      localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(redemptionHistory));
+    }
+
+    function loadAll() {
+      try {
+        var t = localStorage.getItem(STORAGE_KEYS.tasks);
+        var r = localStorage.getItem(STORAGE_KEYS.rewards);
+        var c = localStorage.getItem(STORAGE_KEYS.calendar);
+        var s = localStorage.getItem(STORAGE_KEYS.total);
+        var h = localStorage.getItem(STORAGE_KEYS.history);
+        tasks = t ? JSON.parse(t) : [];
+        rewards = r ? JSON.parse(r) : [];
+        calendarStars = c ? JSON.parse(c) : {};
+        totalStars = s ? parseInt(s, 10) || 0 : 0;
+        redemptionHistory = h ? JSON.parse(h) : [];
+      } catch (e) {
+        tasks = [];
+        rewards = [];
+        calendarStars = {};
+        totalStars = 0;
+        redemptionHistory = [];
+      }
+
+      // 若沒有任何資料，建立幾個預設
+      if (!tasks || tasks.length === 0) {
+        tasks = [
+          { id: generateId(), name: '放學先完成作業', icon: '📚', stars: 2 },
+          { id: generateId(), name: '幫忙收玩具與整理房間', icon: '🧸', stars: 1 },
+          { id: generateId(), name: '晚上準時上床睡覺', icon: '🌙', stars: 2 }
+        ];
+      }
+      if (!rewards || rewards.length === 0) {
+        rewards = [
+          { id: generateId(), name: '一起看一部電影', icon: '🎬', cost: 8 },
+          { id: generateId(), name: '假日去公園玩', icon: '🛝', cost: 6 },
+          { id: generateId(), name: '挑一個小玩具', icon: '🧸', cost: 10 }
+        ];
+      }
+    }
+
+    function generateId() {
+      return 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
+
+    function formatDate(date) {
+      var y = date.getFullYear();
+      var m = (date.getMonth() + 1).toString().padStart(2, '0');
+      var d = date.getDate().toString().padStart(2, '0');
+      return y + '-' + m + '-' + d;
+    }
+
+    function formatDateHuman(date) {
+      var y = date.getFullYear();
+      var m = date.getMonth() + 1;
+      var d = date.getDate();
+      return y + ' / ' + m + ' / ' + d;
+    }
+
+    function formatDateStrHuman(dateStr) {
+      if (!dateStr) return '--';
+      var parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      return parts[0] + ' / ' + parseInt(parts[1], 10) + ' / ' + parseInt(parts[2], 10);
+    }
+
+    function formatDateTime(dt) {
+      var y = dt.getFullYear();
+      var m = (dt.getMonth() + 1).toString().padStart(2, '0');
+      var d = dt.getDate().toString().padStart(2, '0');
+      var hh = dt.getHours().toString().padStart(2, '0');
+      var mm = dt.getMinutes().toString().padStart(2, '0');
+      return y + '-' + m + '-' + d + ' ' + hh + ':' + mm;
+    }
+
+    // --------- UI 更新 ---------
+    function updateStarDisplays() {
+      var totalEl = document.getElementById('totalStars');
+      var shopEl = document.getElementById('shopStars');
+      if (totalEl) totalEl.textContent = totalStars;
+      if (shopEl) shopEl.textContent = totalStars;
+      updateSelectedDateInfo();
+      renderCalendar(currentYear, currentMonth);
+    }
+
+    function updateSelectedDateInfo() {
+      var dateTextEl = document.getElementById('selectedDateText');
+      var dateStarsEl = document.getElementById('selectedDateStars');
+      if (!selectedDateStr) {
+        dateTextEl.textContent = '--';
+        dateStarsEl.textContent = '0';
+        return;
+      }
+      dateTextEl.textContent = formatDateStrHuman(selectedDateStr);
+      var info = calendarStars[selectedDateStr];
+      var value = info && typeof info.earned === 'number' ? info.earned : 0;
+      dateStarsEl.textContent = value;
+    }
+
+    function renderTaskIconChoices() {
+      var container = document.getElementById('taskIconChoices');
+      container.innerHTML = '';
+      taskIcons.forEach(function(icon, index) {
+        var div = document.createElement('div');
+        div.className = 'icon-option';
+        div.textContent = icon;
+        div.dataset.icon = icon;
+        div.addEventListener('click', function() {
+          selectIcon(container, div, 'taskIcon');
+        });
+        container.appendChild(div);
+        if (index === 0) {
+          // 預設選第一個
+          selectIcon(container, div, 'taskIcon');
+        }
+      });
+    }
+
+    function renderRewardIconChoices() {
+      var container = document.getElementById('rewardIconChoices');
+      container.innerHTML = '';
+      rewardIcons.forEach(function(icon, index) {
+        var div = document.createElement('div');
+        div.className = 'icon-option';
+        div.textContent = icon;
+        div.dataset.icon = icon;
+        div.addEventListener('click', function() {
+          selectIcon(container, div, 'rewardIcon');
+        });
+        container.appendChild(div);
+        if (index === 0) {
+          selectIcon(container, div, 'rewardIcon');
+        }
+      });
+    }
+
+    function selectIcon(container, element, hiddenInputId) {
+      var options = container.querySelectorAll('.icon-option');
+      options.forEach(function(opt) { opt.classList.remove('selected'); });
+      element.classList.add('selected');
+      var hidden = document.getElementById(hiddenInputId);
+      if (hidden) hidden.value = element.dataset.icon;
+      flashClick(element);
+    }
+
+    function renderTaskList() {
+      var listEl = document.getElementById('taskList');
+      listEl.innerHTML = '';
+      tasks.forEach(function(task) {
+        var card = document.createElement('div');
+        card.className = 'item-card';
+
+        var main = document.createElement('div');
+        main.className = 'item-main';
+        main.addEventListener('click', function(ev) {
+          // 若點擊的是編輯/刪除按鈕就不要加星星
+          if (ev.target.closest('.small-btn')) return;
+          handleTaskEarn(task, main);
+        });
+
+        var iconSpan = document.createElement('div');
+        iconSpan.className = 'item-icon';
+        iconSpan.textContent = task.icon || '⭐';
+
+        var textDiv = document.createElement('div');
+        textDiv.className = 'item-text';
+        var nameDiv = document.createElement('div');
+        nameDiv.className = 'item-name';
+        nameDiv.textContent = task.name;
+        var subDiv = document.createElement('div');
+        subDiv.className = 'item-sub';
+        subDiv.textContent = '完成一次 + ' + task.stars + ' 顆星星';
+        textDiv.appendChild(nameDiv);
+        textDiv.appendChild(subDiv);
+
+        main.appendChild(iconSpan);
+        main.appendChild(textDiv);
+
+        var actions = document.createElement('div');
+        actions.className = 'item-actions';
+
+        var editBtn = document.createElement('button');
+        editBtn.className = 'small-btn';
+        editBtn.textContent = '編輯';
+        editBtn.addEventListener('click', function() {
+          loadTaskIntoForm(task);
+        });
+
+        var delBtn = document.createElement('button');
+        delBtn.className = 'small-btn';
+        delBtn.textContent = '刪除';
+        delBtn.addEventListener('click', function() {
+          if (confirm('確定要刪除這個任務嗎？')) {
+            tasks = tasks.filter(function(t) { return t.id !== task.id; });
+            saveAll();
+            renderTaskList();
+          }
+        });
+
+        actions.appendChild(editBtn);
+        actions.appendChild(delBtn);
+
+        card.appendChild(main);
+        card.appendChild(actions);
+        listEl.appendChild(card);
+      });
+    }
+
+    function handleTaskEarn(task, element) {
+      if (!selectedDateStr) {
+        // 若尚未選日期，就預設今天
+        var today = new Date();
+        selectedDateStr = formatDate(today);
+      }
+      if (!calendarStars[selectedDateStr]) {
+        calendarStars[selectedDateStr] = { earned: 0 };
+      }
+      calendarStars[selectedDateStr].earned += Number(task.stars) || 0;
+      totalStars += Number(task.stars) || 0;
+      saveAll();
+      flashClick(element);
+      updateStarDisplays();
+    }
+
+    function loadTaskIntoForm(task) {
+      document.getElementById('taskName').value = task.name;
+      document.getElementById('taskStars').value = task.stars;
+      document.getElementById('taskEditingId').value = task.id;
+      // 設定 icon 選擇
+      var container = document.getElementById('taskIconChoices');
+      var options = container.querySelectorAll('.icon-option');
+      options.forEach(function(opt) {
+        if (opt.dataset.icon === task.icon) {
+          selectIcon(container, opt, 'taskIcon');
+        }
+      });
+    }
+
+    function resetTaskForm() {
+      document.getElementById('taskName').value = '';
+      document.getElementById('taskStars').value = 1;
+      document.getElementById('taskEditingId').value = '';
+      var container = document.getElementById('taskIconChoices');
+      var first = container.querySelector('.icon-option');
+      if (first) selectIcon(container, first, 'taskIcon');
+    }
+
+    function renderRewardList() {
+      var listEl = document.getElementById('rewardList');
+      listEl.innerHTML = '';
+      rewards.forEach(function(reward) {
+        var card = document.createElement('div');
+        card.className = 'item-card';
+
+        var main = document.createElement('div');
+        main.className = 'item-main';
+
+        var iconSpan = document.createElement('div');
+        iconSpan.className = 'item-icon';
+        iconSpan.textContent = reward.icon || '🎁';
+
+        var textDiv = document.createElement('div');
+        textDiv.className = 'item-text';
+        var nameDiv = document.createElement('div');
+        nameDiv.className = 'item-name';
+        nameDiv.textContent = reward.name;
+        var subDiv = document.createElement('div');
+        subDiv.className = 'item-sub';
+        subDiv.textContent = '兌換需要 ' + reward.cost + ' 顆星星';
+        textDiv.appendChild(nameDiv);
+        textDiv.appendChild(subDiv);
+
+        main.appendChild(iconSpan);
+        main.appendChild(textDiv);
+
+        var actions = document.createElement('div');
+        actions.className = 'item-actions';
+
+        var editBtn = document.createElement('button');
+        editBtn.className = 'small-btn';
+        editBtn.textContent = '編輯';
+        editBtn.addEventListener('click', function() {
+          loadRewardIntoForm(reward);
+        });
+
+        var delBtn = document.createElement('button');
+        delBtn.className = 'small-btn';
+        delBtn.textContent = '刪除';
+        delBtn.addEventListener('click', function() {
+          if (confirm('確定要刪除這個獎品嗎？')) {
+            rewards = rewards.filter(function(r) { return r.id !== reward.id; });
+            saveAll();
+            renderRewardList();
+            renderRewardShop();
+          }
+        });
+
+        actions.appendChild(editBtn);
+        actions.appendChild(delBtn);
+
+        card.appendChild(main);
+        card.appendChild(actions);
+        listEl.appendChild(card);
+      });
+    }
+
+    function loadRewardIntoForm(reward) {
+      document.getElementById('rewardName').value = reward.name;
+      document.getElementById('rewardCost').value = reward.cost;
+      document.getElementById('rewardEditingId').value = reward.id;
+      var container = document.getElementById('rewardIconChoices');
+      var options = container.querySelectorAll('.icon-option');
+      options.forEach(function(opt) {
+        if (opt.dataset.icon === reward.icon) {
+          selectIcon(container, opt, 'rewardIcon');
+        }
+      });
+    }
+
+    function resetRewardForm() {
+      document.getElementById('rewardName').value = '';
+      document.getElementById('rewardCost').value = 5;
+      document.getElementById('rewardEditingId').value = '';
+      var container = document.getElementById('rewardIconChoices');
+      var first = container.querySelector('.icon-option');
+      if (first) selectIcon(container, first, 'rewardIcon');
+    }
+
+    function renderRewardShop() {
+      var shopEl = document.getElementById('rewardShop');
+      shopEl.innerHTML = '';
+      rewards.forEach(function(reward) {
+        var card = document.createElement('div');
+        card.className = 'shop-card';
+
+        var iconDiv = document.createElement('div');
+        iconDiv.className = 'shop-icon';
+        iconDiv.textContent = reward.icon || '🎁';
+
+        var nameDiv = document.createElement('div');
+        nameDiv.className = 'shop-name';
+        nameDiv.textContent = reward.name;
+
+        var costDiv = document.createElement('div');
+        costDiv.className = 'shop-cost';
+        costDiv.innerHTML = '<span>⭐</span><span>' + reward.cost + ' 顆</span>';
+
+        card.appendChild(iconDiv);
+        card.appendChild(nameDiv);
+        card.appendChild(costDiv);
+
+        card.addEventListener('click', function() {
+          handleRewardRedeem(reward, card);
+        });
+
+        shopEl.appendChild(card);
+      });
+    }
+
+    function handleRewardRedeem(reward, element) {
+      var statusEl = document.getElementById('shopStatus');
+      if (totalStars < reward.cost) {
+        statusEl.textContent = '星星不夠，還差 ' + (reward.cost - totalStars) + ' 顆，可以再多做幾件好事喔！';
+        flashClick(element);
+        return;
+      }
+      totalStars -= reward.cost;
+      var now = new Date();
+      redemptionHistory.unshift({
+        id: generateId(),
+        name: reward.name,
+        icon: reward.icon,
+        cost: reward.cost,
+        datetime: formatDateTime(now)
+      });
+      saveAll();
+      flashClick(element);
+      statusEl.textContent = '已成功兌換「' + reward.name + '」，記錄已存入兌換紀錄。';
+      updateStarDisplays();
+      renderHistory();
+    }
+
+    function renderHistory() {
+      var listEl = document.getElementById('historyList');
+      listEl.innerHTML = '';
+      if (!redemptionHistory || redemptionHistory.length === 0) {
+        var empty = document.createElement('div');
+        empty.className = 'hint-text';
+        empty.style.marginTop = '8px';
+        empty.textContent = '目前還沒有兌換紀錄，先在獎勵超市挑選獎品吧！';
+        listEl.appendChild(empty);
+        return;
+      }
+      redemptionHistory.forEach(function(rec) {
+        var item = document.createElement('div');
+        item.className = 'history-item';
+
+        var main = document.createElement('div');
+        main.className = 'history-main';
+
+        var iconDiv = document.createElement('div');
+        iconDiv.className = 'history-icon';
+        iconDiv.textContent = rec.icon || '🎁';
+
+        var textDiv = document.createElement('div');
+        textDiv.className = 'history-text';
+
+        var titleDiv = document.createElement('div');
+        titleDiv.textContent = '兌換「' + rec.name + '」 - 使用 ' + rec.cost + ' 顆星星';
+
+        var metaDiv = document.createElement('div');
+        metaDiv.className = 'history-meta';
+        metaDiv.textContent = rec.datetime;
+
+        textDiv.appendChild(titleDiv);
+        textDiv.appendChild(metaDiv);
+
+        main.appendChild(iconDiv);
+        main.appendChild(textDiv);
+
+        var starsDiv = document.createElement('div');
+        starsDiv.className = 'history-meta';
+        starsDiv.textContent = '⭐-' + rec.cost;
+
+        item.appendChild(main);
+        item.appendChild(starsDiv);
+        listEl.appendChild(item);
+      });
+    }
+
+    function flashClick(element) {
+      element.classList.remove('icon-clicked');
+      // 觸發重播動畫
+      void element.offsetWidth;
+      element.classList.add('icon-clicked');
+    }
+
+    // --------- 日曆 ---------
+    var currentYear, currentMonth;
+
+    function initCalendar() {
+      var today = new Date();
+      currentYear = today.getFullYear();
+      currentMonth = today.getMonth(); // 0-based
+      selectedDateStr = formatDate(today);
+      renderCalendar(currentYear, currentMonth);
+      updateSelectedDateInfo();
+    }
+
+    function renderCalendar(year, month) {
+      var grid = document.getElementById('calendarGrid');
+      var titleEl = document.getElementById('calendarTitle');
+      grid.innerHTML = '';
+
+      var monthNames = ['1 月','2 月','3 月','4 月','5 月','6 月','7 月','8 月','9 月','10 月','11 月','12 月'];
+      titleEl.textContent = year + ' 年 ' + monthNames[month];
+
+      var weekdays = ['日','一','二','三','四','五','六'];
+      weekdays.forEach(function(w) {
+        var wEl = document.createElement('div');
+        wEl.className = 'weekday';
+        wEl.textContent = w;
+        grid.appendChild(wEl);
+      });
+
+      var firstDay = new Date(year, month, 1);
+      var startingWeekday = firstDay.getDay();
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      var prevMonthDays = new Date(year, month, 0).getDate();
+
+      // 前一個月的空格
+      for (var i = 0; i < startingWeekday; i++) {
+        var dayNum = prevMonthDays - startingWeekday + 1 + i;
+        var dateStrPrev = formatDate(new Date(year, month - 1, dayNum));
+        grid.appendChild(createDayCell(dayNum, dateStrPrev, true));
+      }
+
+      // 當月
+      for (var d = 1; d <= daysInMonth; d++) {
+        var dateStr = formatDate(new Date(year, month, d));
+        grid.appendChild(createDayCell(d, dateStr, false));
+      }
+
+      var cellsCount = startingWeekday + daysInMonth;
+      var nextDays = (7 - (cellsCount % 7)) % 7;
+      for (var j = 1; j <= nextDays; j++) {
+        var dateStrNext = formatDate(new Date(year, month + 1, j));
+        grid.appendChild(createDayCell(j, dateStrNext, true));
+      }
+
+      highlightSelectedDateCell();
+    }
+
+    function createDayCell(dayNumber, dateStr, isOtherMonth) {
+      var cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'calendar-day';
+      if (isOtherMonth) cell.classList.add('other-month');
+      cell.dataset.date = dateStr;
+      cell.textContent = dayNumber;
+
+      var info = calendarStars[dateStr];
+      var value = info && typeof info.earned === 'number' ? info.earned : 0;
+      if (value > 0) {
+        var starDiv = document.createElement('div');
+        starDiv.className = 'day-star-count';
+        starDiv.innerHTML = '⭐ ' + value;
+        cell.appendChild(starDiv);
+      }
+
+      var todayStr = formatDate(new Date());
+      if (dateStr === todayStr) {
+        cell.classList.add('today');
+      }
+
+      cell.addEventListener('click', function() {
+        selectedDateStr = dateStr;
+        updateSelectedDateInfo();
+        highlightSelectedDateCell();
+      });
+
+      return cell;
+    }
+
+    function highlightSelectedDateCell() {
+      var grid = document.getElementById('calendarGrid');
+      var cells = grid.querySelectorAll('.calendar-day');
+      cells.forEach(function(c) {
+        if (c.dataset.date === selectedDateStr) {
+          c.classList.add('selected');
+        } else {
+          c.classList.remove('selected');
+        }
+      });
+    }
+
+    function changeMonth(delta) {
+      currentMonth += delta;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear -= 1;
+      } else if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear += 1;
+      }
+      renderCalendar(currentYear, currentMonth);
+      highlightSelectedDateCell();
+    }
+
+    // --------- 分頁切換 ---------
+    function initTabs() {
+      var tabButtons = document.querySelectorAll('.tab-btn');
+      var pages = document.querySelectorAll('.tab-page');
+      tabButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var tab = btn.dataset.tab;
+          tabButtons.forEach(function(b) { b.classList.remove('active'); });
+          pages.forEach(function(p) { p.classList.remove('active'); });
+          btn.classList.add('active');
+          var page = document.querySelector(".tab-page[data-page='" + tab + "']");
+          if (page) page.classList.add('active');
+        });
+      });
+    }
+
+    // --------- 事件與初始化 ---------
+    document.addEventListener('DOMContentLoaded', function() {
+      loadAll();
+      renderTaskIconChoices();
+      renderRewardIconChoices();
+      renderTaskList();
+      renderRewardList();
+      renderRewardShop();
+      renderHistory();
+      initTabs();
+      initCalendar();
+      updateStarDisplays();
+
+      document.getElementById('prevMonth').addEventListener('click', function() {
+        changeMonth(-1);
+      });
+      document.getElementById('nextMonth').addEventListener('click', function() {
+        changeMonth(1);
+      });
+
+      document.getElementById('taskForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var name = document.getElementById('taskName').value.trim();
+        var stars = parseInt(document.getElementById('taskStars').value, 10) || 1;
+        var icon = document.getElementById('taskIcon').value || '⭐';
+        var editId = document.getElementById('taskEditingId').value;
+        if (!name) return;
+        if (editId) {
+          tasks = tasks.map(function(t) {
+            if (t.id === editId) {
+              return { id: t.id, name: name, icon: icon, stars: stars };
+            }
+            return t;
+          });
+        } else {
+          tasks.push({ id: generateId(), name: name, icon: icon, stars: stars });
+        }
+        saveAll();
+        renderTaskList();
+        resetTaskForm();
+      });
+
+      document.getElementById('taskCancelEdit').addEventListener('click', function() {
+        resetTaskForm();
+      });
+
+      document.getElementById('rewardForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var name = document.getElementById('rewardName').value.trim();
+        var cost = parseInt(document.getElementById('rewardCost').value, 10) || 1;
+        var icon = document.getElementById('rewardIcon').value || '🎁';
+        var editId = document.getElementById('rewardEditingId').value;
+        if (!name) return;
+        if (editId) {
+          rewards = rewards.map(function(r) {
+            if (r.id === editId) {
+              return { id: r.id, name: name, icon: icon, cost: cost };
+            }
+            return r;
+          });
+        } else {
+          rewards.push({ id: generateId(), name: name, icon: icon, cost: cost });
+        }
+        saveAll();
+        renderRewardList();
+        renderRewardShop();
+        resetRewardForm();
+      });
+
+      document.getElementById('rewardCancelEdit').addEventListener('click', function() {
+        resetRewardForm();
+      });
+
+      document.getElementById('clearHistory').addEventListener('click', function() {
+        if (!confirm('確定要清除所有兌換紀錄嗎？')) return;
+        redemptionHistory = [];
+        saveAll();
+        renderHistory();
+      });
+    });
+  </script>
+</body>
+</html>
