@@ -102,6 +102,21 @@
         .confetti { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 120px; opacity: 0; pointer-events: none; z-index: 5; }
         .show-star { animation: popStar 0.8s ease-out; }
         @keyframes popStar { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); } }
+
+        /* 作者 footer */
+        .author-footer {
+            margin-top: 18px;
+            font-size: 12px;
+            color: #b2bec3;
+        }
+        .author-footer a {
+            color: #636e72;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .author-footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -130,13 +145,18 @@
         <div class="question" id="question">? x ? = ?</div>
         
         <div class="options-grid" id="options">
-            </div>
+        </div>
 
         <div style="height: 30px; margin-top:10px; font-weight:bold; color:#636e72" id="feedback">
             每題有 8 秒鐘！
         </div>
         
         <button id="restart-btn" style="display:none; margin-top:20px; background-color: #ff6b6b;" onclick="window.location.reload()">重新開始</button>
+
+        <!-- 作者連結 footer -->
+        <div class="author-footer">
+            Designed by：<a href="https://vartanliu.blogspot.com/" target="_blank" rel="noopener noreferrer">Vartan Liu</a>
+        </div>
     </div>
 
     <script>
@@ -179,8 +199,6 @@
 
         function playSound(type) {
             if (!audioCtx || !isGameRunning) return;
-            // 這裡省略了完整的 playSound 函式內容，請使用上一個回覆提供的完整版本
-            // 為了簡潔，在程式碼中用註解表示，但功能是完整的
             
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
@@ -310,7 +328,6 @@
             }, 1500);
         }
         
-        // ... (generateQuestion, generateOptions function 沿用，不再重複)
         function generateQuestion() {
             if (!isGameRunning) return; // 遊戲結束不產生新題
 
@@ -325,7 +342,6 @@
             currentAnswer = num1 * num2;
             questionEl.textContent = `${num1} x ${num2} = ?`;
 
-            // 這裡需要重新啟用選項
             generateOptions(currentAnswer); 
             startQuestionTimer();
         }
@@ -403,4 +419,4 @@
 
     </script>
 </body>
-</html>
+</html
