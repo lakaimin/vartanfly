@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>貴英娘娘開運抽籤</title>
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap');
+        
+        body {
+            margin: 0;
+            font-family: 'Noto Serif TC', serif;
+        }
+
+        .writing-vertical-rl {
+            writing-mode: vertical-rl;
+        }
+
+        @keyframes shake-hard {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        @keyframes sticks-jump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-shake-hard {
+            animation: shake-hard 0.5s infinite;
+        }
+        
+        .animate-sticks-jump {
+            animation: sticks-jump 0.3s infinite;
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .animate-fade-in {
+            animation: fade-in 0.8s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const SHOPPING_URL = "https://greema.qdm.tw/%E6%89%80%E6%9C%89%E5%95%86%E5%93%81"; // 這裡替換成你的購物網址
+
+        const FORTUNES = [
+            // --- 大吉 (1-15) ---
+            { type: "大吉", title: "萬事亨通籤", poem: "雲開霧散見青天，萬里鵬程路正寬。", desc: "過去的努力即將開花結果，現在是全速前進的最佳時刻，心中所想皆能成真。", luckyColor: "亮金色", luckyItem: "新手錶" },
+            { type: "大吉", title: "金玉滿堂籤", poem: "一輪明月照窗前，喜氣盈門慶自然。", desc: "家庭和諧，財運亨通。身邊的人會為你帶來好消息，適合進行長期投資或儲蓄。", luckyColor: "朱紅色", luckyItem: "紅包袋" },
+            { type: "大吉", title: "龍騰四海籤", poem: "巨龍躍出千江水，光彩奪目映日輝。", desc: "事業進入爆發期，地位顯赫，聲望日隆。展現實力、引領眾人的大好時機。", luckyColor: "寶藍色", luckyItem: "鋼筆" },
+            { type: "大吉", title: "花開富貴籤", poem: "春色滿園關不住，錦上添花運自來。", desc: "好運接二連三，人緣極佳。不論是人際關係還是物質財富，都處於頂峰狀態。", luckyColor: "牡丹紅", luckyItem: "鮮花" },
+            { type: "大吉", title: "心心相印籤", poem: "銀河架橋會佳期，兩情繾綣永相依。", desc: "感情運勢極佳，單身者將遇良緣，有伴者感情升溫，是確立承諾的吉日。", luckyColor: "玫瑰粉", luckyItem: "巧克力" },
+            { type: "大吉", title: "功成名就籤", poem: "寒窗苦讀多年日，一朝提名天下聞。", desc: "考試、求職或競賽將傳來捷報。辛勞已成過去，榮耀正要開始。", luckyColor: "象牙白", luckyItem: "獎狀" },
+            { type: "大吉", title: "福星高照籤", poem: "福如東海長流水，壽比南山不老松。", desc: "身心安康，家族興旺。長輩健康無虞，整體家運如日中天。", luckyColor: "翡翠綠", luckyItem: "茶具" },
+            { type: "大吉", title: "旭日東昇籤", poem: "晨曦破曉萬物甦，前程似錦煥新圖。", desc: "阻礙已然消失，全新的計畫將順利啟航。大膽嘗試新領域，必有驚人獲益。", luckyColor: "亮橘色", luckyItem: "背包" },
+            { type: "大吉", title: "天賜良機籤", poem: "天降甘霖潤沃土，時來運轉展宏圖。", desc: "命中註定的機會出現在眼前，不要猶豫，果斷行動將帶來意想不到的豐碩回報。", luckyColor: "青金石藍", luckyItem: "新的記事本" },
+            { type: "大吉", title: "錦繡前程籤", poem: "繁花似錦鋪前路，駿馬奔馳志四方。", desc: "你的遠見將得到回報。現在非常適合規劃長遠目標，所有資源都會向你靠攏。", luckyColor: "琥珀色", luckyItem: "地圖" },
+            { type: "大吉", title: "步步為贏籤", poem: "穩操勝算運籌中，旗開得勝在指尖。", desc: "決策精準，任何談判都能取得對你最有利的結果。相信自己的直覺與分析。", luckyColor: "玄青色", luckyItem: "棋盤" },
+            { type: "大吉", title: "雙喜臨門籤", poem: "好事成雙喜氣盈，福祿雙全樂天倫。", desc: "事業與感情同時傳來喜訊。這是人生中少見的高光時刻，請與摯愛共同慶祝。", luckyColor: "大紅色", luckyItem: "紅酒" },
+            { type: "大吉", title: "神來之筆籤", poem: "靈感湧現破迷霧，創意無限建奇功。", desc: "如果你從事創作或研發，今日將有突破性的思緒。大膽執行你的異想天開。", luckyColor: "銀紫色", luckyItem: "畫筆" },
+            { type: "大吉", title: "安享天年籤", poem: "清風拂面心神曠，悠然自得享太平。", desc: "目前的狀態極其穩定，無憂無慮。適合進行深層休息或長途旅行，充實靈魂。", luckyColor: "米白色", luckyItem: "絲綢枕頭" },
+            { type: "大吉", title: "英雄輩出籤", poem: "拔萃超群顯英雄，光宗耀祖在今朝。", desc: "你的才氣掩蓋不住，將受到眾人的推崇與敬仰。身負重任但也榮光無限。", luckyColor: "青銅色", luckyItem: "徽章" },
+
+            // --- 上吉 (16-35) ---
+            { type: "上吉", title: "貴人逢時籤", poem: "枯木逢春猶再發，人逢喜事精神爽。", desc: "身邊將出現得力的合作夥伴，或是多年不見的老友帶來機會。保持開放心態。", luckyColor: "橘黃色", luckyItem: "名片盒" },
+            { type: "上吉", title: "步步高升籤", poem: "青雲直上無阻礙，一展抱負在今朝。", desc: "職場或學業上有突破性的進展，領導力獲得認可，只要堅持信念必能成功。", luckyColor: "藏青色", luckyItem: "皮夾" },
+            { type: "上吉", title: "財源廣進籤", poem: "日進斗金無盡期，利源滾滾湧如泉。", desc: "財運轉旺，適合開展業務。小投資會有意外驚喜，但不宜貪多求快。", luckyColor: "金黃色", luckyItem: "存摺" },
+            { type: "上吉", title: "良緣天成籤", poem: "千里姻緣一線牽，郎才女貌配雙全。", desc: "社交場合中魅力四射，適合參與聯誼或主動邀約心儀對象。", luckyColor: "珊瑚粉", luckyItem: "香水" },
+            { type: "上吉", title: "如魚得水籤", poem: "魚躍龍門波浪闊，自由翱翔展雄才。", desc: "環境對你極為有利，能充分發揮所長。人際關係融洽，能得到提拔。", luckyColor: "海軍藍", luckyItem: "藍牙耳機" },
+            { type: "上吉", title: "柳暗花明籤", poem: "山窮水盡疑無路，柳暗花明又一村。", desc: "原本陷入膠著的問題，將在今日意外獲得解決之道。關鍵在於改變思考角度。", luckyColor: "翠綠色", luckyItem: "多肉植物" },
+            { type: "上吉", title: "德財兼備籤", poem: "誠信修身福自至，厚德載物利長隨。", desc: "因過去的誠實與善舉，將在今日獲得回報。名聲與利益雙收。", luckyColor: "土黃色", luckyItem: "圖章" },
+            { type: "上吉", title: "旗開得勝籤", poem: "旌旗飄揚壯志酬，馬到成功在指頭。", desc: "談判或比賽中佔據上風，勝券在握。保持自信心，不要因小失大。", luckyColor: "亮紅色", luckyItem: "運動水壺" },
+            { type: "上吉", title: "吉祥如意籤", poem: "所求皆應心如願，如意算盤打得響。", desc: "生活瑣事處理得心應手，身邊充滿正能量。適合處理延宕已久的私務。", luckyColor: "亮紫色", luckyItem: "收納盒" },
+            { type: "上吉", title: "福慧雙修籤", poem: "心靈明鏡照菩提，智慧大開福自積。", desc: "學習與感悟能力提升。適合深度閱讀、冥想，心靈層次將大步跨進。", luckyColor: "深咖啡", luckyItem: "佛珠" },
+            { type: "上吉", title: "志存高遠籤", poem: "欲窮千里目無礙，更上一層樓更高。", desc: "你的目光不再侷限於眼前。目前適合制定長期的轉型計畫，會有強大推力。", luckyColor: "石灰色", luckyItem: "望遠鏡" },
+            { type: "上吉", title: "廣納百川籤", poem: "海納百川容乃大，博採眾長成巨功。", desc: "透過聆聽不同背景人的建議，你將獲得關鍵拼圖。合作是今日的獲勝密碼。", luckyColor: "湖水藍", luckyItem: "耳機" },
+            { type: "上吉", title: "家和萬事興籤", poem: "庭前花木皆欣向，家內平安百事寧。", desc: "家庭內部的糾紛將圓滿化解，這種後盾的穩定會反哺你的事業發展。", luckyColor: "暖米色", luckyItem: "全家福照" },
+            { type: "上吉", title: "才華橫溢籤", poem: "珠玉潛藏今始現，才氣逼人眾皆驚。", desc: "一個讓你展示實力的舞台突然出現。不要客氣，盡情釋放你的才華與個人風格。", luckyColor: "櫻草黃", luckyItem: "絲巾" },
+            { type: "上吉", title: "不鳴則已籤", poem: "一鳴驚人天下響，厚積薄發正當時。", desc: "你之前的低調與累積終於迎來爆發點。今日的言論或成品將引起業界轟動。", luckyColor: "炭灰色", luckyItem: "麥克風" },
+            { type: "上吉", title: "情深似海籤", poem: "相知相惜意綿綿，永結同心共百年。", desc: "與伴侶的靈魂契合度達到巔峰。適合進行深度對話或共商未來人生計畫。", luckyColor: "酒紅色", luckyItem: "對戒" },
+            { type: "上吉", title: "義薄雲天籤", poem: "慷慨赴義得眾助，德不孤必有鄰從。", desc: "你的古道熱腸為你贏得珍貴的信譽。今天遇到困難時，許多人都會願意伸手拉你一把。", luckyColor: "古銅色", luckyItem: "腰帶" },
+            { type: "上吉", title: "迎風破浪籤", poem: "長風破浪會有時，直掛雲帆濟滄海。", desc: "面對挑戰你毫無懼色。雖然過程有波動，但你的勇氣將帶領你到達成功的彼岸。", luckyColor: "水藍色", luckyItem: "帆布鞋" },
+            { type: "上吉", title: "點石成金籤", poem: "慧眼識珠無遺漏，平凡之物現奇珍。", desc: "你的眼光精準，適合處理藝術品交易、投資或在雜亂中尋找新的商業模式。", luckyColor: "暗金色", luckyItem: "老相機" },
+            { type: "上吉", title: "歲月靜好籤", poem: "春有百花秋有月，夏有涼風冬有雪。", desc: "深刻感受到生活的美好。目前不需要追求大變動，享受當下的圓滿即是最大的吉兆。", luckyColor: "淡青色", luckyItem: "風鈴" },
+
+            // --- 中吉 (36-60) ---
+            { type: "中吉", title: "平安順心籤", poem: "靜坐庭前看落花，去留無意任天涯。", desc: "保持平常心，不強求反而會有驚喜。適合慢節奏的生活，多與自然接觸。", luckyColor: "森林綠", luckyItem: "室內盆栽" },
+            { type: "中吉", title: "源遠流長籤", poem: "細水長流終入海，功名富貴自得來。", desc: "不要急於一時，穩紮穩打才是關鍵。目前的項目進展緩慢但基礎深厚。", luckyColor: "淺藍色", luckyItem: "保溫杯" },
+            { type: "中吉", title: "守株待兔籤", poem: "勤懇耕耘終有獲，靜心守候待機緣。", desc: "努力已足夠，現在需要的是耐心。不要頻繁更換目標，穩定才是最佳策略。", luckyColor: "稻草色", luckyItem: "草帽" },
+            { type: "中吉", title: "和風細雨籤", poem: "微雨初晴空氣鮮，心情舒暢樂無邊。", desc: "人際糾葛漸漸化解，適合與曾有誤會的朋友聯絡。生活平淡充滿溫馨。", luckyColor: "青灰色", luckyItem: "手帕" },
+            { type: "中吉", title: "勤能補拙籤", poem: "笨鳥先飛早入林，勤學苦練點成金。", desc: "雖然天賦非頂尖，但你的努力將彌補一切。專業技能上的精進會有感。", luckyColor: "暗紅色", luckyItem: "計時器" },
+            { type: "中吉", title: "居安思危籤", poem: "平路走來需謹慎，防微杜漸福綿延。", desc: "運勢平穩，但要注意細節隱患。定期檢查財務，能確保長遠安泰。", luckyColor: "銀色", luckyItem: "保險箱" },
+            { type: "中吉", title: "隨遇而安籤", poem: "此心安處是吾鄉，何必奔波求遠方。", desc: "不要過度羨慕他人。發掘身邊現有的美好，你會發現快樂其實很簡單。", luckyColor: "淺駝色", luckyItem: "抱枕" },
+            { type: "中吉", title: "積少成多籤", poem: "滴水穿石功不顯，聚沙成塔利無窮。", desc: "適合開始儲蓄。每天的一點點進步，將在未來展現巨大威力。", luckyColor: "青銅色", luckyItem: "存錢筒" },
+            { type: "中吉", title: "謙受益籤", poem: "滿招損時謙受益，虛懷若谷德威宣。", desc: "多聽聽他人的反對意見。低調行事反而能招來真正的支持。", luckyColor: "深灰色", luckyItem: "隨身碟" },
+            { type: "中吉", title: "好事多磨籤", poem: "真金不怕火來煉，好事終成且待磨。", desc: "進度雖然受阻，但這是為了確保品質。不要氣餒，最終成果會滿意。", luckyColor: "亮銀色", luckyItem: "磨刀石" },
+            { type: "中吉", title: "反躬自省籤", poem: "明鏡高懸照心扉，修身齊家福自隨。", desc: "適合整理家居或刪除舊檔案。環境的清爽會帶動思緒的清明。", luckyColor: "白色", luckyItem: "清潔噴霧" },
+            { type: "中吉", title: "明察秋毫籤", poem: "智慧明燈照幽暗，是非黑白自瞭然。", desc: "在複雜合約中，你會發現隱藏風險。相信直覺，細心檢查細節。", luckyColor: "深紫色", luckyItem: "眼鏡" },
+            { type: "中吉", title: "百折不撓籤", poem: "鋼毅如龍志不改，浪打礁石意更堅。", desc: "挫折是暫時的磨刀石。你的韌性將贏得對手的敬重，離目標更近一步。", luckyColor: "咖啡色", luckyItem: "登山杖" },
+            { type: "中吉", title: "守得雲開籤", poem: "守得雲開見月明，耐得寂寞見繁華。", desc: "目前是最後的黑暗期。只要再堅持一下，黎明的光輝即將灑向你的臉龐。", luckyColor: "墨藍色", luckyItem: "小提燈" },
+            { type: "中吉", title: "飲水思源籤", poem: "飲水不忘掘井人，感恩戴德福綿延。", desc: "拜訪曾經幫助過你的老師或前輩，這種連結將在未來再次產生意想不到的作用。", luckyColor: "褐色", luckyItem: "卡片" },
+            { type: "中吉", title: "自求多福籤", poem: "命由己作福自求，天道酬勤莫外求。", desc: "與其求神問卜，不如檢視自身行為。調整作息與飲食，好運自然會回來。", luckyColor: "奶油色", luckyItem: "瑜珈墊" },
+            { type: "中吉", title: "廣結善緣籤", poem: "出外靠友路寬廣，廣結善緣福自多。", desc: "適合參加社交。今天結下的善緣，會在未來不經意時回報你。", luckyColor: "薄荷綠", luckyItem: "薄荷糖" },
+            { type: "中吉", title: "量力而為籤", poem: "量力而行無大礙，莫要貪功惹禍端。", desc: "不要答應超過你負荷的要求。學會優雅地拒絕，才能保護好現有的成果。", luckyColor: "淺灰色", luckyItem: "體重計" },
+            { type: "中吉", title: "細嚼慢嚥籤", poem: "美食當前需緩品，慢工出細活無慮。", desc: "無論是進食還是工作，放慢速度。細節決定成敗，慢節奏能讓你發現錯誤。", luckyColor: "淡黃色", luckyItem: "木筷" },
+            { type: "中吉", title: "同舟共濟籤", poem: "風雨同舟共進退，一心一德克萬難。", desc: "團隊協作是今日主軸。放下個人英雄主義，成全大局，個人也會受益。", luckyColor: "靛藍色", luckyItem: "救生圈飾品" },
+            { type: "中吉", title: "知難而進籤", poem: "明知山有虎不避，志在巔峰勇者成。", desc: "明知困難卻不退縮。雖然過程艱辛，但這種氣魄將讓你脫胎換骨。", luckyColor: "鐵青色", luckyItem: "指南針" },
+            { type: "中吉", title: "穩紮穩打籤", poem: "根基深厚無懼風，高樓平地起自然。", desc: "不要看輕基礎工作。今日的枯燥練習，是未來登頂的唯一階梯。", luckyColor: "卡其色", luckyItem: "石頭壓紙" },
+            { type: "中吉", title: "心如止水籤", poem: "萬事紛擾心不動，明鏡映照萬物清。", desc: "外界謠言四起，但你若不動如山，麻煩會自動繞道。適合安靜讀書。", luckyColor: "深綠色", luckyItem: "線香" },
+            { type: "中吉", title: "左右逢源籤", poem: "八面玲瓏交遊廣，事事如意路通達。", desc: "交際能力極強，能遊走於各方勢力之間而不受損。適合擔任協調者。", luckyColor: "紫紅色", luckyItem: "戒指" },
+            { type: "中吉", title: "順水推舟籤", poem: "借力使力不費功，順勢而為成功易。", desc: "不要與大趨勢對抗。觀察風向，借別人的力量來推動自己的計畫。", luckyColor: "天藍色", luckyItem: "小紙船" },
+
+            // --- 小吉 (61-75) ---
+            { type: "小吉", title: "小確幸籤", poem: "梅花香自苦寒來，除舊佈新好運開。", desc: "生活中小驚喜即將發生，試著改變日常習慣，會發現新的驚喜。", luckyColor: "粉紅色", luckyItem: "甜點" },
+            { type: "小吉", title: "雲淡風輕籤", poem: "微風送爽人心醉，且向花間醉幾回。", desc: "壓力漸消失，放鬆心情好時機。與家人出遊能增進感情。", luckyColor: "淡紫色", luckyItem: "太陽眼鏡" },
+            { type: "小吉", title: "身體力行籤", poem: "坐而言不如起而行，手腦並用功自成。", desc: "不要再空想了，踏出第一步。即便是一通電話也行。", luckyColor: "土赭色", luckyItem: "運動鞋" },
+            { type: "小吉", title: "否極泰來籤", poem: "殘雪消融春意動，冰河解凍好運萌。", desc: "最糟糕的情況已過去，好轉跡象顯現。保持信心。", luckyColor: "淡黃色", luckyItem: "暖暖包" },
+            { type: "小吉", title: "守成待變籤", poem: "守舊不如開新局，靜待時機轉乾坤。", desc: "目前不是大動作好時機。維持現狀，暗中規劃下一步。", luckyColor: "墨綠色", luckyItem: "鎖匙圈" },
+            { type: "小吉", title: "一線生機籤", poem: "絕處逢生真奇蹟，轉機就在瞬息間。", desc: "面臨困局時突然出現一條出路。把握這微小的機會，能扭轉全局。", luckyColor: "亮白色", luckyItem: "手電筒" },
+            { type: "小吉", title: "蜻蜓點水籤", poem: "浮生若夢且隨緣，淺嚐輒止樂無邊。", desc: "今日不宜深入鑽研。廣泛接觸新事物，保持好奇心即可。", luckyColor: "銀綠色", luckyItem: "悠遊卡" },
+            { type: "小吉", title: "因禍得福籤", poem: "失之東隅得桑榆，禍福相依理自然。", desc: "看似倒楣的事，背後隱藏更大獲益。不要第一時間感到沮喪。", luckyColor: "灰紫色", luckyItem: "舊照片" },
+            { type: "小吉", title: "小有斬獲籤", poem: "積小成多功不廢，微薄之利亦可欣。", desc: "雖然不是大財富，但今日的小偏財運不錯。適合買張刮刮樂試手氣。", luckyColor: "鵝黃色", luckyItem: "銅板" },
+            { type: "小吉", title: "化敵為友籤", poem: "冤家宜解不宜結，一笑泯卻萬古愁。", desc: "主動示好能消除敵意。今日適合與對頭達成某種程度的共識。", luckyColor: "橄欖綠", luckyItem: "茶袋" },
+            { type: "小吉", title: "及時雨籤", poem: "久旱逢甘雨滋潤，渴者得泉心神清。", desc: "在資金或物資最缺乏時，援助會及時到達。請記得未來回報對方。", luckyColor: "深藍灰色", luckyItem: "雨衣" },
+            { type: "小吉", title: "踏石留印籤", poem: "凡走過必留痕跡，每一步皆有意義。", desc: "不要覺得白費力氣。你現在做的雜事，未來會成為你履歷上的亮點。", luckyColor: "灰褐色", luckyItem: "護照" },
+            { type: "小吉", title: "知足者富籤", poem: "身外之物何足論，內心豐盈富莫比。", desc: "拒絕物欲。今日整理衣櫃，捐出不用的物品，心靈會非常充實。", luckyColor: "米白色", luckyItem: "帆布袋" },
+            { type: "小吉", title: "柳暗花明籤", poem: "山迴路轉疑無路，花明柳暗現村莊。", desc: "不必急著找終點。享受過程中的轉向，美景常在意外之處。", luckyColor: "粉藍色", luckyItem: "相機" },
+            { type: "小吉", title: "百里挑一籤", poem: "沙裡淘金顯珍異，萬中選一德才兼。", desc: "在眾多選擇中，你會一眼認出那個對的。相信你的初衷。", luckyColor: "紫金", luckyItem: "放大鏡" },
+
+            // --- 吉 (76-90) ---
+            { type: "吉", title: "蓄勢待發籤", poem: "潛龍勿用待時機，一朝風起便化龍。", desc: "累積實力的好時機，多學習、多觀察。不要怕寂寞。", luckyColor: "玄黑色", luckyItem: "筆記本" },
+            { type: "吉", title: "知足常樂籤", poem: "半畝方塘一鑑開，天光雲影共徘徊。", desc: "內心平靜比成就更重要。學會滿足於現狀，生活會變輕鬆。", luckyColor: "米白色", luckyItem: "舒壓球" },
+            { type: "吉", title: "日就月將籤", poem: "學海無涯苦作舟，進步分秒莫停留。", desc: "專業能力穩步提升。你在同儕中的地位已逐漸穩固。", luckyColor: "深藍色", luckyItem: "書籤" },
+            { type: "吉", title: "與人為善籤", poem: "笑臉迎人無難事，寬容待眾福長留。", desc: "適合處理人事糾紛。你的耐心與親和力將化解敵意。", luckyColor: "暖粉色", luckyItem: "護唇膏" },
+            { type: "吉", title: "安分守己籤", poem: "知止不辱常自足，安居樂業享清福。", desc: "不要捲入辦公室政治。專注於自己的責任，避開麻煩。", luckyColor: "土灰色", luckyItem: "降噪耳機" },
+            { type: "吉", title: "得失隨緣籤", poem: "人生幾何需盡歡，得失隨緣心自寬。", desc: "不要過度執著具體結果。換個心情喝杯茶，會發現替代方案。", luckyColor: "奶茶色", luckyItem: "茶包" },
+            { type: "吉", title: "一帆風順籤", poem: "順風行船不費力，一帆風順抵彼岸。", desc: "目前的任務沒有什麼障礙，依照原定計畫執行即可。", luckyColor: "淡藍色", luckyItem: "指南針" },
+            { type: "吉", title: "實至名歸籤", poem: "千錘百鍊終成器，名副其實眾所歸。", desc: "你的努力被看見了。雖然沒有慶祝活動，但大家都已在心裡認同你。", luckyColor: "深灰色", luckyItem: "公事包" },
+            { type: "吉", title: "各得其所籤", poem: "萬物並育而不害，各安其位樂無窮。", desc: "今日不宜爭奪。每個人都有屬於自己的位置，找回自己的節奏。", luckyColor: "青色", luckyItem: "靠枕" },
+            { type: "吉", title: "苦盡甘來籤", poem: "苦澀已隨流水去，清甜自向口中留。", desc: "一段艱難的關係或工作終於結束。現在可以開始享受輕鬆的氛圍。", luckyColor: "淺紫色", luckyItem: "蜂蜜" },
+            { type: "吉", title: "金榜題名籤", poem: "雖然名次非首位，榜上有名亦可嘉。", desc: "成績符合期待。雖然不是最頂尖，但也足夠讓你邁向下一個階段。", luckyColor: "紅褐色", luckyItem: "原子筆" },
+            { type: "吉", title: "歲月靜好籤", poem: "庭前燕子報平安，窗外梅花傲雪寒。", desc: "這是一個安靜的吉兆。代表健康穩定，沒有什麼煩心事干擾。", luckyColor: "乳白色", luckyItem: "蠟燭" },
+            { type: "吉", title: "禮尚往來籤", poem: "投桃報李意真誠，人脈和諧利長遠。", desc: "送份小禮物給同事或客戶，這份心意會在關鍵時刻轉化為助力。", luckyColor: "粉紫色", luckyItem: "精美禮包" },
+            { type: "吉", title: "學以致用籤", poem: "博學多才終有用，實踐方知真智慧。", desc: "今天會有一個場合讓你用到之前學過的冷門知識。這種驚艷感能加分不少。", luckyColor: "墨綠色", luckyItem: "字典" },
+            { type: "吉", title: "心寬福自來籤", poem: "胸懷坦蕩無牽掛，福氣自然隨步生。", desc: "原諒一個曾經傷害你的人。這種心境的解脫會讓你今日磁場大好。", luckyColor: "淺米色", luckyItem: "軟墊" },
+
+            // --- 末吉 (91-100) ---
+            { type: "末吉", title: "磨練心智籤", poem: "石中藏玉待人磨，莫教虛度好時光。", desc: "可能感到些許阻礙，但這正是打磨靈魂的機會。多聽取建議。", luckyColor: "咖啡色", luckyItem: "拼圖" },
+            { type: "末吉", title: "謹慎行事籤", poem: "行到水窮處坐看，雲起之時見曙光。", desc: "遇到困境不要慌亂。守舊比創新安全，低調度過這段時期。", luckyColor: "灰色", luckyItem: "圍巾" },
+            { type: "末吉", title: "待時而動籤", poem: "嚴冬臘月待春風，枯木重生在其中。", desc: "目前的低迷是暫時的。像樹木在冬季蓄力，充實大腦與體魄。", luckyColor: "炭黑色", luckyItem: "健身器材" },
+            { type: "末吉", title: "退一步海闊天空籤", poem: "爭執不下兩傷悲，各退一步喜相隨。", desc: "容易與人摩擦，衝動是魔鬼。退讓不代表失敗，是長遠利益。", luckyColor: "深褐色", luckyItem: "薄荷油" },
+            { type: "末吉", title: "破釜沉舟籤", poem: "困局求生需果斷，壯士斷腕保周全。", desc: "不適合的舊習慣或損友，是時候割捨了。未來會感謝今日果決。", luckyColor: "鐵鏽紅", luckyItem: "美工刀" },
+            { type: "末吉", title: "勞心勞力籤", poem: "披荊斬棘路維艱，流汗耕耘自有田。", desc: "感到體力消耗巨大，雜事纏身。保證充足睡眠，辛苦會轉化為經驗。", luckyColor: "深橘色", luckyItem: "維他命" },
+            { type: "末吉", title: "慎選良師籤", poem: "盲人騎瞎馬路險，尋求明燈指迷津。", desc: "不要盲目跟從投資建議。找專業人士商量，否則容易破財。", luckyColor: "深紫紅", luckyItem: "計算器" },
+            { type: "末吉", title: "物極必反籤", poem: "月滿則虧需注意，處盛慮衰保平安。", desc: "看起來都很順利時要小心。不要過度擴張，守住成果就是勝利。", luckyColor: "墨紫色", luckyItem: "手電筒" },
+            { type: "末吉", title: "口舌之災籤", poem: "禍從口出需防範，言多必失理自然。", desc: "今日宜保持沉默。不要參與八卦討論，否則會被當成代罪羔羊。", luckyColor: "灰藍色", luckyItem: "口罩" },
+            { type: "末吉", title: "防患未然籤", poem: "風雲變幻莫測度，未雨綢繆保無虞。", desc: "檢查家中的水電設備或備份電腦資料。一個小動作能避免大麻煩。", luckyColor: "土黃色", luckyItem: "備份硬碟" }
+        ];
+
+        // 強化版音效引擎
+        const useAudio = () => {
+            const audioCtx = useRef(null);
+
+            const initCtx = async () => {
+                if (!audioCtx.current) {
+                    audioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.current.state === 'suspended') {
+                    await audioCtx.current.resume();
+                }
+                return audioCtx.current;
+            };
+
+            const playShakeSound = async () => {
+                const ctx = await initCtx();
+                if (!ctx) return;
+
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(180, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.1);
+
+                gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.1);
+            };
+
+            const playSuccessSound = async () => {
+                const ctx = await initCtx();
+                if (!ctx) return;
+                
+                const playTone = (freq, startTime, duration) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, startTime);
+                    gain.gain.setValueAtTime(0.2, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(startTime);
+                    osc.stop(startTime + duration);
+                };
+
+                const now = ctx.currentTime;
+                playTone(523.25, now, 0.4); 
+                playTone(659.25, now + 0.1, 0.4);
+                playTone(783.99, now + 0.2, 0.6);
+            };
+
+            return { playShakeSound, playSuccessSound, initCtx };
+        };
+
+        const CylinderIcon = ({ shaking }) => (
+            <svg viewBox="0 0 200 240" className={`w-48 h-56 md:w-64 md:h-80 drop-shadow-2xl ${shaking ? 'animate-shake-hard' : ''}`} fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="100" cy="220" rx="70" ry="10" fill="#2d0a0a" fillOpacity="0.25" />
+                <path d="M40 60 C40 45 160 45 160 60 V200 C160 215 40 215 40 200 Z" fill="#4a0e0e" />
+                <ellipse cx="100" cy="60" rx="60" ry="15" fill="#330a0a" />
+                <path d="M40 60 A60 15 0 0 1 160 60" stroke="#991B1B" strokeWidth="4" fill="none" />
+                <g className={shaking ? "animate-sticks-jump" : ""}>
+                    <rect x="65" y="30" width="10" height="130" rx="2" fill="#F2C94C" transform="rotate(-12 65 100)" stroke="#B45309" strokeWidth="0.5"/>
+                    <rect x="85" y="25" width="10" height="130" rx="2" fill="#FBBF24" transform="rotate(-4 85 100)" stroke="#B45309" strokeWidth="0.5"/>
+                    <rect x="105" y="28" width="10" height="130" rx="2" fill="#F2C94C" transform="rotate(3 105 100)" stroke="#B45309" strokeWidth="0.5"/>
+                    <rect x="125" y="35" width="10" height="130" rx="2" fill="#F59E0B" transform="rotate(10 125 100)" stroke="#B45309" strokeWidth="0.5"/>
+                    <rect x="95" y="20" width="10" height="130" rx="2" fill="#FCD34D" stroke="#B45309" strokeWidth="0.5"/>
+                </g>
+                <path d="M40 60 C40 75 160 75 160 60 V200 C160 215 40 215 40 200 Z" fill="#7F1D1D" />
+                <path d="M40 60 A60 15 0 0 0 160 60" stroke="#991B1B" strokeWidth="4" fill="none" strokeLinecap="round" />
+                <rect x="75" y="105" width="50" height="50" transform="rotate(45 100 130)" fill="#F59E0B" rx="4" />
+                <text x="100" y="140" fontSize="32" fill="#78350F" fontWeight="bold" textAnchor="middle" style={{fontFamily: 'serif'}}>運</text>
+            </svg>
+        );
+
+        function App() {
+            const [gameState, setGameState] = useState('start');
+            const [fortune, setFortune] = useState(null);
+            const [showResultCard, setShowResultCard] = useState(false);
+            const { playShakeSound, playSuccessSound, initCtx } = useAudio();
+            const shakeInterval = useRef(null);
+
+            const enterGame = async () => {
+                await initCtx();
+                setGameState('playing');
+            };
+
+            const handleDraw = async () => {
+                if (gameState === 'shaking') return;
+                await initCtx();
+                setGameState('shaking');
+                
+                shakeInterval.current = setInterval(() => {
+                    playShakeSound();
+                }, 160);
+
+                setTimeout(() => {
+                    clearInterval(shakeInterval.current);
+                    const res = FORTUNES[Math.floor(Math.random() * FORTUNES.length)];
+                    setFortune(res);
+                    setGameState('result');
+                    playSuccessSound();
+                    setTimeout(() => setShowResultCard(true), 100);
+                }, 2000);
+            };
+
+            const handleReset = () => {
+                setShowResultCard(false);
+                setTimeout(() => {
+                    setGameState('start');
+                    setFortune(null);
+                }, 300);
+            };
+
+            const goToShop = () => {
+                window.open(SHOPPING_URL, '_blank');
+            };
+
+            return (
+                <div className="min-h-screen w-full bg-[#5c1919] text-[#FFFBEB] flex flex-col items-center justify-center overflow-hidden relative font-serif">
+                    <div className="absolute inset-0 opacity-10 pointer-events-none" style={{backgroundImage: `radial-gradient(#FCD34D 1px, transparent 1px)`, backgroundSize: '30px 30px'}}></div>
+                    
+                    <main className="z-10 w-full max-w-md px-6 flex flex-col items-center">
+                        {gameState === 'start' && (
+                            <div className="animate-fade-in flex flex-col items-center space-y-8">
+                                <div className="text-center">
+                                 <h1 className="text-5xl font-bold text-[#FCD34D] tracking-widest mb-4">貴英娘娘</h1>   
+                                 <h1 className="text-5xl font-bold text-[#FCD34D] tracking-widest mb-4">開運抽籤</h1>
+                                    <p className="text-lg text-red-100 opacity-80">抽出你的今日運勢</p>
+                                </div>
+                                <div className="animate-float cursor-pointer" onClick={enterGame}>
+                                    <CylinderIcon shaking={false} />
+                                </div>
+                                <div className="flex flex-col space-y-4 w-full items-center">
+                                    <button onClick={enterGame} className="w-64 bg-[#FCD34D] text-[#78350F] text-xl font-bold py-3 px-12 rounded-full shadow-lg hover:scale-105 transition-transform">
+                                        開始抽籤
+                                    </button>
+                                   
+                                </div>
+                            </div>
+                        )}
+
+                        {(gameState === 'playing' || gameState === 'shaking') && (
+                            <div className="animate-fade-in flex flex-col items-center text-center">
+                                <h2 className="text-2xl text-[#FCD34D] mb-12 tracking-widest font-bold">
+                                    {gameState === 'shaking' ? '誠心祈求中...' : '請搖動籤筒抽籤'}
+                                </h2>
+                                <div className="cursor-pointer" onClick={handleDraw}>
+                                    <CylinderIcon shaking={gameState === 'shaking'} />
+                                </div>
+                                {gameState === 'playing' && (
+                                    <p className="mt-8 text-red-200 animate-pulse">點擊筒身開始</p>
+                                )}
+                            </div>
+                        )}
+
+                        {gameState === 'result' && fortune && (
+                            <div className={`bg-[#FFFBF0] w-full max-w-[340px] shadow-2xl rounded-lg overflow-hidden transform transition-all duration-700 p-8 flex flex-col items-center text-center ${showResultCard ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+                                <div className="border-2 border-[#B91C1C] text-[#B91C1C] px-4 py-1 text-base font-bold mb-4 rounded-sm">{fortune.type}</div>
+                                <h3 className="text-2xl text-[#78350F] font-bold mb-6 border-b-2 border-[#FEF3C7] pb-2 w-full">{fortune.title}</h3>
+                                <div className="flex flex-row-reverse justify-center gap-8 h-44 mb-6 text-[#4B5563]">
+                                    <p className="writing-vertical-rl text-xl font-medium leading-relaxed tracking-widest">{fortune.poem.split('，')[0]}</p>
+                                    <p className="writing-vertical-rl text-xl font-medium leading-relaxed tracking-widest">{fortune.poem.split('，')[1]}</p>
+                                </div>
+                                <div className="bg-[#FEF3C7] p-4 rounded-lg w-full mb-6 text-left text-sm text-[#78350F] leading-relaxed">
+                                    <p className="font-bold mb-2 border-b border-[#F59E0B] inline-block">【 解籤 】</p>
+                                    <p>{fortune.desc}</p>
+                                </div>
+                                <div className="text-xs text-gray-400 mb-6 font-sans">
+                                    幸運色：<span className="text-[#78350F] font-semibold mr-3">{fortune.luckyColor}</span>
+                                    幸運物：<span className="text-[#78350F] font-semibold">{fortune.luckyItem}</span>
+                                </div>
+                                <div className="flex flex-col space-y-3 w-full">
+                                    <button onClick={handleReset} className="w-full bg-[#B91C1C] hover:bg-[#991B1B] text-white py-4 rounded-md font-bold transition-colors shadow-md">
+                                        再抽一次
+                                    </button>
+                                    <button onClick={goToShop} className="w-full border-2 border-[#B91C1C] text-[#B91C1C] hover:bg-[#B91C1C] hover:text-white py-3 rounded-md font-bold transition-all shadow-sm">
+                                        <span className="text-[#F59E0B]">開運專區</span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
