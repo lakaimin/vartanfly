@@ -18,7 +18,7 @@
             background: #0a0a0c;
             color: #ffffff;
             margin: 0;
-            overflow: hidden; /* 預防滑動干擾 */
+            overflow: hidden;
         }
 
         .glass-card {
@@ -36,9 +36,8 @@
             box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
         }
 
-        .neon-btn:active {
-            transform: scale(0.95);
-        }
+        .neon-btn:active { transform: scale(0.95); }
+        .neon-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         #scratch-container {
             position: relative;
@@ -75,6 +74,17 @@
 
         .fade-in { animation: fadeIn 0.5s forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        #loading-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            border-radius: 24px;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
@@ -83,15 +93,12 @@
     <div id="step-1" class="w-full max-w-md text-center fade-in">
         <div class="glass-card p-6 mb-6">
             <div class="w-full h-64 bg-gray-800 rounded-xl mb-6 overflow-hidden relative">
-                <!-- <div class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-900 to-black">
-                    <span class="text-4xl font-black italic tracking-tighter text-white opacity-80">BIG SALE</span>
-                </div> -->
                 <img src="https://live.staticflickr.com/65535/55004640362_a4d31f4400_z.jpg" alt="活動海報" class="w-full h-full object-cover mix-blend-overlay">
             </div>
             <h1 class="text-3xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">魔幻刮刮樂-10點玩一次</h1>
             <p class="text-gray-400 mb-8">刮開隱藏驚喜，領取您的專屬好禮！</p>
             <p class="text-gray-400 mb-8">積木兌換券、課外書、貼紙、免費10點、5元現金券</p>
-            <p class="text-gray-400 mb-8">5元現金券適用:螢光筆、馬克筆、自動筆</p>
+            <p class="text-gray-400 mb-8">現金券適用:自動筆、馬克筆、螢光筆</p>
             <button onclick="goToStep(2)" class="neon-btn w-full py-4 rounded-full text-lg font-bold text-white tracking-widest uppercase">
                 開始遊戲
             </button>
@@ -104,7 +111,6 @@
             <h2 class="text-2xl font-bold mb-1">試試手氣！</h2>
             <p class="text-sm text-gray-400">請在下方方塊內來回滑動刮開</p>
         </div>
-        
         <div id="scratch-container" class="shadow-2xl">
             <div class="prize-underlay">
                 <span class="text-xs text-gray-500 mb-1">恭喜</span>
@@ -112,7 +118,6 @@
             </div>
             <canvas id="scratch-canvas"></canvas>
         </div>
-
         <button onclick="resetGame()" class="mt-10 text-gray-500 hover:text-white transition-colors text-sm underline underline-offset-4">
             返回首頁
         </button>
@@ -121,25 +126,23 @@
     <!-- 步驟 3: 獎項內容頁面 -->
     <div id="step-3" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 hidden">
         <div class="glass-card w-full max-w-xs p-8 text-center border-2 border-cyan-500/50 relative">
+            <div id="loading-overlay">
+                <div class="text-cyan-400 animate-pulse">紀錄中...</div>
+            </div>
             <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-cyan-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(0,242,255,0.5)]">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                 </svg>
             </div>
-            
             <h3 class="text-xl font-bold mt-8 mb-2">   </h3>
             <div id="final-prize-name" class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-4 uppercase">
                 獎項名稱
             </div>
-            
-             <div class="bg-black/50 p-4 rounded-xl border border-white/10 mb-6">
-                <!-- <p class="text-xs text-gray-500 mb-1">您的專屬代碼</p> -->
+            <div class="bg-black/50 p-4 rounded-xl border border-white/10 mb-6">
                 <div id="promo-code" class="text-xl font-mono font-bold tracking-widest text-cyan-400">CODE</div> 
-
             </div> 
-
             <div class="space-y-3">
-                <button onclick="copyAndUse()" class="neon-btn w-full py-3 rounded-xl font-bold text-white">
+                <button id="use-btn" onclick="copyAndUse()" class="neon-btn w-full py-3 rounded-xl font-bold text-white">
                     立即使用專屬禮物
                 </button>
                 <button onclick="restartGame()" class="w-full py-3 rounded-xl font-bold border border-white/20 hover:bg-white/5 transition-colors">
@@ -150,12 +153,9 @@
     </div>
 
     <script>
-        /**
-         * 獎項權重調整區
-         * weight 數值越大，中獎機率越高。
-         * 例如：85折(70) + 免運(20) + 現折(9) + 潮流帽(1) = 100 總權重
-         * 潮流帽的中獎率就是 1 / 100 = 1%
-         */
+        // --- 請將下方的網址替換成你的 Google Apps Script 部署網址 ---
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxA5q670pRvwan3DtNZUBdIlQiRUWYsVxXRO7fIh7SN7drLWSVmfjK5JlGFuytMqNpP/exec"; 
+
         const prizes = [
             { name: "中獎了!", code: "送你10點", weight: 25 },
             { name: "中獎了!", code: "免費再玩一次", weight: 20 },
@@ -165,7 +165,7 @@
             { name: "中獎了!", code: "馬克筆5元現金券", weight: 5 },
             { name: "中獎了!", code: "貼紙1張", weight: 10 },
             { name: "中獎了!", code: "課外書1本", weight: 3 },
-            { name: "中獎了!", code: "積木兌換券", weight:2 }
+            { name: "中獎了!", code: "積木兌換券", weight: 2 }
         ];
 
         let currentPrize = null;
@@ -174,15 +174,11 @@
         const ctx = canvas.getContext('2d');
         const container = document.getElementById('scratch-container');
 
-        // 隨機選取獎項（根據權重）
         function getRandomPrize() {
             const totalWeight = prizes.reduce((sum, p) => sum + p.weight, 0);
             let randomNum = Math.random() * totalWeight;
-            
             for (const prize of prizes) {
-                if (randomNum < prize.weight) {
-                    return prize;
-                }
+                if (randomNum < prize.weight) return prize;
                 randomNum -= prize.weight;
             }
             return prizes[0];
@@ -192,7 +188,6 @@
             document.getElementById('step-1').classList.add('hidden');
             document.getElementById('step-2').classList.add('hidden');
             document.getElementById('step-3').classList.add('hidden');
-
             if (step === 2) {
                 document.getElementById('step-2').classList.remove('hidden');
                 initScratch();
@@ -203,9 +198,7 @@
 
         function initScratch() {
             isScratched = false;
-            // 改為使用權重隨機函數
             currentPrize = getRandomPrize();
-            
             document.getElementById('prize-text').innerText = currentPrize.name;
             document.getElementById('final-prize-name').innerText = currentPrize.name;
             document.getElementById('promo-code').innerText = currentPrize.code;
@@ -213,20 +206,16 @@
             const size = container.offsetWidth;
             canvas.width = size;
             canvas.height = size;
-
             ctx.fillStyle = '#444';
             ctx.fillRect(0, 0, size, size);
-            
             for (let i = 0; i < 500; i++) {
                 ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.1})`;
                 ctx.fillRect(Math.random() * size, Math.random() * size, 2, 2);
             }
-
             ctx.font = 'bold 24px Noto Sans TC';
             ctx.fillStyle = '#888';
             ctx.textAlign = 'center';
             ctx.fillText('刮開領獎', size / 2, size / 2 + 10);
-
             setupInteraction();
         }
 
@@ -234,7 +223,6 @@
             let drawing = false;
             const startDrawing = (e) => { drawing = true; scratch(e); };
             const endDrawing = () => { drawing = false; checkScratchPercentage(); };
-
             const scratch = (e) => {
                 if (!drawing) return;
                 const rect = canvas.getBoundingClientRect();
@@ -245,13 +233,12 @@
                 ctx.arc(x, y, 30, 0, Math.PI * 2);
                 ctx.fill();
             };
-
             canvas.addEventListener('mousedown', startDrawing);
             window.addEventListener('mouseup', endDrawing);
             canvas.addEventListener('mousemove', scratch);
-            canvas.addEventListener('touchstart', startDrawing);
+            canvas.addEventListener('touchstart', startDrawing, {passive: false});
             canvas.addEventListener('touchend', endDrawing);
-            canvas.addEventListener('touchmove', scratch);
+            canvas.addEventListener('touchmove', scratch, {passive: false});
         }
 
         function checkScratchPercentage() {
@@ -270,15 +257,45 @@
             }
         }
 
-        function copyAndUse() {
+        async function copyAndUse() {
             const code = document.getElementById('promo-code').innerText;
-            const el = document.createElement('textarea');
-            el.value = code;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            alert('優惠碼已複製！');
+            const useBtn = document.getElementById('use-btn');
+            const loading = document.getElementById('loading-overlay');
+
+            // 1. 複製功能
+            try {
+                const el = document.createElement('textarea');
+                el.value = code;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+            } catch (err) { console.error('Copy failed', err); }
+
+            // 2. 傳送到 Google Sheets
+            if (WEB_APP_URL) {
+                useBtn.disabled = true;
+                loading.style.display = 'flex';
+                
+                try {
+                    await fetch(WEB_APP_URL, {
+                        method: 'POST',
+                        mode: 'no-cors', // 跨網域存取限制通常需要 no-cors
+                        cache: 'no-cache',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code: code })
+                    });
+                    alert('優惠碼已複製，且已為您完成紀錄！');
+                } catch (error) {
+                    console.error('Record failed', error);
+                    alert('優惠碼已複製！（紀錄失敗，請檢查網路）');
+                } finally {
+                    loading.style.display = 'none';
+                    useBtn.disabled = false;
+                }
+            } else {
+                alert('優惠碼已複製！(未設定紀錄網址)');
+            }
         }
 
         function restartGame() {
