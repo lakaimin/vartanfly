@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>貴英娘娘開運抽籤</title>
-    <!-- React & Babel -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap');
@@ -74,7 +72,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        const SHOPPING_URL = "https://greema.qdm.tw/%E6%89%80%E6%9C%89%E5%95%86%E5%93%81"; // 這裡替換成你的購物網址
+        const SHOPPING_URL = "https://greema.qdm.tw/%E6%89%80%E6%9C%89%E5%95%86%E5%93%81"; 
 
         const FORTUNES = [
             // --- 大吉 (1-15) ---
@@ -379,9 +377,12 @@
                             </div>
                         )}
                     </main>
-                
-                
-            </div>
+
+                    {/* 修改後的頁尾：添加超連結與滑鼠懸停效果 */}
+                    <footer className="mt-8 mb-4 opacity-40 text-[#FCD34D] text-sm tracking-widest font-sans">
+                        Designed by <a href="https://vartanliu.blogspot.com/" target="_blank" rel="noopener noreferrer" className="hover:underline hover:opacity-100 transition-all">Vartan Liu</a>
+                    </footer>
+                </div>
             );
         }
 
@@ -389,6 +390,4 @@
         root.render(<App />);
     </script>
 </body>
-
 </html>
-
