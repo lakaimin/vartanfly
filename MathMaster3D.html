@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Math Master 3D：天才小神算</title>
+    <!-- 引入 Tailwind CSS 進行快速排版 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 全域設定 */
+        :root {
+            --bg-color: #e0e5ec;
+            --primary-shadow: #a3b1c6;
+            --secondary-shadow: #ffffff;
+            --card-color: #f0f0f3;
+            --green: #4ade80;
+            --red: #f87171;
+            --text-color: #4b5563;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #fce7f3; /* 柔和粉底色 */
+            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+            background-size: cover;
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* 3D 黏土風格 (Claymorphism) 卡片與容器 */
+        .clay-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 
+                20px 20px 60px rgba(0,0,0,0.1), 
+                -20px -20px 60px rgba(255,255,255,0.5),
+                inset 5px 5px 10px rgba(255,255,255,0.5),
+                inset -5px -5px 10px rgba(0,0,0,0.05);
+            border: 2px solid rgba(255,255,255,0.8);
+        }
+
+        /* 撲克牌樣式 */
+        .poker-card-container {
+            perspective: 1000px;
+            width: 100px;
+            height: 140px;
+        }
+
+        @media (min-width: 768px) {
+            .poker-card-container {
+                width: 140px;
+                height: 190px;
+            }
+        }
+
+        .poker-card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        .poker-card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            background: white;
+            border: 4px solid white;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            /* Pattern */
+            background-image: radial-gradient(#ffffff 15%, transparent 16%), radial-gradient(#ffffff 15%, transparent 16%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card-logo {
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .card-front {
+            transform: rotateY(180deg);
+            color: #333;
+            flex-direction: column;
+        }
+
+        .suit-top { position: absolute; top: 10px; left: 10px; font-size: 1.2rem; }
+        .suit-bottom { position: absolute; bottom: 10px; right: 10px; font-size: 1.2rem; transform: rotate(180deg); }
+        
+        .red-suit { color: #ef4444; }
+        .black-suit { color: #1f2937; }
+
+        /* 3D 按鈕 */
+        .btn-3d {
+            transition: all 0.1s;
+            position: relative;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            transform: translateY(0);
+        }
+
+        .btn-3d:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0px rgba(0,0,0,0.2) !important;
+        }
+
+        .btn-correct {
+            background: #4ade80;
+            box-shadow: 0 8px 0px #16a34a, 0 15px 20px rgba(0,0,0,0.2);
+            color: white;
+        }
+
+        .btn-wrong {
+            background: #f87171;
+            box-shadow: 0 8px 0px #dc2626, 0 15px 20px rgba(0,0,0,0.2);
+            color: white;
+        }
+
+        /* 浮動動畫 */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .floating {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* 答對答錯動畫 */
+        @keyframes pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+
+        .feedback-anim {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8rem;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 50;
+            display: none;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .feedback-anim.show {
+            display: block;
+            animation: pop 0.8s ease-out forwards;
+        }
+
+        /* 分數變化動畫 */
+        @keyframes scoreChange {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-30px); opacity: 0; }
+        }
+        .score-float {
+            position: absolute;
+            font-size: 1.5rem;
+            font-weight: bold;
+            animation: scoreChange 1s ease-out forwards;
+        }
+
+        /* 運算符號樣式 */
+        .operator {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #4b5563;
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
+            margin: 0 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 主遊戲容器 -->
+    <div class="relative w-full max-w-2xl px-4 py-6 mx-auto h-screen flex flex-col justify-center">
+        
+        <!-- 頂部資訊欄 -->
+        <div class="flex justify-between items-center mb-6 px-2">
+            <div class="clay-card px-6 py-3 flex items-center gap-2 transform -rotate-2">
+                <span class="text-gray-500 font-bold text-lg">得分</span>
+                <span id="scoreDisplay" class="text-3xl font-extrabold text-indigo-600">0</span>
+            </div>
+            <div class="clay-card px-4 py-2 transform rotate-2">
+                <span class="text-sm font-bold text-gray-400 block text-center">連續答對</span>
+                <span id="streakDisplay" class="text-xl font-extrabold text-pink-500 text-center block">0</span>
+            </div>
+        </div>
+
+        <!-- 遊戲主舞台 -->
+        <div class="clay-card w-full p-6 flex flex-col items-center justify-center relative min-h-[400px]">
+            
+            <!-- 回饋動畫層 -->
+            <div id="feedbackCorrect" class="feedback-anim text-green-500">⭕</div>
+            <div id="feedbackWrong" class="feedback-anim text-red-500">❌</div>
+
+            <!-- 卡片區域 -->
+            <div class="flex items-center justify-center gap-2 md:gap-6 mb-8 w-full">
+                <!-- 左卡 -->
+                <div class="poker-card-container">
+                    <div class="poker-card" id="cardLeft">
+                        <div class="card-face card-back">
+                            <span class="card-logo">♠</span>
+                        </div>
+                        <div class="card-face card-front" id="cardLeftFront">
+                            <span class="suit-top">♠</span>
+                            <span class="number">7</span>
+                            <span class="suit-bottom">♠</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 乘號 -->
+                <div class="operator">×</div>
+
+                <!-- 右卡 -->
+                <div class="poker-card-container">
+                    <div class="poker-card" id="cardRight">
+                        <div class="card-face card-back">
+                            <span class="card-logo">♥</span>
+                        </div>
+                        <div class="card-face card-front" id="cardRightFront">
+                            <span class="suit-top text-red-suit">♥</span>
+                            <span class="number text-red-suit">8</span>
+                            <span class="suit-bottom text-red-suit">♥</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 等式與答案區 -->
+            <div class="flex items-center justify-center gap-4 mb-8">
+                <div class="operator">=</div>
+                <div id="targetAnswer" class="bg-white rounded-2xl px-8 py-4 text-5xl font-extrabold text-gray-700 shadow-inner border-4 border-gray-100 min-w-[120px] text-center floating">
+                    ?
+                </div>
+            </div>
+
+            <!-- 提示文字 -->
+            <p class="text-gray-500 font-bold mb-4 text-center text-lg">這個算式正確嗎？</p>
+
+            <!-- 按鈕區 -->
+            <div class="grid grid-cols-2 gap-6 w-full max-w-md">
+                <button onclick="checkAnswer(true)" class="btn-3d btn-correct rounded-2xl py-5 flex flex-col items-center justify-center group">
+                    <span class="text-3xl mb-1">⭕</span>
+                    <span class="text-xl font-bold">正確</span>
+                </button>
+                <button onclick="checkAnswer(false)" class="btn-3d btn-wrong rounded-2xl py-5 flex flex-col items-center justify-center group">
+                    <span class="text-3xl mb-1">❌</span>
+                    <span class="text-xl font-bold">錯誤</span>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- 底部裝飾與版權 -->
+        <div class="text-center mt-6 text-white/60 text-sm font-bold tracking-wider">
+            Math Master 3D • 累積積分挑戰<br>
+            Designed by <a href="https://vartanliu.blogspot.com/" target="_blank" class="hover:text-white hover:underline transition-all">Vartan Liu</a>
+        </div>
+
+    </div>
+
+    <!-- 音效 (使用 AudioContext 生成簡單音效，避免外部依賴) -->
+    <script>
+        // 音效合成器
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playTone(freq, type, duration) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playCorrectSound() {
+            playTone(600, 'sine', 0.1);
+            setTimeout(() => playTone(800, 'sine', 0.2), 100);
+        }
+
+        function playWrongSound() {
+            playTone(300, 'sawtooth', 0.15);
+            setTimeout(() => playTone(200, 'sawtooth', 0.3), 150);
+        }
+
+        function playFlipSound() {
+            playTone(400, 'triangle', 0.05);
+        }
+
+        // 煙火特效 (Confetti) - 簡單的 JS 實現
+        function fireConfetti() {
+            const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+            for(let i=0; i<30; i++) {
+                const div = document.createElement('div');
+                div.style.position = 'fixed';
+                div.style.left = '50%';
+                div.style.top = '50%';
+                div.style.width = '10px';
+                div.style.height = '10px';
+                div.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                div.style.borderRadius = '50%';
+                div.style.pointerEvents = 'none';
+                div.style.zIndex = '100';
+                document.body.appendChild(div);
+
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 5 + Math.random() * 10;
+                const tx = Math.cos(angle) * velocity * 20;
+                const ty = Math.sin(angle) * velocity * 20;
+
+                div.animate([
+                    { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 800,
+                    easing: 'cubic-bezier(0, .9, .57, 1)'
+                }).onfinish = () => div.remove();
+            }
+        }
+    </script>
+
+    <!-- 遊戲邏輯 -->
+    <script>
+        // 遊戲狀態
+        let score = 0;
+        let streak = 0;
+        let currentQuestion = {
+            num1: 0,
+            num2: 0,
+            displayedAnswer: 0,
+            isCorrect: false
+        };
+        let isAnimating = false;
+
+        // DOM 元素
+        const elScore = document.getElementById('scoreDisplay');
+        const elStreak = document.getElementById('streakDisplay');
+        const cardLeft = document.getElementById('cardLeft');
+        const cardRight = document.getElementById('cardRight');
+        const cardLeftFront = document.getElementById('cardLeftFront');
+        const cardRightFront = document.getElementById('cardRightFront');
+        const elTargetAnswer = document.getElementById('targetAnswer');
+        const fbCorrect = document.getElementById('feedbackCorrect');
+        const fbWrong = document.getElementById('feedbackWrong');
+
+        // 花色陣列
+        const suits = [
+            { icon: '♠', color: 'black-suit' },
+            { icon: '♥', color: 'red-suit' },
+            { icon: '♣', color: 'black-suit' },
+            { icon: '♦', color: 'red-suit' }
+        ];
+
+        function getRandomSuit() {
+            return suits[Math.floor(Math.random() * suits.length)];
+        }
+
+        // 初始化遊戲
+        function initGame() {
+            score = 0;
+            streak = 0;
+            updateScoreUI();
+            nextRound();
+        }
+
+        // 產生下一題
+        function nextRound() {
+            if(isAnimating) return;
+            isAnimating = true;
+
+            // 1. 翻回卡背
+            cardLeft.classList.remove('flipped');
+            cardRight.classList.remove('flipped');
+            elTargetAnswer.innerText = "?";
+            elTargetAnswer.classList.remove('text-green-500', 'text-red-500');
+            elTargetAnswer.classList.add('text-gray-700');
+
+            setTimeout(() => {
+                playFlipSound();
+                // 2. 設定數值 (1-9)
+                const n1 = Math.floor(Math.random() * 9) + 1;
+                const n2 = Math.floor(Math.random() * 9) + 1;
+                const realAnswer = n1 * n2;
+                
+                // 決定是否顯示正確答案 (50% 機率)
+                const showCorrect = Math.random() > 0.5;
+                let displayAns = realAnswer;
+
+                if (!showCorrect) {
+                    // 產生錯誤答案：確保不等於正確答案，且在合理範圍內 (避免太假)
+                    const offset = Math.floor(Math.random() * 5) + 1; // 1 to 5
+                    if (Math.random() > 0.5) {
+                        displayAns = realAnswer + offset;
+                    } else {
+                        displayAns = Math.max(1, realAnswer - offset);
+                    }
+                    // 再次確保
+                    if (displayAns === realAnswer) displayAns = realAnswer + 1;
+                }
+
+                currentQuestion = {
+                    num1: n1,
+                    num2: n2,
+                    displayedAnswer: displayAns,
+                    isCorrect: showCorrect
+                };
+
+                // 更新卡面 DOM
+                updateCardFace(cardLeftFront, n1);
+                updateCardFace(cardRightFront, n2);
+
+                // 3. 翻開卡片
+                cardLeft.classList.add('flipped');
+                setTimeout(() => {
+                    cardRight.classList.add('flipped');
+                    playFlipSound();
+                }, 150);
+
+                // 4. 顯示答案
+                setTimeout(() => {
+                    elTargetAnswer.innerText = displayAns;
+                    isAnimating = false;
+                }, 500);
+
+            }, 600);
+        }
+
+        function updateCardFace(el, num) {
+            const suit = getRandomSuit();
+            el.innerHTML = `
+                <span class="suit-top ${suit.color}">${suit.icon}</span>
+                <span class="number ${suit.color}">${num}</span>
+                <span class="suit-bottom ${suit.color}">${suit.icon}</span>
+            `;
+        }
+
+        // 檢查答案
+        function checkAnswer(userSaysCorrect) {
+            if (isAnimating) return; // 防止連點
+
+            const isActuallyCorrect = currentQuestion.isCorrect;
+            const userWon = (userSaysCorrect === isActuallyCorrect);
+
+            if (userWon) {
+                // 答對
+                playCorrectSound();
+                score += 20;
+                streak++;
+                fireConfetti();
+                showFloatingText(elTargetAnswer, "+20", "#10b981");
+                
+                // 視覺回饋
+                fbCorrect.classList.add('show');
+                setTimeout(() => fbCorrect.classList.remove('show'), 800);
+                elTargetAnswer.classList.remove('text-gray-700');
+                elTargetAnswer.classList.add('text-green-500');
+
+            } else {
+                // 答錯
+                playWrongSound();
+                score -= 10;
+                streak = 0;
+                showFloatingText(elTargetAnswer, "-10", "#ef4444");
+
+                // 視覺回饋
+                fbWrong.classList.add('show');
+                setTimeout(() => fbWrong.classList.remove('show'), 800);
+                elTargetAnswer.classList.remove('text-gray-700');
+                elTargetAnswer.classList.add('text-red-500');
+                
+                // 震動效果
+                document.body.animate([
+                    { transform: 'translateX(0)' },
+                    { transform: 'translateX(-10px)' },
+                    { transform: 'translateX(10px)' },
+                    { transform: 'translateX(0)' }
+                ], { duration: 300 });
+            }
+
+            updateScoreUI();
+            
+            // 延遲後進入下一題
+            setTimeout(nextRound, 1200);
+        }
+
+        function showFloatingText(element, text, color) {
+            const rect = element.getBoundingClientRect();
+            const floatEl = document.createElement('div');
+            floatEl.innerText = text;
+            floatEl.className = 'score-float';
+            floatEl.style.color = color;
+            floatEl.style.left = (rect.left + rect.width/2) + 'px';
+            floatEl.style.top = rect.top + 'px';
+            document.body.appendChild(floatEl);
+            setTimeout(() => floatEl.remove(), 1000);
+        }
+
+        function updateScoreUI() {
+            // 數字跳動效果
+            elScore.style.transform = "scale(1.5)";
+            setTimeout(() => elScore.style.transform = "scale(1)", 200);
+            
+            elScore.innerText = score;
+            elStreak.innerText = streak;
+        }
+
+        // 啟動
+        window.addEventListener('load', () => {
+            // 避免 iOS 雙擊縮放
+            document.addEventListener('touchstart', function(event) {
+                if (event.touches.length > 1) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+            
+            // 開始第一局
+            initGame();
+        });
+
+    </script>
+</body>
+</html>
