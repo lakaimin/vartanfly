@@ -21,7 +21,7 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Firebase SDKs (Compat Version 11.6.1 for best stability in single-file) -->
+    <!-- Firebase SDKs (Compat Version 11.6.1) - 使用 Compat 版本確保全域變數穩定性 -->
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
@@ -38,21 +38,6 @@
             position: fixed;
             width: 100%;
             height: 100%;
-        }
-
-        /* Error Banner */
-        #error-banner {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(220, 38, 38, 0.9);
-            color: white;
-            padding: 10px;
-            text-align: center;
-            z-index: 9999;
-            font-size: 12px;
         }
 
         .history-scroll::-webkit-scrollbar {
@@ -121,57 +106,89 @@
         .pb-safe-area {
             padding-bottom: env(safe-area-inset-bottom, 20px);
         }
+        
+        /* Error Boundary UI */
+        .error-boundary {
+            padding: 20px;
+            color: #ff6b6b;
+            background: rgba(0,0,0,0.9);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 9999;
+        }
     </style>
 </head>
 <body>
-    <div id="error-banner"></div>
+
     <div id="canvas-container"></div>
     <div id="root"></div>
 
-    <!-- Error Handling Script -->
-    <script>
-        window.onerror = function(message, source, lineno, colno, error) {
-            console.error("Global Error:", message);
-            // Only show major errors if the app doesn't load
-            if (!document.getElementById('root').hasChildNodes()) {
-                const banner = document.getElementById('error-banner');
-                banner.style.display = 'block';
-                banner.textContent = "System Alert: " + message;
-            }
-        };
-    </script>
-
     <script type="text/babel">
-        // --- Safe Firebase Initialization ---
+        const { useState, useEffect, useRef, Component } = React;
+
+        // --- Error Boundary (防止畫面一片黑) ---
+        class ErrorBoundary extends Component {
+            constructor(props) {
+                super(props);
+                this.state = { hasError: false, error: null };
+            }
+
+            static getDerivedStateFromError(error) {
+                return { hasError: true, error };
+            }
+
+            componentDidCatch(error, errorInfo) {
+                console.error("React Error:", error, errorInfo);
+            }
+
+            render() {
+                if (this.state.hasError) {
+                    return (
+                        <div className="error-boundary">
+                            <h2 className="text-2xl font-bold mb-4">系統遭遇異常 / System Error</h2>
+                            <p className="mb-4 text-gray-300 max-w-md">邏輯核心連線不穩定，請嘗試重新整理頁面。</p>
+                            <pre className="bg-black/50 p-4 rounded text-xs text-left overflow-auto max-w-full mb-6 border border-red-500/30">
+                                {this.state.error?.toString()}
+                            </pre>
+                            <button 
+                                onClick={() => window.location.reload()}
+                                className="px-6 py-2 bg-red-600 rounded text-white font-bold hover:bg-red-500 transition"
+                            >
+                                重新啟動系統 / Reboot
+                            </button>
+                        </div>
+                    );
+                }
+                return this.props.children;
+            }
+        }
+
+        // --- Firebase Initialization (Global Scope) ---
         let auth = null;
         let db = null;
-        let firebaseReady = false;
+        let isFirebaseAvailable = false;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         try {
-            if (typeof firebase !== 'undefined') {
-                const configStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
-                if (configStr) {
-                    const firebaseConfig = JSON.parse(configStr);
-                    if (!firebase.apps.length) {
-                        firebase.initializeApp(firebaseConfig);
-                    }
-                    auth = firebase.auth();
-                    db = firebase.firestore();
-                    firebaseReady = true;
-                    console.log("Firebase initialized successfully.");
-                } else {
-                    console.warn("Firebase config not found. Running in Offline Mode.");
+            if (typeof firebase !== 'undefined' && typeof __firebase_config !== 'undefined') {
+                const firebaseConfig = JSON.parse(__firebase_config);
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
                 }
+                auth = firebase.auth();
+                db = firebase.firestore();
+                isFirebaseAvailable = true;
+                console.log("Firebase initialized successfully.");
             } else {
-                console.warn("Firebase SDK not loaded. Running in Offline Mode.");
+                console.warn("Firebase configuration missing or SDK not loaded.");
             }
         } catch (e) {
-            console.error("Firebase init error:", e);
-            // Fallback to offline mode, do not crash the app
+            console.error("Firebase Initialization Error:", e);
         }
-
-        const { useState, useEffect, useRef } = React;
 
         // --- Utils ---
         const formatTime = (seconds) => {
@@ -185,13 +202,7 @@
             const mountRef = useRef(null);
             
             useEffect(() => {
-                if (!mountRef.current) return;
-                
-                // Safety check for Three.js
-                if (typeof THREE === 'undefined') {
-                    console.warn("Three.js not loaded");
-                    return;
-                }
+                if (!mountRef.current || typeof THREE === 'undefined') return;
 
                 const scene = new THREE.Scene();
                 scene.fog = new THREE.FogExp2(0x050510, 0.035);
@@ -263,7 +274,7 @@
                     cancelAnimationFrame(frameId);
                     window.removeEventListener('resize', handleResize);
                     if (mountRef.current && renderer.domElement) {
-                         mountRef.current.removeChild(renderer.domElement);
+                        mountRef.current.removeChild(renderer.domElement);
                     }
                     geometry.dispose();
                     material.dispose();
@@ -273,11 +284,11 @@
             return <div ref={mountRef} className="absolute inset-0 z-0 pointer-events-none" />;
         };
 
-        // --- Hooks ---
+        // --- Game Logic ---
         const useGameLogic = () => {
             const [secret, setSecret] = useState([]);
             const [history, setHistory] = useState([]); 
-            const [gameState, setGameState] = useState('playing'); // playing, won
+            const [gameState, setGameState] = useState('playing'); 
             const [showRules, setShowRules] = useState(true);
             const [timer, setTimer] = useState(0);
             const timerRef = useRef(null);
@@ -377,35 +388,42 @@
             const [error, setError] = useState(null);
 
             useEffect(() => {
-                if (!firebaseReady) {
-                    setError("離線模式：排行榜無法使用");
-                    setLoading(false);
-                    return;
-                }
-                
-                // If offline but firebase loaded, or user not authed yet
-                if (!user) {
-                     // We wait a bit or show empty, but don't error immediately
-                     return;
-                }
-
                 const fetchScores = async () => {
+                    if (!isFirebaseAvailable || !user) {
+                         // 不顯示錯誤，只是一直轉圈等待連線，或顯示空狀態
+                         // 如果長時間沒有，再顯示連線中
+                         return;
+                    }
+
                     try {
+                        // 使用 client-side sorting 避免 compound query 錯誤
                         const leaderboardRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('leaderboard');
                         const querySnapshot = await leaderboardRef.get();
+                        
                         const fetchedScores = [];
                         querySnapshot.forEach((doc) => fetchedScores.push({ id: doc.id, ...doc.data() }));
+                        
+                        // 記憶體排序
                         fetchedScores.sort((a, b) => a.time - b.time);
                         setScores(fetchedScores.slice(0, 10));
+                        setLoading(false);
                     } catch (err) {
                         console.error("Error fetching scores:", err);
-                        setError("無法讀取排行榜資料");
-                    } finally {
+                        setError("讀取失敗，請檢查網路連線");
                         setLoading(false);
                     }
                 };
+                
                 fetchScores();
-            }, [user]);
+                
+                // 設置一個 interval 自動重試 (每 5 秒)
+                const interval = setInterval(() => {
+                    if (loading && isFirebaseAvailable && user) fetchScores();
+                }, 5000);
+
+                return () => clearInterval(interval);
+
+            }, [user, loading]);
 
             return (
                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-fade-in">
@@ -413,9 +431,19 @@
                         <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white"><i data-lucide="x" className="w-6 h-6"></i></button>
                         <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><i data-lucide="trophy" className="text-yellow-400"></i> 排行榜 / Top 10</h2>
                         <div className="flex-1 overflow-y-auto space-y-2 pr-1 history-scroll">
-                            {error ? <div className="text-center text-red-400 py-8">{error}</div> :
-                            loading ? <div className="text-center text-gray-500 py-8">載入中...</div> : 
-                            scores.length === 0 ? <div className="text-center text-gray-500 py-8">暫無紀錄，快來搶第一！</div> : (
+                            {error ? (
+                                <div className="text-center text-red-400 py-8">
+                                    <p>{error}</p>
+                                    <button onClick={() => { setError(null); setLoading(true); }} className="mt-2 text-sm underline text-white">重試</button>
+                                </div>
+                            ) : loading ? (
+                                <div className="text-center text-gray-500 py-8 flex flex-col items-center">
+                                    <i data-lucide="loader-2" className="animate-spin w-8 h-8 mb-2"></i>
+                                    <span>資料同步中...</span>
+                                </div>
+                            ) : scores.length === 0 ? (
+                                <div className="text-center text-gray-500 py-8">暫無紀錄，快來搶第一！</div>
+                            ) : (
                                 scores.map((score, idx) => (
                                     <div key={score.id} className="bg-white/5 border border-white/10 rounded-lg p-3 flex items-center justify-between">
                                         <div className="flex items-center gap-3">
@@ -445,8 +473,8 @@
             const [submitted, setSubmitted] = useState(false);
 
             const handleSubmit = async () => {
-                if (!firebaseReady) {
-                    alert("離線模式無法上傳成績。");
+                if (!isFirebaseAvailable) {
+                    alert("目前無法連線至排行榜，但您的成績已保留。請稍後再試。");
                     return;
                 }
                 if (!name.trim() || submitting || !user) return;
@@ -462,7 +490,7 @@
                 } catch (e) {
                     console.error("Error submitting score: ", e);
                     setSubmitting(false);
-                    alert("上傳失敗，請稍後再試。");
+                    alert("上傳失敗，請檢查網路連線。");
                 }
             };
 
@@ -483,11 +511,11 @@
                                     className="w-full bg-black/30 border border-white/20 rounded-lg p-3 text-white focus:border-cyan-500 outline-none transition-colors" />
                                 <input type="text" placeholder="留下一句話 (Message)" maxLength="20" value={message} onChange={e => setMessage(e.target.value)}
                                     className="w-full bg-black/30 border border-white/20 rounded-lg p-3 text-white focus:border-cyan-500 outline-none transition-colors" />
-                                <button onClick={handleSubmit} disabled={!name.trim() || submitting || !firebaseReady}
+                                <button onClick={handleSubmit} disabled={!name.trim() || submitting}
                                     className={`w-full py-3 rounded-xl font-bold text-white shadow-lg transition-all
-                                        ${(!name.trim() || !firebaseReady) ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:scale-105'}
+                                        ${(!name.trim()) ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:scale-105'}
                                     `}>
-                                    {submitting ? '傳送中...' : firebaseReady ? '送出成績 / Submit' : '離線模式 (Offline)'}
+                                    {submitting ? '傳送中...' : '送出成績 / Submit'}
                                 </button>
                             </div>
                         ) : (
@@ -499,6 +527,7 @@
             );
         };
 
+        // --- Other Modals ---
         const RulesModal = ({ onClose }) => (
              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-fade-in">
                 <div className="glass-panel p-6 rounded-2xl max-w-sm w-full relative">
@@ -542,11 +571,11 @@
                 if (window.lucide) window.lucide.createIcons();
             });
 
-            // Auth Init (Safe)
+            // Auth Init (Auto Retry)
             useEffect(() => {
-                const initAuth = async () => {
-                    if (!firebaseReady) return; // Skip if offline
+                if (!isFirebaseAvailable || !auth) return;
 
+                const initAuth = async () => {
                     try {
                         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                             await auth.signInWithCustomToken(__initial_auth_token);
@@ -554,16 +583,15 @@
                             await auth.signInAnonymously();
                         }
                     } catch (err) {
-                        console.error("Auth Error:", err);
-                        // Continue in restricted mode if auth fails
+                        console.error("Auth Error, retrying anonymously...", err);
+                        // Fallback
+                        try { await auth.signInAnonymously(); } catch(e) { console.error("Fallback failed", e); }
                     }
                 };
                 
-                if (firebaseReady && auth) {
-                    initAuth();
-                    const unsubscribe = auth.onAuthStateChanged(setUser);
-                    return () => unsubscribe();
-                }
+                initAuth();
+                const unsubscribe = auth.onAuthStateChanged(setUser);
+                return () => unsubscribe();
             }, []);
 
             const handleInput = (num) => {
@@ -604,7 +632,7 @@
                         </div>
                         <div className="flex gap-2">
                             <button onClick={() => setShowLeaderboard(true)} className="p-2 rounded-full hover:bg-white/10 transition-colors" title="排行榜">
-                                <i data-lucide="trophy" className={`w-6 h-6 ${firebaseReady ? 'text-yellow-400' : 'text-gray-500'}`}></i>
+                                <i data-lucide="trophy" className="w-6 h-6 text-yellow-400"></i>
                             </button>
                             <button onClick={() => setShowAnswer(true)} className="p-2 rounded-full hover:bg-white/10 transition-colors" title="公布答案">
                                 <i data-lucide="eye" className="w-6 h-6 text-red-400"></i>
@@ -649,7 +677,11 @@
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        root.render(
+            <ErrorBoundary>
+                <App />
+            </ErrorBoundary>
+        );
     </script>
 </body>
 </html>
