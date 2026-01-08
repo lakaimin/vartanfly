@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D Zen Tetris</title>
+    
+    <!-- 載入 Tailwind CSS 進行快速樣式設計 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 載入 Three.js 3D 引擎 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- 載入圖標庫 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* 字體設定 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&family=Orbitron:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #1a1a2e;
+            font-family: 'Noto Sans TC', sans-serif;
+            touch-action: none; /* 防止手機滑動時觸發瀏覽器滾動 */
+        }
+
+        /* 玻璃擬態通用樣式 */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 按鈕特效 */
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-glass:active, .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+        
+        /* 難度按鈕特定樣式 */
+        .btn-easy:hover { border-color: #86efac; box-shadow: 0 0 15px rgba(134, 239, 172, 0.3); }
+        .btn-normal:hover { border-color: #67e8f9; box-shadow: 0 0 15px rgba(103, 232, 249, 0.3); }
+        .btn-hard:hover { border-color: #f87171; box-shadow: 0 0 15px rgba(248, 113, 113, 0.3); }
+
+        /* 遊戲畫布容器 */
+        #game-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* UI 層級 */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none; /* 讓點擊穿透到 3D 場景 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* 讓 UI 元素可點擊 */
+        .interactive {
+            pointer-events: auto;
+        }
+
+        /* 霓虹文字特效 */
+        .neon-text {
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 5px rgba(66, 220, 219, 0.5), 0 0 10px rgba(66, 220, 219, 0.3);
+        }
+
+        /* 隱藏滾動條 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2); 
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 3D 場景容器 -->
+    <div id="game-container"></div>
+
+    <!-- UI 覆蓋層 -->
+    <div id="ui-layer" class="p-4 safe-area">
+        
+        <!-- 頂部資訊欄 -->
+        <div class="flex justify-between items-start w-full">
+            <!-- 左側：Home 按鈕 + 分數 -->
+            <div class="flex flex-col gap-2 pointer-events-auto">
+                <button onclick="quitToMenu()" class="btn-glass w-10 h-10 rounded-full text-white interactive flex items-center justify-center hover:bg-red-500/20 group" title="返回初始頁">
+                    <i class="fas fa-home text-sm group-hover:scale-110 transition-transform"></i>
+                </button>
+                
+                <div class="glass-panel rounded-2xl p-4 text-white interactive animate-fade-in-down min-w-[140px]">
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Score <span id="diff-badge" class="ml-1 text-[10px] px-1 rounded border border-white/20"></span></div>
+                    <div id="score-display" class="text-2xl font-bold neon-text text-cyan-400">0</div>
+                    <div class="mt-2 text-xs text-gray-400 uppercase tracking-wider mb-1">Time</div>
+                    <div id="time-display" class="text-xl font-mono text-yellow-400">00:00</div>
+                </div>
+            </div>
+
+            <!-- 右側：下一個方塊預覽 -->
+            <div class="glass-panel rounded-2xl p-2 w-20 h-20 flex items-center justify-center interactive">
+                <div id="next-piece-canvas" class="w-16 h-16 relative"></div>
+            </div>
+        </div>
+
+        <!-- 中間：遊戲結束/排行榜 模態框 (預設隱藏) -->
+        <div id="modal-overlay" class="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm interactive z-50 hidden">
+            <div class="glass-panel rounded-3xl p-8 max-w-md w-full mx-4 text-center transform transition-all duration-300 scale-100">
+                
+                <!-- 開始選單 -->
+                <div id="start-screen">
+                    <h1 class="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 mb-2 neon-text">CUBE TRIS</h1>
+                    <p class="text-gray-300 mb-1 text-sm tracking-widest">3D IMMERSIVE PUZZLE</p>
+                    
+                    <!-- 署名連結區塊 -->
+                    <p class="text-[14px] text-gray-500 mb-6 font-light tracking-wide">
+                        Designed by <a href="https://vartanliu.blogspot.com/" target="_blank" class="text-cyan-500/80 hover:text-cyan-400 border-b border-cyan-500/30 hover:border-cyan-400 transition-all pb-0.5">Vartan Liu</a>
+                    </p>
+                    
+                    <div class="mb-6 flex flex-col gap-3">
+                        <p class="text-white/50 text-xs tracking-widest uppercase mb-1">Select Difficulty</p>
+                        
+                        <button onclick="startGame('easy')" class="btn-glass btn-easy text-green-300 font-bold py-3 px-8 rounded-full text-lg w-full flex items-center justify-center gap-3 group">
+                            <i class="fas fa-leaf text-sm group-hover:animate-bounce"></i> 
+                            <span>EASY</span> 
+                            <span class="text-xs font-normal opacity-60 ml-auto">Slow</span>
+                        </button>
+                        
+                        <button onclick="startGame('normal')" class="btn-glass btn-normal text-cyan-300 font-bold py-3 px-8 rounded-full text-lg w-full flex items-center justify-center gap-3 group">
+                            <i class="fas fa-cube text-sm group-hover:animate-bounce"></i> 
+                            <span>NORMAL</span>
+                            <span class="text-xs font-normal opacity-60 ml-auto">Standard</span>
+                        </button>
+                        
+                        <button onclick="startGame('hard')" class="btn-glass btn-hard text-red-400 font-bold py-3 px-8 rounded-full text-lg w-full flex items-center justify-center gap-3 group">
+                            <i class="fas fa-fire text-sm group-hover:animate-bounce"></i> 
+                            <span>HARD</span>
+                            <span class="text-xs font-normal opacity-60 ml-auto">Fast</span>
+                        </button>
+                    </div>
+
+                    <button onclick="showLeaderboard()" class="btn-glass text-gray-300 py-2 px-6 rounded-full text-sm w-full hover:bg-white/10">
+                        <i class="fas fa-trophy mr-2 text-yellow-400"></i> LEADERBOARD
+                    </button>
+                </div>
+
+                <!-- 遊戲結束選單 -->
+                <div id="game-over-screen" class="hidden">
+                    <h2 class="text-3xl font-bold text-white mb-2">GAME OVER</h2>
+                    
+                    <!-- 署名連結區塊 (Game Over 頁面也加上) -->
+                    <p class="text-[14px] text-gray-500 mb-6 font-light tracking-wide">
+                        Designed by <a href="https://vartanliu.blogspot.com/" target="_blank" class="text-cyan-500/80 hover:text-cyan-400 border-b border-cyan-500/30 hover:border-cyan-400 transition-all pb-0.5">Vartan Liu</a>
+                    </p>
+
+                    <div class="flex justify-center gap-8 mb-6">
+                        <div class="text-center">
+                            <p class="text-xs text-gray-400 uppercase">Score</p>
+                            <p class="text-cyan-400 text-3xl font-mono neon-text" id="final-score">0</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xs text-gray-400 uppercase">Time</p>
+                            <p class="text-yellow-400 text-3xl font-mono neon-text" id="final-time">00:00</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 新紀錄輸入區 -->
+                    <div id="new-record-input" class="mb-6 hidden">
+                        <p class="text-yellow-300 text-sm mb-2 font-bold animate-pulse"><i class="fas fa-crown"></i> 登錄排行榜</p>
+                        <div class="flex flex-col gap-2">
+                            <input type="text" id="player-name" placeholder="輸入您的暱稱 / Nickname" maxlength="12" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-400 focus:bg-white/20 transition-all text-center placeholder-gray-400">
+                            <input type="text" id="player-msg" placeholder="留下您的感言 / Message" maxlength="20" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-400 focus:bg-white/20 transition-all text-center placeholder-gray-400">
+                            <button onclick="saveScore()" class="mt-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-lg px-4 py-3 w-full transition-all transform active:scale-95 shadow-lg border border-white/10">
+                                <i class="fas fa-paper-plane mr-2"></i> 送出成績
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 按鈕區 -->
+                    <div id="game-over-buttons" class="flex gap-2 justify-center">
+                        <button onclick="resetToMenu()" class="btn-glass text-white py-2 px-6 rounded-full hover:bg-white/10">Menu</button>
+                        <button onclick="startGame()" class="btn-glass text-white py-2 px-6 rounded-full bg-white/10 hover:bg-white/20">Replay</button>
+                    </div>
+                </div>
+
+                <!-- 排行榜 -->
+                <div id="leaderboard-screen" class="hidden text-left">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-white"><i class="fas fa-trophy text-yellow-400 mr-2"></i> Top 10</h3>
+                        <button onclick="backToMenu()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="overflow-y-auto max-h-60 pr-2" id="leaderboard-list">
+                        <!-- JS 填充 -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 底部控制區 (手機版顯示，電腦版隱藏但保留功能) -->
+        <div class="w-full flex flex-col items-center interactive pb-4 md:hidden">
+            <!-- 手機操作說明：滑動或點擊 -->
+            <div class="flex justify-between w-full max-w-sm gap-4">
+                <div class="flex gap-2">
+                     <button id="btn-left" class="btn-glass w-14 h-14 rounded-full text-white"><i class="fas fa-arrow-left"></i></button>
+                     <button id="btn-right" class="btn-glass w-14 h-14 rounded-full text-white"><i class="fas fa-arrow-right"></i></button>
+                </div>
+                <div class="flex gap-2">
+                     <button id="btn-rotate" class="btn-glass w-14 h-14 rounded-full text-white bg-purple-500/20"><i class="fas fa-sync-alt"></i></button>
+                     <button id="btn-down" class="btn-glass w-14 h-14 rounded-full text-white"><i class="fas fa-arrow-down"></i></button>
+                </div>
+            </div>
+            <button id="btn-drop" class="mt-4 btn-glass w-full max-w-sm h-12 rounded-xl text-white font-bold tracking-widest bg-cyan-500/20 border-cyan-400/50">
+                HARD DROP
+            </button>
+        </div>
+        
+        <!-- 電腦版操作提示 -->
+        <div class="hidden md:flex justify-center w-full text-white/50 text-xs tracking-widest interactive">
+            USE ARROW KEYS TO MOVE • UP TO ROTATE • SPACE TO DROP
+        </div>
+    </div>
+
+    <script>
+        // --- 遊戲邏輯與設置 ---
+        const COLS = 10;
+        const ROWS = 20;
+        const BLOCK_SIZE = 1;
+        
+        let scene, camera, renderer;
+        let grid = []; 
+        let meshGrid = []; 
+        let activePiece = null;
+        let gameInterval = null;
+        let timerInterval = null;
+        let score = 0;
+        let gameTime = 0;
+        let isPaused = false;
+        let isGameOver = false;
+
+        // --- 難度設定 ---
+        const DIFFICULTY_SETTINGS = {
+            'easy':   { name: 'EASY',   baseSpeed: 1000, speedDivider: 10, minSpeed: 200, color: '#86efac' },
+            'normal': { name: 'NORMAL', baseSpeed: 700,  speedDivider: 5,  minSpeed: 100, color: '#67e8f9' },
+            'hard':   { name: 'HARD',   baseSpeed: 300,  speedDivider: 2,  minSpeed: 50,  color: '#f87171' }
+        };
+        let currentDifficulty = 'normal'; // 預設
+
+        // 方塊形狀定義
+        const SHAPES = {
+            I: { color: 0x00f0f0, shape: [[1, 1, 1, 1]] },
+            J: { color: 0x0000f0, shape: [[1, 0, 0], [1, 1, 1]] },
+            L: { color: 0xf0a000, shape: [[0, 0, 1], [1, 1, 1]] },
+            O: { color: 0xf0f000, shape: [[1, 1], [1, 1]] },
+            S: { color: 0x00f000, shape: [[0, 1, 1], [1, 1, 0]] },
+            T: { color: 0xa000f0, shape: [[0, 1, 0], [1, 1, 1]] },
+            Z: { color: 0xf00000, shape: [[1, 1, 0], [0, 1, 1]] }
+        };
+
+        const SHAPE_KEYS = Object.keys(SHAPES);
+
+        // --- Three.js 初始化 ---
+        function initThreeJS() {
+            const container = document.getElementById('game-container');
+            
+            // 場景
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a2e);
+            scene.fog = new THREE.FogExp2(0x1a1a2e, 0.035);
+
+            // 攝影機
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.set(0, 18, 22); 
+            camera.lookAt(0, 8, 0);
+
+            // 渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            // 燈光
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(10, 20, 10);
+            dirLight.castShadow = true;
+            scene.add(dirLight);
+
+            const spotLight = new THREE.SpotLight(0x42dcdb, 0.6); 
+            spotLight.position.set(-10, 10, 0);
+            scene.add(spotLight);
+
+            // 遊戲邊界框
+            const boxGeo = new THREE.BoxGeometry(COLS * BLOCK_SIZE, ROWS * BLOCK_SIZE, BLOCK_SIZE);
+            const edges = new THREE.EdgesGeometry(boxGeo);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.1, transparent: true }));
+            line.position.set(0, ROWS/2 * BLOCK_SIZE - 0.5, 0);
+            scene.add(line);
+
+            // 地板網格
+            const gridHelper = new THREE.GridHelper(100, 100, 0x42dcdb, 0x2a2a4e);
+            scene.add(gridHelper);
+
+            // 渲染迴圈
+            animate();
+            
+            // 視窗響應
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        // --- 遊戲邏輯 ---
+
+        // 輔助函式：徹底清除場景中的方塊
+        function clearSceneMeshes() {
+            // 1. 清除「正在掉落」的方塊 (這就是導致 Bug 的原因)
+            if (activePiece && activePiece.meshes) {
+                activePiece.meshes.forEach(m => scene.remove(m));
+            }
+            activePiece = null;
+
+            // 2. 清除「已固定」的方塊 (meshGrid)
+            if (meshGrid.length > 0) {
+                meshGrid.forEach(row => {
+                    if (Array.isArray(row)) {
+                        row.forEach(mesh => {
+                            if(mesh) scene.remove(mesh);
+                        });
+                    }
+                });
+            }
+            // 3. 重置 meshGrid 陣列結構
+            meshGrid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+            grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+        }
+
+        function initGame() {
+            clearSceneMeshes(); 
+            
+            score = 0;
+            gameTime = 0;
+            isGameOver = false;
+            updateUI();
+            
+            // 顯示遮罩
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('leaderboard-screen').classList.add('hidden');
+        }
+        
+        function quitToMenu() {
+            // 停止所有計時器
+            if(gameInterval) clearInterval(gameInterval);
+            if(timerInterval) clearInterval(timerInterval);
+            
+            // 停止任何正在進行的連發動作
+            stopAllRepeatingActions();
+
+            isGameOver = true;
+            initGame(); // 重置並顯示選單
+        }
+
+        function startGame(difficulty) {
+            // 設定難度
+            if (difficulty) {
+                currentDifficulty = difficulty;
+            }
+            
+            // 更新 UI
+            const diffConfig = DIFFICULTY_SETTINGS[currentDifficulty];
+            const badge = document.getElementById('diff-badge');
+            badge.innerText = diffConfig.name;
+            badge.style.color = diffConfig.color;
+            badge.style.borderColor = diffConfig.color;
+
+            document.getElementById('modal-overlay').classList.add('hidden');
+            
+            // 徹底重置狀態
+            clearSceneMeshes();
+            
+            score = 0;
+            gameTime = 0;
+            isGameOver = false;
+            
+            spawnPiece();
+            
+            // 啟動計時器
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                gameTime++;
+                updateUI();
+            }, 1000);
+
+            // 啟動遊戲迴圈
+            if(gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(() => {
+                moveDown();
+            }, diffConfig.baseSpeed);
+        }
+
+        // 生成 3D 方塊 Mesh (保持不變)
+        function createCubeMesh(color, x, y) {
+            const geometry = new THREE.BoxGeometry(BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: color, 
+                roughness: 0.1,
+                metalness: 0.1,
+                transparent: true,
+                opacity: 0.9
+            });
+            const cube = new THREE.Mesh(geometry, material);
+            
+            cube.position.x = (x - COLS/2 + 0.5) * BLOCK_SIZE;
+            cube.position.y = (ROWS - 1 - y) * BLOCK_SIZE; 
+            cube.position.z = 0;
+            
+            const edgeGeo = new THREE.EdgesGeometry(geometry);
+            const edgeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
+            const wireframe = new THREE.LineSegments(edgeGeo, edgeMat);
+            cube.add(wireframe);
+
+            scene.add(cube);
+            return cube;
+        }
+
+        class Piece {
+            constructor() {
+                const typeKey = SHAPE_KEYS[Math.floor(Math.random() * SHAPE_KEYS.length)];
+                this.type = SHAPES[typeKey];
+                this.shape = this.type.shape;
+                this.color = this.type.color;
+                this.x = Math.floor(COLS / 2) - Math.floor(this.shape[0].length / 2);
+                this.y = 0;
+                
+                this.meshes = [];
+                this.refreshMeshes();
+            }
+
+            refreshMeshes() {
+                this.meshes.forEach(m => scene.remove(m));
+                this.meshes = [];
+
+                for(let r=0; r<this.shape.length; r++) {
+                    for(let c=0; c<this.shape[r].length; c++) {
+                        if(this.shape[r][c]) {
+                            const mesh = createCubeMesh(this.color, this.x + c, this.y + r);
+                            this.meshes.push(mesh);
+                        }
+                    }
+                }
+            }
+
+            updateMeshPositions() {
+                let i = 0;
+                for(let r=0; r<this.shape.length; r++) {
+                    for(let c=0; c<this.shape[r].length; c++) {
+                        if(this.shape[r][c] && this.meshes[i]) {
+                            this.meshes[i].position.x = (this.x + c - COLS/2 + 0.5) * BLOCK_SIZE;
+                            this.meshes[i].position.y = (ROWS - 1 - (this.y + r)) * BLOCK_SIZE;
+                            i++;
+                        }
+                    }
+                }
+            }
+
+            rotate() {
+                const newShape = this.shape[0].map((val, index) => this.shape.map(row => row[index]).reverse());
+                const prevShape = this.shape;
+                this.shape = newShape;
+                
+                if (this.collision()) {
+                    if(!this.collision(1, 0)) this.x += 1;
+                    else if(!this.collision(-1, 0)) this.x -= 1;
+                    else {
+                        this.shape = prevShape;
+                        return;
+                    }
+                }
+                this.refreshMeshes();
+            }
+
+            collision(offsetX = 0, offsetY = 0) {
+                for(let r=0; r<this.shape.length; r++) {
+                    for(let c=0; c<this.shape[r].length; c++) {
+                        if(this.shape[r][c]) {
+                            let newX = this.x + c + offsetX;
+                            let newY = this.y + r + offsetY;
+                            
+                            if(newX < 0 || newX >= COLS || newY >= ROWS) return true;
+                            if(newY >= 0 && grid[newY][newX]) return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            lock() {
+                for(let r=0; r<this.shape.length; r++) {
+                    for(let c=0; c<this.shape[r].length; c++) {
+                        if(this.shape[r][c]) {
+                            let boardY = this.y + r;
+                            let boardX = this.x + c;
+                            if(boardY >= 0) {
+                                grid[boardY][boardX] = this.color;
+                            }
+                        }
+                    }
+                }
+                
+                this.meshes.forEach(m => scene.remove(m));
+                syncGridMeshes();
+                checkLines();
+                spawnPiece();
+            }
+        }
+
+        function syncGridMeshes() {
+            for(let y=0; y<ROWS; y++) {
+                for(let x=0; x<COLS; x++) {
+                    if(grid[y][x] !== 0) {
+                        if(!meshGrid[y][x]) {
+                            meshGrid[y][x] = createCubeMesh(grid[y][x], x, y);
+                        }
+                    } else {
+                        if(meshGrid[y][x]) {
+                            scene.remove(meshGrid[y][x]);
+                            meshGrid[y][x] = null;
+                        }
+                    }
+                }
+            }
+        }
+
+        function spawnPiece() {
+            activePiece = new Piece();
+            if(activePiece.collision()) {
+                gameOver();
+            }
+        }
+
+        function moveDown() {
+            if(!activePiece || isGameOver) return;
+            if(!activePiece.collision(0, 1)) {
+                activePiece.y++;
+                activePiece.updateMeshPositions();
+            } else {
+                activePiece.lock();
+            }
+        }
+
+        function moveLeft() {
+            if(!activePiece || isGameOver) return;
+            if(!activePiece.collision(-1, 0)) {
+                activePiece.x--;
+                activePiece.updateMeshPositions();
+            }
+        }
+
+        function moveRight() {
+            if(!activePiece || isGameOver) return;
+            if(!activePiece.collision(1, 0)) {
+                activePiece.x++;
+                activePiece.updateMeshPositions();
+            }
+        }
+
+        function rotatePiece() {
+            if(!activePiece || isGameOver) return;
+            activePiece.rotate();
+        }
+
+        function hardDrop() {
+            if(!activePiece || isGameOver) return;
+            while(!activePiece.collision(0, 1)) {
+                activePiece.y++;
+            }
+            activePiece.updateMeshPositions();
+            activePiece.lock();
+        }
+
+        function checkLines() {
+            let linesCleared = 0;
+            for(let y = ROWS - 1; y >= 0; y--) {
+                if(grid[y].every(cell => cell !== 0)) {
+                    grid.splice(y, 1);
+                    grid.unshift(Array(COLS).fill(0));
+                    linesCleared++;
+                    y++; 
+                }
+            }
+            
+            if(linesCleared > 0) {
+                // 計分規則
+                const points = [0, 100, 300, 500, 800];
+                score += points[linesCleared];
+                syncGridMeshes();
+                updateUI();
+
+                // 速度調整 (根據目前難度)
+                const diffConfig = DIFFICULTY_SETTINGS[currentDifficulty];
+                
+                // 速度公式：基礎速度 - (分數 / 除數)
+                const newSpeed = Math.max(
+                    diffConfig.minSpeed, 
+                    diffConfig.baseSpeed - Math.floor(score / diffConfig.speedDivider)
+                );
+                
+                clearInterval(gameInterval);
+                gameInterval = setInterval(moveDown, newSpeed);
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('score-display').innerText = score;
+            const minutes = Math.floor(gameTime / 60).toString().padStart(2, '0');
+            const seconds = (gameTime % 60).toString().padStart(2, '0');
+            document.getElementById('time-display').innerText = `${minutes}:${seconds}`;
+        }
+
+        function gameOver() {
+            isGameOver = true;
+            clearInterval(gameInterval);
+            clearInterval(timerInterval);
+            stopAllRepeatingActions();
+
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('leaderboard-screen').classList.add('hidden');
+            document.getElementById('game-over-screen').classList.remove('hidden');
+            
+            // 顯示最終分數與時間
+            document.getElementById('final-score').innerText = score;
+            const minutes = Math.floor(gameTime / 60).toString().padStart(2, '0');
+            const seconds = (gameTime % 60).toString().padStart(2, '0');
+            document.getElementById('final-time').innerText = `${minutes}:${seconds}`;
+
+            // Check if top 10 (or if leaderboard is not full)
+            const leaderboard = getLeaderboard();
+            const isTop10 = leaderboard.length < 10 || score > leaderboard[leaderboard.length - 1].score;
+            
+            const inputDiv = document.getElementById('new-record-input');
+            const nameInput = document.getElementById('player-name');
+            const msgInput = document.getElementById('player-msg');
+
+            // 只要進入排行榜（不論分數是否為0，只要是前10名）就顯示輸入框
+            if(isTop10) {
+                inputDiv.classList.remove('hidden');
+                // 清空舊資料
+                nameInput.value = '';
+                msgInput.value = '';
+                // 自動聚焦
+                setTimeout(() => nameInput.focus(), 100);
+            } else {
+                inputDiv.classList.add('hidden');
+            }
+        }
+
+        // --- 排行榜系統 (Local Storage) ---
+        const LB_KEY = 'tetris_3d_leaderboard';
+
+        function getLeaderboard() {
+            const data = localStorage.getItem(LB_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveScore() {
+            const nameInput = document.getElementById('player-name');
+            const msgInput = document.getElementById('player-msg');
+            
+            // 簡單驗證
+            const name = nameInput.value.trim() || 'Anonymous';
+            const msg = msgInput.value.trim() || '-';
+            const diffName = DIFFICULTY_SETTINGS[currentDifficulty].name;
+            const finalTime = document.getElementById('time-display').innerText; 
+            
+            let lb = getLeaderboard();
+            // 儲存時加入 time 欄位
+            lb.push({ name, msg, score, time: finalTime, difficulty: diffName, date: new Date().toLocaleDateString() });
+            lb.sort((a, b) => b.score - a.score);
+            lb = lb.slice(0, 10);
+            
+            localStorage.setItem(LB_KEY, JSON.stringify(lb));
+            showLeaderboard();
+        }
+
+        function showLeaderboard() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-over-screen').classList.add('hidden');
+            const lbScreen = document.getElementById('leaderboard-screen');
+            lbScreen.classList.remove('hidden');
+
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = '';
+            
+            const lb = getLeaderboard();
+            if(lb.length === 0) {
+                list.innerHTML = '<div class="text-gray-400 text-center py-4">No records yet</div>';
+            } else {
+                lb.forEach((entry, idx) => {
+                    const row = document.createElement('div');
+                    row.className = 'flex justify-between items-center bg-white/5 p-3 rounded mb-2 text-sm'; 
+                    
+                    const diffLabel = entry.difficulty ? `<span class="text-[10px] bg-white/10 px-1 rounded ml-2 text-gray-400 border border-white/10">${entry.difficulty}</span>` : '';
+                    
+                    row.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-yellow-500 w-5 text-lg">${idx + 1}.</span>
+                            <div class="flex flex-col">
+                                <span class="text-white font-bold flex items-center text-base">${entry.name} ${diffLabel}</span>
+                                <span class="text-xs text-gray-400 italic">"${entry.msg}"</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-cyan-400 font-mono font-bold text-lg">${entry.score}</div>
+                            <div class="text-xs text-yellow-500 font-mono"><i class="far fa-clock mr-1"></i>${entry.time || '00:00'}</div>
+                        </div>
+                    `;
+                    list.appendChild(row);
+                });
+            }
+        }
+
+        function backToMenu() {
+            resetToMenu();
+        }
+
+        function resetToMenu() {
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('leaderboard-screen').classList.add('hidden');
+        }
+
+        // --- 輸入控制 ---
+
+        document.addEventListener('keydown', (e) => {
+            if(isGameOver) return;
+            switch(e.key) {
+                case 'ArrowLeft': moveLeft(); break;
+                case 'ArrowRight': moveRight(); break;
+                case 'ArrowDown': moveDown(); break;
+                case 'ArrowUp': rotatePiece(); break;
+                case ' ': hardDrop(); break;
+                case 'Escape': quitToMenu(); break; // 電腦版 Escape 也可以回首頁
+            }
+        });
+
+        // 觸控按鈕綁定
+        const btnLeft = document.getElementById('btn-left');
+        const btnRight = document.getElementById('btn-right');
+        const btnRotate = document.getElementById('btn-rotate');
+        const btnDown = document.getElementById('btn-down');
+        const btnDrop = document.getElementById('btn-drop');
+
+        // 通用的長按連發處理函式
+        let activeIntervals = [];
+
+        function stopAllRepeatingActions() {
+            activeIntervals.forEach(id => clearInterval(id));
+            activeIntervals = [];
+        }
+
+        function createRepeatButton(btnElement, actionFunction, intervalTime = 100) {
+            let intervalId = null;
+
+            const start = (e) => {
+                if (e.cancelable && e.type === 'touchstart') e.preventDefault();
+                if (isGameOver) return;
+                
+                actionFunction(); // 立即觸發一次
+                if(navigator.vibrate) navigator.vibrate(10);
+
+                if (intervalId) clearInterval(intervalId);
+                intervalId = setInterval(() => {
+                    actionFunction();
+                    if(navigator.vibrate) navigator.vibrate(5);
+                }, intervalTime);
+                activeIntervals.push(intervalId);
+            };
+
+            const stop = (e) => {
+                if (e.cancelable && e.type !== 'mouseleave') e.preventDefault(); // 防止 mouseleave 觸發意外行為
+                if (intervalId) { 
+                    clearInterval(intervalId); 
+                    activeIntervals = activeIntervals.filter(id => id !== intervalId);
+                    intervalId = null; 
+                }
+            };
+
+            btnElement.addEventListener('touchstart', start, { passive: false });
+            btnElement.addEventListener('touchend', stop);
+            btnElement.addEventListener('touchcancel', stop);
+            
+            btnElement.addEventListener('mousedown', start);
+            btnElement.addEventListener('mouseup', stop);
+            btnElement.addEventListener('mouseleave', stop);
+        }
+
+        // 簡單的點擊事件 (旋轉、硬降)
+        const addTouch = (elem, action) => {
+            elem.addEventListener('touchstart', (e) => {
+                if (e.cancelable) e.preventDefault();
+                action();
+                if(navigator.vibrate) navigator.vibrate(10);
+            });
+            elem.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                action();
+            });
+        };
+
+        // 應用新的連發邏輯
+        createRepeatButton(btnLeft, moveLeft, 100);   // 左移，間隔 100ms
+        createRepeatButton(btnRight, moveRight, 100); // 右移，間隔 100ms
+        createRepeatButton(btnDown, moveDown, 50);    // 下移，間隔 50ms (較快)
+
+        // 應用單次點擊邏輯
+        addTouch(btnRotate, rotatePiece);
+        addTouch(btnDrop, hardDrop);
+
+
+        // --- 啟動 ---
+        initThreeJS();
+        initGame(); 
+
+    </script>
+</body>
+</html>
