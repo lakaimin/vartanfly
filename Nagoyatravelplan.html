@@ -73,8 +73,7 @@
                 </div>
                 <h1 class="text-3xl font-bold tracking-tight text-gray-900 leading-tight">名古屋<br>親子慢活旅</h1>
                 
-                <!-- NEW: Designed by 移至此處 -->
-                <div class="mt-2 text-[12px] text-gray-400 font-medium flex items-center gap-1">
+                <div class="mt-2 text-xs text-gray-400 font-medium flex items-center gap-1">
                     <span>Designed by</span>
                     <a href="https://vartanliu.blogspot.com/" target="_blank" class="text-gray-500 hover:text-black transition-colors decoration-none border-b border-gray-300 pb-0.5">Vartan Liu</a>
                 </div>
@@ -185,15 +184,22 @@
                         <div class="absolute left-[14px] top-5 w-4 h-4 rounded-full border-[3px] border-white shadow-sm z-10" 
                              :class="getDotColor(item.type)"></div>
                         
-                        <!-- 內容卡片 -->
-                        <div class="card-base p-5 relative overflow-hidden group/card">
-                            <!-- Delete Activity Button -->
-                            <button @click="deleteActivity(dayIndex, i)" class="absolute top-3 right-3 text-gray-300 hover:text-red-500 bg-white/80 rounded-full w-8 h-8 flex items-center justify-center transition opacity-100 sm:opacity-0 sm:group-hover/card:opacity-100 z-20">
-                                <i class="fa-solid fa-trash-can text-sm"></i>
-                            </button>
+                        <!-- 正常顯示模式 (View Mode) -->
+                        <div v-if="!isEditing(dayIndex, i)" class="card-base p-5 relative overflow-hidden group/card">
+                            <!-- 操作按鈕群 -->
+                            <div class="absolute top-3 right-3 flex gap-2 transition opacity-100 sm:opacity-0 sm:group-hover/card:opacity-100 z-20">
+                                <!-- 編輯按鈕 -->
+                                <button @click="startEditActivity(dayIndex, i)" class="text-gray-400 hover:text-blue-500 bg-white/80 rounded-full w-8 h-8 flex items-center justify-center">
+                                    <i class="fa-solid fa-pen text-sm"></i>
+                                </button>
+                                <!-- 刪除按鈕 -->
+                                <button @click="deleteActivity(dayIndex, i)" class="text-gray-400 hover:text-red-500 bg-white/80 rounded-full w-8 h-8 flex items-center justify-center">
+                                    <i class="fa-solid fa-trash-can text-sm"></i>
+                                </button>
+                            </div>
 
                             <!-- 時間與類型 -->
-                            <div class="flex justify-between items-start mb-2 pr-8">
+                            <div class="flex justify-between items-start mb-2 pr-16">
                                 <span class="mono-font text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-md">{{ item.time }}</span>
                                 <div class="flex gap-2">
                                     <span v-if="item.cost" class="text-[10px] font-medium px-2 py-1 rounded bg-yellow-50 text-yellow-700 border border-yellow-100">
@@ -230,11 +236,39 @@
                             <!-- 裝飾色條 -->
                             <div class="absolute left-0 top-0 bottom-0 w-1" :class="getBarColor(item.type)"></div>
                         </div>
+
+                        <!-- 編輯模式 (Edit Mode) -->
+                        <div v-else class="card-base p-4 border-2 border-blue-200 bg-blue-50/30 relative z-20">
+                            <h4 class="text-xs font-bold text-blue-500 mb-3">編輯行程</h4>
+                            <div class="space-y-3">
+                                <div class="flex gap-2">
+                                    <input v-model="tempEditActivity.time" type="time" class="bg-white border border-gray-200 rounded-lg px-2 py-2 text-xs w-1/3 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <select v-model="tempEditActivity.type" class="bg-white border border-gray-200 rounded-lg px-2 py-2 text-xs w-2/3 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="sight">觀光 (綠色)</option>
+                                        <option value="food">美食 (橘色)</option>
+                                        <option value="shopping">購物 (粉色)</option>
+                                        <option value="transport">交通 (藍色)</option>
+                                        <option value="stay">住宿 (紫色)</option>
+                                    </select>
+                                </div>
+                                <input v-model="tempEditActivity.title" type="text" placeholder="標題" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <textarea v-model="tempEditActivity.desc" rows="2" placeholder="備註描述..." class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"></textarea>
+                                <div class="flex gap-2">
+                                     <input v-model.number="tempEditActivity.cost" type="number" placeholder="預估票價" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <input v-model="tempEditActivity.tagsString" type="text" placeholder="標籤 (用逗號分隔)" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                
+                                <div class="flex gap-2 pt-2">
+                                    <button @click="cancelEditActivity" class="flex-1 bg-gray-200 text-gray-600 py-2 rounded-lg text-xs font-bold">取消</button>
+                                    <button @click="saveEditActivity" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-xs font-bold shadow-md">儲存修改</button>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- 新增行程按鈕/表單 -->
                     <div class="pl-10 mt-6 relative">
-                         <!-- 時間點點 (虛線) -->
                          <div class="absolute left-[18px] top-6 w-2 h-2 rounded-full bg-gray-300 z-10"></div>
 
                         <div v-if="addingDayIndex === dayIndex" class="card-base p-4 border-2 border-dashed border-gray-300 bg-gray-50/50">
@@ -512,17 +546,21 @@
                 isEditingBudget: false,
                 newExpense: { title: '', amount: '' },
                 
-                // 行程編輯
-                addingDayIndex: null, // 當前正在編輯哪一天的行程
+                // 行程編輯 - 新增
+                addingDayIndex: null, 
                 newActivity: { time: '', type: 'sight', title: '', desc: '', cost: '', location: '' },
+
+                // 行程編輯 - 修改 (NEW)
+                editingState: { dayIndex: null, activityIndex: null },
+                tempEditActivity: { time: '', type: 'sight', title: '', desc: '', cost: '', location: '', tagsString: '' },
 
                 // 新增清單分類的輸入
                 newCategoryName: '',
                 
                 // 行程資料
-                itinerary: JSON.parse(JSON.stringify(DEFAULT_ITINERARY)), // 深拷貝初始值
+                itinerary: JSON.parse(JSON.stringify(DEFAULT_ITINERARY)), 
 
-                // 檢查清單 (源自導遊叮嚀)
+                // 檢查清單
                 packingList: [
                     {
                         name: "重要證件 & 網路",
@@ -555,7 +593,7 @@
             }
         },
         mounted() {
-            const savedData = localStorage.getItem('nagoyaTrip2026_v6'); // Updated version key
+            const savedData = localStorage.getItem('nagoyaTrip2026_v7'); // Updated key
             if (savedData) {
                 const parsed = JSON.parse(savedData);
                 this.expenses = parsed.expenses || [];
@@ -566,7 +604,6 @@
                 if (parsed.totalBudget) {
                     this.totalBudget = parsed.totalBudget;
                 }
-                // 讀取儲存的行程
                 if (parsed.itinerary && parsed.itinerary.length > 0) {
                     this.itinerary = parsed.itinerary;
                 }
@@ -575,7 +612,7 @@
         watch: {
             '$data': {
                 handler(newValue) {
-                    localStorage.setItem('nagoyaTrip2026_v6', JSON.stringify({
+                    localStorage.setItem('nagoyaTrip2026_v7', JSON.stringify({
                         expenses: newValue.expenses,
                         packingList: newValue.packingList,
                         totalBudget: newValue.totalBudget,
@@ -609,10 +646,48 @@
             }
         },
         methods: {
-            // --- 行程編輯功能 ---
+            // --- 行程編輯功能 (修改) ---
+            isEditing(dayIndex, activityIndex) {
+                return this.editingState.dayIndex === dayIndex && this.editingState.activityIndex === activityIndex;
+            },
+            startEditActivity(dayIndex, activityIndex) {
+                // 深拷貝資料到 temp
+                const activity = this.itinerary[dayIndex].activities[activityIndex];
+                this.tempEditActivity = JSON.parse(JSON.stringify(activity));
+                
+                // 處理 tags 轉字串
+                this.tempEditActivity.tagsString = activity.tags ? activity.tags.join(', ') : '';
+                
+                this.editingState = { dayIndex, activityIndex };
+                // 關閉新增模式如果開著
+                this.addingDayIndex = null;
+            },
+            saveEditActivity() {
+                // 處理 tags 字串轉回陣列
+                if (this.tempEditActivity.tagsString && this.tempEditActivity.tagsString.trim() !== '') {
+                    this.tempEditActivity.tags = this.tempEditActivity.tagsString.split(',').map(t => t.trim()).filter(t => t !== '');
+                } else {
+                    this.tempEditActivity.tags = [];
+                }
+                delete this.tempEditActivity.tagsString; // 移除臨時欄位
+
+                // 更新資料
+                Object.assign(this.itinerary[this.editingState.dayIndex].activities[this.editingState.activityIndex], this.tempEditActivity);
+                
+                // 重新排序 (如果時間有改)
+                this.itinerary[this.editingState.dayIndex].activities.sort((a, b) => a.time.localeCompare(b.time));
+
+                this.editingState = { dayIndex: null, activityIndex: null };
+            },
+            cancelEditActivity() {
+                this.editingState = { dayIndex: null, activityIndex: null };
+            },
+
+            // --- 行程編輯功能 (新增) ---
             startAddActivity(dayIndex) {
                 this.addingDayIndex = dayIndex;
                 this.newActivity = { time: '09:00', type: 'sight', title: '', desc: '', cost: '', location: '' };
+                this.cancelEditActivity(); // 關閉編輯模式如果開著
             },
             cancelAddActivity() {
                 this.addingDayIndex = null;
@@ -622,17 +697,10 @@
                     alert('請輸入標題');
                     return;
                 }
-                
-                // 插入新行程
                 const activity = { ...this.newActivity };
-                
-                // 簡單的時間排序插入
                 const activities = this.itinerary[dayIndex].activities;
                 activities.push(activity);
-                
-                // 根據時間排序 (簡單字串比較)
                 activities.sort((a, b) => a.time.localeCompare(b.time));
-
                 this.addingDayIndex = null;
             },
             deleteActivity(dayIndex, activityIndex) {
@@ -736,7 +804,7 @@
             },
             resetData() {
                 if(confirm('確定重置所有資料 (包含清單、預算與行程)？\n\n注意：這會將行程恢復為預設值。')) {
-                    localStorage.removeItem('nagoyaTrip2026_v6');
+                    localStorage.removeItem('nagoyaTrip2026_v7');
                     location.reload();
                 }
             }
