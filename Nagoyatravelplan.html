@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>名古屋親子慢活遊 | 2026</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F2F2F7; /* iOS 淺灰 */
+            color: #1D1D1F;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .mono-font { font-family: 'Roboto Mono', monospace; }
+        
+        /* 隱藏滾動條 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* 玻璃擬態導航 */
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        /* 卡片與陰影 */
+        .card-base {
+            background: white;
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+            transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        .card-base:active { transform: scale(0.98); }
+        
+        /* 時間軸線條 */
+        .timeline-line {
+            position: absolute;
+            left: 23px;
+            top: 40px;
+            bottom: -20px;
+            width: 2px;
+            background: #E5E5EA;
+            z-index: 0;
+        }
+        
+        /* 自定義標籤顏色 */
+        .tag-transport { background: #EBF8FF; color: #007AFF; }
+        .tag-food { background: #FFF5EB; color: #FF9500; }
+        .tag-sight { background: #E8F5E9; color: #34C759; }
+        .tag-shopping { background: #FFF0F5; color: #FF2D55; }
+        .tag-stay { background: #F3E5F5; color: #AF52DE; }
+
+        /* 動畫 */
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+    </style>
+</head>
+<body class="antialiased pb-28">
+
+<div id="app" class="max-w-md mx-auto min-h-screen bg-[#F2F2F7] relative sm:border-x sm:border-gray-300">
+
+    <!-- Header 區域 -->
+    <header class="bg-white px-6 pt-12 pb-8 rounded-b-[2.5rem] shadow-sm mb-6 z-20 relative">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 text-[10px] font-bold tracking-wider text-gray-500 mb-2">
+                    <i class="fa-solid fa-plane-departure"></i> 5 DAYS TRIP
+                </div>
+                <h1 class="text-3xl font-bold tracking-tight text-gray-900 leading-tight">名古屋<br>親子慢活旅</h1>
+            </div>
+            <button @click="resetData" class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-red-500 transition">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+
+        <!-- 預算卡片 -->
+        <div class="bg-[#1C1C1E] text-white p-5 rounded-2xl shadow-xl relative overflow-hidden group">
+            <div class="absolute right-0 top-0 w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full blur-3xl opacity-30 -mr-10 -mt-10"></div>
+            
+            <div class="relative z-10 flex flex-col justify-between h-full">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-widest">Wallet</span>
+                    <span class="text-[10px] bg-gray-800 px-2 py-1 rounded text-gray-300 mono-font">JPY (¥)</span>
+                </div>
+                <div class="flex items-baseline gap-1 mt-1">
+                    <span class="text-3xl font-bold mono-font tracking-tighter">¥{{ remainingBudget.toLocaleString() }}</span>
+                    <span class="text-xs text-gray-500 font-medium">剩餘</span>
+                </div>
+                
+                <div class="mt-4">
+                    <div class="flex justify-between text-[10px] text-gray-400 mb-1.5">
+                        <span>預算使用率</span>
+                        <span>{{ budgetProgress.toFixed(0) }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-400 to-purple-400 h-full rounded-full transition-all duration-700 ease-out" 
+                             :style="{ width: budgetProgress + '%' }"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 重點資訊摘要 -->
+        <div class="flex gap-3 mt-6 overflow-x-auto no-scrollbar pb-1">
+            <div class="flex-shrink-0 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100">
+                <div class="text-xs text-gray-400 mb-1">住宿</div>
+                <div class="font-bold text-sm text-gray-800">Ibis Styles Nagoya</div>
+            </div>
+            <div class="flex-shrink-0 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100">
+                <div class="text-xs text-gray-400 mb-1">去程航班</div>
+                <div class="font-bold text-sm text-gray-800">CX530 11:55</div>
+            </div>
+            <div class="flex-shrink-0 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100">
+                <div class="text-xs text-gray-400 mb-1">回程航班</div>
+                <div class="font-bold text-sm text-gray-800">CX531 16:50</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要內容區 -->
+    <main class="px-5">
+        
+        <!-- Tab 1: 行程時間軸 -->
+        <div v-if="currentTab === 'timeline'" class="pb-8">
+            <div v-for="(day, dayIndex) in itinerary" :key="dayIndex" class="mb-10 relative animate-fade-in">
+                
+                <!-- 日期標頭 Sticky -->
+                <div class="sticky top-2 z-10 flex justify-center mb-6">
+                    <div class="bg-white/90 backdrop-blur-md shadow-sm border border-gray-100 px-4 py-1.5 rounded-full flex items-center gap-2">
+                        <span class="bg-black text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Day {{ dayIndex + 1 }}</span>
+                        <span class="text-sm font-bold text-gray-800">{{ day.date }}</span>
+                        <span class="text-xs text-gray-500 pl-1 border-l border-gray-300">{{ day.weather }}</span>
+                    </div>
+                </div>
+
+                <div class="relative pl-2">
+                    <!-- 連接線 -->
+                    <div class="timeline-line"></div>
+
+                    <!-- 行程項目 -->
+                    <div v-for="(item, i) in day.activities" :key="i" class="relative pl-10 mb-8 last:mb-0 group">
+                        <!-- 時間點點 -->
+                        <div class="absolute left-[14px] top-5 w-4 h-4 rounded-full border-[3px] border-white shadow-sm z-10" 
+                             :class="getDotColor(item.type)"></div>
+                        
+                        <!-- 內容卡片 -->
+                        <div class="card-base p-5 relative overflow-hidden">
+                            <!-- 時間與類型 -->
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="mono-font text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-md">{{ item.time }}</span>
+                                <div class="flex gap-2">
+                                    <span v-if="item.cost" class="text-[10px] font-medium px-2 py-1 rounded bg-yellow-50 text-yellow-700 border border-yellow-100">
+                                        票: ¥{{ item.cost }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- 標題與描述 -->
+                            <h3 class="text-lg font-bold text-gray-800 mb-1">{{ item.title }}</h3>
+                            <p class="text-sm text-gray-500 leading-relaxed mb-3">{{ item.desc }}</p>
+
+                            <!-- Tags -->
+                            <div class="flex flex-wrap gap-2 mb-3" v-if="item.tags && item.tags.length > 0">
+                                <span v-for="tag in item.tags" class="text-[10px] px-2 py-1 rounded bg-gray-100 text-gray-500">
+                                    #{{ tag }}
+                                </span>
+                            </div>
+
+                            <!-- 底部功能區 -->
+                            <div class="flex items-center justify-between pt-3 border-t border-gray-50 mt-1">
+                                <a v-if="item.location" :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(item.location)" target="_blank" 
+                                   class="text-xs font-bold text-blue-500 flex items-center gap-1 hover:opacity-70">
+                                    <i class="fa-solid fa-location-arrow"></i> 導航
+                                </a>
+                                <span v-else></span>
+                                
+                                <!-- 快速記帳按鈕 -->
+                                <button @click="quickAddExpense(item.title)" class="text-gray-300 hover:text-gray-800 transition">
+                                    <i class="fa-solid fa-plus-circle text-lg"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- 裝飾色條 -->
+                            <div class="absolute left-0 top-0 bottom-0 w-1" :class="getBarColor(item.type)"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 導遊叮嚀區 -->
+            <div class="bg-slate-800 text-slate-200 p-6 rounded-2xl mt-8 mx-1 mb-20">
+                <h3 class="font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-yellow-400"></i> 在地導遊小叮嚀
+                </h3>
+                <ul class="space-y-3 text-sm opacity-90">
+                    <li class="flex gap-2"><i class="fa-solid fa-check mt-1 text-green-400"></i> 市區1-8度，山上負度，務必洋蔥式穿搭。</li>
+                    <li class="flex gap-2"><i class="fa-solid fa-check mt-1 text-green-400"></i> 日本冬天乾燥，隨身帶護唇膏/乳液。</li>
+                    <li class="flex gap-2"><i class="fa-solid fa-check mt-1 text-green-400"></i> 建議買 eSIM 卡，查地圖最方便。</li>
+                    <li class="flex gap-2"><i class="fa-solid fa-check mt-1 text-green-400"></i> 餐廳看 Tabelog 3.5分以上就是神店。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab 2: 行前清單 -->
+        <div v-if="currentTab === 'checklist'" class="space-y-6 animate-fade-in">
+            <!-- 進度概覽 -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
+                <div class="relative w-32 h-32 mx-auto mb-4 flex items-center justify-center">
+                    <svg class="transform -rotate-90 w-32 h-32">
+                        <circle cx="64" cy="64" r="60" stroke="#F3F4F6" stroke-width="8" fill="transparent" />
+                        <circle cx="64" cy="64" r="60" stroke="#34C759" stroke-width="8" fill="transparent" 
+                                :stroke-dasharray="377" :stroke-dashoffset="377 - (377 * checkListProgress) / 100" 
+                                class="transition-all duration-1000 ease-out" />
+                    </svg>
+                    <span class="absolute text-2xl font-bold text-gray-800">{{ checkListProgress }}%</span>
+                </div>
+                <h3 class="font-bold text-gray-800">準備進度</h3>
+                <p class="text-xs text-gray-400 mt-1">出發前請確認所有項目</p>
+            </div>
+
+            <!-- 清單分類 -->
+            <div v-for="(category, cIndex) in packingList" :key="cIndex">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 ml-2">{{ category.name }}</h4>
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                    <div v-for="(item, iIndex) in category.items" :key="iIndex" 
+                         @click="toggleCheck(cIndex, iIndex)"
+                         class="p-4 border-b border-gray-50 last:border-0 flex items-center justify-between cursor-pointer active:bg-gray-50 transition">
+                        <div class="flex items-center gap-4">
+                            <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300"
+                                 :class="item.checked ? 'bg-green-500 border-green-500 scale-110' : 'border-gray-200'">
+                                <i v-if="item.checked" class="fa-solid fa-check text-white text-xs"></i>
+                            </div>
+                            <span :class="item.checked ? 'text-gray-400 line-through' : 'text-gray-800 font-medium'" class="transition-colors">{{ item.name }}</span>
+                        </div>
+                        <i v-if="item.icon" :class="item.icon" class="text-gray-300 text-sm"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: 記帳錢包 -->
+        <div v-if="currentTab === 'wallet'" class="animate-fade-in pb-20">
+            <!-- 新增消費 -->
+            <div class="card-base p-5 mb-6 sticky top-4 z-20 border border-gray-100">
+                <h3 class="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wide">新增消費</h3>
+                <div class="flex flex-col gap-3">
+                    <input v-model="newExpense.title" type="text" placeholder="項目 (例: 鰻魚飯)" class="bg-gray-50 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <div class="flex gap-3">
+                        <div class="relative flex-1">
+                            <span class="absolute left-3 top-3 text-gray-400 text-sm">¥</span>
+                            <input v-model.number="newExpense.amount" type="number" placeholder="金額" class="w-full bg-gray-50 rounded-xl p-3 pl-7 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mono-font">
+                        </div>
+                        <button @click="addExpense" class="bg-black text-white px-6 rounded-xl font-bold text-sm shadow-lg active:scale-95 transition">
+                            記帳
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 消費列表 -->
+            <div class="space-y-3">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest ml-2 mb-2">消費紀錄</h4>
+                <div v-if="expenses.length === 0" class="text-center py-12 opacity-50">
+                    <i class="fa-solid fa-receipt text-4xl text-gray-300 mb-3"></i>
+                    <p class="text-sm text-gray-400">目前還沒有消費紀錄</p>
+                </div>
+                
+                <div v-for="(record, index) in expenses" :key="index" class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
+                            <i class="fa-solid fa-bag-shopping"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-800 text-sm">{{ record.title }}</p>
+                            <p class="text-[10px] text-gray-400">{{ record.date }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="font-bold text-gray-900 mono-font">- ¥{{ record.amount.toLocaleString() }}</span>
+                        <button @click="removeExpense(index)" class="text-gray-300 hover:text-red-500 transition px-2">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 底部導航 -->
+    <nav class="fixed bottom-0 w-full max-w-md glass-nav z-50">
+        <div class="flex justify-around items-center h-16 sm:h-20">
+            <button @click="currentTab = 'timeline'" class="flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors duration-200" 
+                    :class="currentTab === 'timeline' ? 'text-black' : 'text-gray-400 hover:text-gray-600'">
+                <div class="text-xl transition-transform duration-200" :class="currentTab === 'timeline' ? '-translate-y-1' : ''">
+                    <i class="fa-solid fa-location-dot"></i>
+                </div>
+                <span class="text-[10px] font-bold tracking-wide">行程</span>
+            </button>
+            
+            <button @click="currentTab = 'checklist'" class="flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors duration-200" 
+                    :class="currentTab === 'checklist' ? 'text-black' : 'text-gray-400 hover:text-gray-600'">
+                <div class="text-xl transition-transform duration-200" :class="currentTab === 'checklist' ? '-translate-y-1' : ''">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <span class="text-[10px] font-bold tracking-wide">清單</span>
+            </button>
+            
+            <button @click="currentTab = 'wallet'" class="flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors duration-200" 
+                    :class="currentTab === 'wallet' ? 'text-black' : 'text-gray-400 hover:text-gray-600'">
+                <div class="text-xl transition-transform duration-200" :class="currentTab === 'wallet' ? '-translate-y-1' : ''">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <span class="text-[10px] font-bold tracking-wide">錢包</span>
+            </button>
+        </div>
+    </nav>
+
+</div>
+
+<script>
+    const { createApp } = Vue;
+
+    createApp({
+        data() {
+            return {
+                currentTab: 'timeline',
+                totalBudget: 150000, // 設定一個預設日幣預算 (可依需求調整)
+                newExpense: { title: '', amount: '' },
+                
+                // 行程資料 (源自 PDF)
+                itinerary: [
+                    {
+                        date: "1/13 (二)",
+                        weather: "1~8°C",
+                        activities: [
+                            { time: "11:55", type: "transport", title: "桃園起飛", desc: "CX530 航班，預計 15:35 抵達名古屋中部機場。", tags: ["TPE -> NGO"], location: "Taoyuan International Airport" },
+                            { time: "16:30", type: "transport", title: "搭乘 μ-SKY", desc: "前往名古屋車站 (對號座)，約28分鐘。", cost: 1290, tags: ["名鐵特急"], location: "Chubu Centrair International Airport" },
+                            { time: "17:30", type: "stay", title: "飯店 Check-in", desc: "Ibis Styles Nagoya，從名鐵站步行約10-12分鐘。靠近柳橋中央市場。", location: "Ibis Styles Nagoya" },
+                            { time: "18:30", type: "sight", title: "榮商圈夜景", desc: "必拍：綠洲21「水的宇宙船」、中部電力塔。", cost: 210, tags: ["地鐵東山線"], location: "Oasis 21" },
+                            { time: "19:30", type: "food", title: "晚餐：鰻魚飯三吃", desc: "あつた蓬莱軒 (松坂屋店) 或 しら河。在地人推薦必吃。", location: "Atsuta Horaiken Matsuzakayaten" },
+                            { time: "21:30", type: "shopping", title: "MaxValu 超市", desc: "24小時營業，補給零食飲料。", location: "MaxValu Taiko" }
+                        ]
+                    },
+                    {
+                        date: "1/14 (三)",
+                        weather: "山上負度",
+                        activities: [
+                            { time: "08:30", type: "transport", title: "前往御在所岳", desc: "名鐵巴士中心3樓，搭三重交通巴士直達。", cost: 1500, location: "Meitetsu Bus Center" },
+                            { time: "10:00", type: "sight", title: "御在所纜車 & 樹冰", desc: "搭纜車賞樹冰，山上有「雪之廣場」可租雪盆給小朋友玩。", location: "Gozaisho Ropeway" },
+                            { time: "12:00", type: "food", title: "午餐：咖哩烏龍麵", desc: "山頂餐廳 Nature 必吃招牌。", location: "Gozaisho Ropeway" },
+                            { time: "16:00", type: "sight", title: "大須商店街", desc: "必逛：大須觀音、水曜日的愛麗絲、Komehyo、Seria百元店。", location: "Osu Shopping Street" },
+                            { time: "18:00", type: "food", title: "晚餐：矢場味噌豬排", desc: "大須本店，鐵板味噌醬超下飯。", location: "Yabaton Yaba Cho Head Office" }
+                        ]
+                    },
+                    {
+                        date: "1/15 (四)",
+                        weather: "1~8°C",
+                        activities: [
+                            { time: "09:30", type: "transport", title: "前往樂高樂園", desc: "名古屋站搭「青波線」至金城ふ頭站。", cost: 360, location: "Nagoya Station" },
+                            { time: "10:00", type: "sight", title: "LEGOLAND Japan", desc: "潛水艇、駕駛學校、Miniland。午餐建議園區內 Knight's Table。", location: "LEGOLAND Japan" },
+                            { time: "17:00", type: "food", title: "晚餐：世界的山將", desc: "必點夢幻手羽先 (胡椒雞翅)。記得幫小孩點不辣的。", location: "Sekai no Yamachan" }
+                        ]
+                    },
+                    {
+                        date: "1/16 (五)",
+                        weather: "1~8°C",
+                        activities: [
+                            { time: "09:20", type: "transport", title: "前往長島 Outlet", desc: "名鐵巴士中心4樓22號乘車處。", cost: 1400, location: "Meitetsu Bus Center" },
+                            { time: "10:30", type: "shopping", title: "Jazz Dream Outlet", desc: "日本店鋪最多! Lego Store, Blue Label, Beams。午餐可在長島Kitchen解決。", location: "Mitsui Outlet Park Jazz Dream Nagashima" },
+                            { time: "17:30", type: "food", title: "晚餐：榮商圈 / CoCo壹番屋", desc: "或回飯店附近柳橋中央市場吃海鮮居酒屋。", location: "Sakae Station" }
+                        ]
+                    },
+                    {
+                        date: "1/17 (六)",
+                        weather: "1~8°C",
+                        activities: [
+                            { time: "08:30", type: "stay", title: "Check-out", desc: "行李建議寄放名鐵名古屋站置物櫃。", location: "Meitetsu Nagoya Station" },
+                            { time: "09:30", type: "sight", title: "豐田產業技術紀念館", desc: "小孩必去 Technoland！纖維館、汽車館實演。", cost: 1000, location: "Toyota Commemorative Museum of Industry and Technology" },
+                            { time: "13:00", type: "food", title: "午餐：AEON Mall", desc: "Nagoya Noritake Garden，旁邊有蔦屋書店超美書牆。", location: "Aeon Mall Nagoya Noritake Garden" },
+                            { time: "14:50", type: "transport", title: "前往機場", desc: "搭 μ-SKY。入關前必買「蝦餅」伴手禮！", location: "Chubu Centrair International Airport" },
+                            { time: "16:50", type: "transport", title: "返台", desc: "CX531 飛往 TPE。", tags: ["NGO -> TPE"] }
+                        ]
+                    }
+                ],
+
+                // 檢查清單 (源自導遊叮嚀)
+                packingList: [
+                    {
+                        name: "重要證件 & 網路",
+                        items: [
+                            { name: "護照 (效期6個月+)", checked: false, icon: "fa-solid fa-passport" },
+                            { name: "VJW 截圖 (入境用)", checked: false, icon: "fa-solid fa-qrcode" },
+                            { name: "eSIM / 網卡設定", checked: false, icon: "fa-solid fa-wifi" },
+                            { name: "日幣現金 / 信用卡", checked: false, icon: "fa-regular fa-credit-card" }
+                        ]
+                    },
+                    {
+                        name: "衣物 & 穿搭 (1月均溫4度)",
+                        items: [
+                            { name: "發熱衣 (洋蔥式穿法)", checked: false, icon: "fa-solid fa-shirt" },
+                            { name: "防風大衣 / 羽絨衣", checked: false, icon: "fa-solid fa-vest" },
+                            { name: "毛帽 & 手套 (玩雪用)", checked: false, icon: "fa-regular fa-snowflake" },
+                            { name: "好走的防潑水鞋", checked: false, icon: "fa-solid fa-shoe-prints" }
+                        ]
+                    },
+                    {
+                        name: "隨身小物",
+                        items: [
+                            { name: "護唇膏 / 保濕乳液", checked: false, icon: "fa-solid fa-droplet" },
+                            { name: "行動電源", checked: false, icon: "fa-solid fa-battery-full" },
+                            { name: "牙刷牙膏 (環保考量)", checked: false, icon: "fa-solid fa-tooth" }
+                        ]
+                    }
+                ],
+                expenses: []
+            }
+        },
+        mounted() {
+            const savedData = localStorage.getItem('nagoyaTrip2026');
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
+                this.expenses = parsed.expenses || [];
+                this.packingList = parsed.packingList || this.packingList;
+                // 不覆蓋 itinerary 以免更新程式碼後舊資料蓋過新行程，但保留勾選狀態需更複雜邏輯，此處從簡
+            }
+        },
+        watch: {
+            '$data': {
+                handler(newValue) {
+                    localStorage.setItem('nagoyaTrip2026', JSON.stringify({
+                        expenses: newValue.expenses,
+                        packingList: newValue.packingList
+                    }));
+                },
+                deep: true
+            }
+        },
+        computed: {
+            remainingBudget() {
+                const spent = this.expenses.reduce((sum, item) => sum + item.amount, 0);
+                return this.totalBudget - spent;
+            },
+            budgetProgress() {
+                const spent = this.expenses.reduce((sum, item) => sum + item.amount, 0);
+                const percent = (spent / this.totalBudget) * 100;
+                return Math.min(percent, 100);
+            },
+            checkListProgress() {
+                let total = 0;
+                let checked = 0;
+                this.packingList.forEach(cat => {
+                    cat.items.forEach(item => {
+                        total++;
+                        if (item.checked) checked++;
+                    });
+                });
+                return total === 0 ? 0 : Math.round((checked / total) * 100);
+            }
+        },
+        methods: {
+            getDotColor(type) {
+                const colors = {
+                    transport: 'bg-blue-500 border-blue-100',
+                    food: 'bg-orange-500 border-orange-100',
+                    sight: 'bg-green-500 border-green-100',
+                    shopping: 'bg-pink-500 border-pink-100',
+                    stay: 'bg-purple-500 border-purple-100'
+                };
+                return colors[type] || 'bg-gray-400';
+            },
+            getBarColor(type) {
+                const colors = {
+                    transport: 'bg-blue-500',
+                    food: 'bg-orange-500',
+                    sight: 'bg-green-500',
+                    shopping: 'bg-pink-500',
+                    stay: 'bg-purple-500'
+                };
+                return colors[type] || 'bg-gray-300';
+            },
+            toggleCheck(cIndex, iIndex) {
+                this.packingList[cIndex].items[iIndex].checked = !this.packingList[cIndex].items[iIndex].checked;
+            },
+            addExpense() {
+                if (!this.newExpense.title || !this.newExpense.amount) return;
+                const today = new Date();
+                const dateStr = `${today.getMonth()+1}/${today.getDate()} ${today.getHours().toString().padStart(2,'0')}:${today.getMinutes().toString().padStart(2,'0')}`;
+                
+                this.expenses.unshift({
+                    title: this.newExpense.title,
+                    amount: this.newExpense.amount,
+                    date: dateStr
+                });
+                this.newExpense.title = '';
+                this.newExpense.amount = '';
+                // 自動切換到錢包 tab
+                // this.currentTab = 'wallet'; 
+            },
+            quickAddExpense(title) {
+                this.newExpense.title = title;
+                this.currentTab = 'wallet';
+            },
+            removeExpense(index) {
+                if(confirm('確定刪除這筆紀錄？')) {
+                    this.expenses.splice(index, 1);
+                }
+            },
+            resetData() {
+                if(confirm('確定重置所有清單與記帳資料？(行程不會消失)')) {
+                    localStorage.removeItem('nagoyaTrip2026');
+                    location.reload();
+                }
+            }
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
