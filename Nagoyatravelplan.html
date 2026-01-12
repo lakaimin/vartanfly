@@ -252,6 +252,11 @@
                                     </select>
                                 </div>
                                 <input v-model="tempEditActivity.title" type="text" placeholder="標題" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <!-- 新增：地點欄位 -->
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2.5 text-gray-400 text-xs"><i class="fa-solid fa-location-dot"></i></span>
+                                    <input v-model="tempEditActivity.location" type="text" placeholder="導航地點 (Google Maps 關鍵字)" class="w-full bg-white border border-gray-200 rounded-lg pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
                                 <textarea v-model="tempEditActivity.desc" rows="2" placeholder="備註描述..." class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"></textarea>
                                 <div class="flex gap-2">
                                      <input v-model.number="tempEditActivity.cost" type="number" placeholder="預估票價" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
@@ -285,6 +290,11 @@
                                     </select>
                                 </div>
                                 <input v-model="newActivity.title" type="text" placeholder="標題 (例如: 名古屋城)" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <!-- 新增：地點欄位 -->
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2.5 text-gray-400 text-xs"><i class="fa-solid fa-location-dot"></i></span>
+                                    <input v-model="newActivity.location" type="text" placeholder="導航地點 (Google Maps 關鍵字)" class="w-full bg-white border border-gray-200 rounded-lg pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
                                 <input v-model="newActivity.desc" type="text" placeholder="備註描述..." class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
                                 <div class="flex gap-2">
                                      <input v-model.number="newActivity.cost" type="number" placeholder="預估票價 (可選)" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
@@ -593,7 +603,7 @@
             }
         },
         mounted() {
-            const savedData = localStorage.getItem('nagoyaTrip2026_v7'); // Updated key
+            const savedData = localStorage.getItem('nagoyaTrip2026_v8'); // Updated key
             if (savedData) {
                 const parsed = JSON.parse(savedData);
                 this.expenses = parsed.expenses || [];
@@ -612,7 +622,7 @@
         watch: {
             '$data': {
                 handler(newValue) {
-                    localStorage.setItem('nagoyaTrip2026_v7', JSON.stringify({
+                    localStorage.setItem('nagoyaTrip2026_v8', JSON.stringify({
                         expenses: newValue.expenses,
                         packingList: newValue.packingList,
                         totalBudget: newValue.totalBudget,
@@ -804,7 +814,7 @@
             },
             resetData() {
                 if(confirm('確定重置所有資料 (包含清單、預算與行程)？\n\n注意：這會將行程恢復為預設值。')) {
-                    localStorage.removeItem('nagoyaTrip2026_v7');
+                    localStorage.removeItem('nagoyaTrip2026_v8');
                     location.reload();
                 }
             }
@@ -813,4 +823,3 @@
 </script>
 </body>
 </html>
-
