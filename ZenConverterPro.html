@@ -3,28 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZenConverter Pro v2.0 | PDF to PPTX</title>
+    <title>ZenConverter Pro v3.0 | Safe Mode</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     
     <style>
         :root {
-            --primary: #2C3E50;
+            --primary: #000000;
             --accent: #E74C3C;
-            --bg: #ECF0F1;
+            --bg: #F5F5F7;
             --surface: #FFFFFF;
-            --text-main: #2C3E50;
-            --text-sub: #7F8C8D;
-            --shadow: 0 10px 30px rgba(0,0,0,0.1);
-            --radius: 12px;
+            --radius: 16px;
         }
 
-        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        
         body {
-            font-family: 'Helvetica Neue', Arial, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
-            color: var(--text-main);
+            color: #333;
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -36,396 +31,204 @@
         .container {
             background: var(--surface);
             width: 90%;
-            max-width: 600px;
+            max-width: 500px;
             padding: 40px;
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             text-align: center;
-            transition: transform 0.3s ease;
         }
 
-        h1 {
-            font-weight: 300;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-            font-size: 24px;
-        }
-        
-        .version {
-            font-size: 10px;
-            color: var(--accent);
-            font-weight: bold;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-bottom: 20px;
-            display: block;
-        }
+        h1 { margin: 0 0 10px 0; font-size: 22px; font-weight: 600; }
+        .tag { font-size: 11px; background: #eee; padding: 4px 8px; border-radius: 4px; color: #666; font-weight: bold; }
 
-        p.desc {
-            color: var(--text-sub);
-            font-size: 14px;
-            margin-bottom: 30px;
-            line-height: 1.6;
-        }
-
-        .upload-zone {
-            border: 2px dashed #BDC3C7;
-            border-radius: var(--radius);
+        .upload-box {
+            margin-top: 30px;
+            border: 2px dashed #DDD;
+            border-radius: 12px;
             padding: 40px 20px;
             cursor: pointer;
-            transition: all 0.3s ease;
             position: relative;
-            background: #F9F9F9;
-        }
-
-        .upload-zone:hover, .upload-zone.dragover {
-            border-color: var(--accent);
-            background: #FDEDEC;
-        }
-
-        .icon-upload {
-            font-size: 40px;
-            color: var(--text-sub);
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        input[type="file"] {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .options {
-            margin-top: 25px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .switch-container {
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-            color: var(--text-main);
-            cursor: pointer;
-            background: #F0F2F5;
-            padding: 8px 15px;
-            border-radius: 50px;
-            transition: background 0.2s;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 36px;
-            height: 20px;
-            background-color: #BDC3C7;
-            border-radius: 20px;
-            margin-right: 10px;
-            transition: background-color 0.3s;
-        }
-
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 16px;
-            height: 16px;
-            background-color: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        input[type="checkbox"] { display: none; }
-        
-        input[type="checkbox"]:checked + .toggle-switch {
-            background-color: var(--accent);
+            background: #FAFAFA;
+            transition: 0.3s;
         }
         
-        input[type="checkbox"]:checked + .toggle-switch::after {
-            transform: translateX(16px);
-        }
-
-        .status-area {
-            margin-top: 30px;
-            min-height: 20px;
-        }
+        .upload-box:hover { border-color: var(--accent); background: #FFF; }
         
-        .loader {
-            display: none;
-            width: 100%;
-            height: 4px;
-            background: #eee;
-            margin-top: 10px;
-            position: relative;
-            overflow: hidden;
-            border-radius: 2px;
-        }
-        
-        .loader-bar {
-            position: absolute;
-            height: 100%;
-            width: 0%;
-            background: var(--accent);
-            transition: width 0.3s ease;
-        }
+        input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
-        .btn-download {
+        .controls { margin-top: 20px; display: flex; justify-content: center; gap: 15px; font-size: 14px; }
+        
+        .progress-container { margin-top: 25px; display: none; }
+        .bar-bg { width: 100%; height: 6px; background: #EEE; border-radius: 3px; overflow: hidden; }
+        .bar-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.3s; }
+        .status { margin-top: 10px; font-size: 13px; color: #666; }
+
+        button#downloadBtn {
             margin-top: 20px;
             background: var(--primary);
-            color: white;
+            color: #fff;
             border: none;
             padding: 12px 30px;
+            border-radius: 30px;
             font-size: 14px;
-            border-radius: 50px;
             cursor: pointer;
-            letter-spacing: 1px;
-            transition: transform 0.2s, background 0.2s;
             display: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .btn-download:hover {
-            transform: translateY(-2px);
-            background: #000;
-        }
-
-        footer {
-            margin-top: 40px;
-            font-size: 12px;
-            color: #AAA;
-        }
-
-        footer a {
-            color: #AAA;
-            text-decoration: none;
-            transition: color 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         
-        footer a:hover {
-            color: var(--accent);
-        }
-        
-        .note {
-            font-size: 12px;
-            color: #999;
-            margin-top: 10px;
-        }
-
-        @media (max-width: 480px) {
-            .container { padding: 25px; width: 95%; }
-            h1 { font-size: 20px; }
-        }
+        footer { margin-top: 40px; font-size: 12px; color: #BBB; }
+        footer a { color: #BBB; text-decoration: none; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>ZenConverter Pro</h1>
-        <span class="version">V2.0 STABLE • OFFICE COMPATIBLE</span>
-        <p class="desc">高效、穩定的商務文件轉換工具。<br>自動適配頁面尺寸，支援舊版 Office。</p>
+        <span class="tag">OFFICE 2013 SAFE MODE</span>
+        <h1>ZenConverter Pro v3</h1>
+        <p style="color:#888; font-size:14px;">相容性優先模式：防止舊版 Office 壞檔<br>自動降速處理以確保檔案結構完整</p>
 
-        <div class="upload-zone" id="dropZone">
-            <span class="icon-upload">＋</span>
-            <div id="uploadText">點擊或拖曳 PDF 檔案至此</div>
+        <div class="upload-box" id="dropZone">
+            <div style="font-size:30px; margin-bottom:10px;">📄</div>
+            <div>點擊選擇或拖曳 PDF</div>
             <input type="file" id="fileInput" accept="application/pdf">
         </div>
 
-        <div class="options">
-            <label class="switch-container">
-                <input type="checkbox" id="removeBgToggle">
-                <div class="toggle-switch"></div>
-                <span>智慧去背模式 (輸出 PNG)</span>
-            </label>
+        <div class="controls">
+            <label><input type="checkbox" id="removeBg"> 去背模式 (慢)</label>
+            <label><input type="checkbox" id="forceA4" checked> 強制 A4 版面</label>
         </div>
-        <div class="note" id="modeNote">目前模式：標準 (JPEG 高速壓縮，相容性最高)</div>
 
-        <div class="status-area">
-            <div id="statusText"></div>
-            <div class="loader" id="loader">
-                <div class="loader-bar" id="loaderBar"></div>
-            </div>
-            <button class="btn-download" id="downloadBtn">下載 PPTX</button>
+        <div class="progress-container" id="progressBox">
+            <div class="bar-bg"><div class="bar-fill" id="barFill"></div></div>
+            <div class="status" id="statusText">準備中...</div>
         </div>
+
+        <button id="downloadBtn">下載 PPTX</button>
     </div>
 
-    <footer>
-        Designed by <a href="https://vartanliu.blogspot.com/" target="_blank">Vartan Liu</a>
-    </footer>
+    <footer>Designed by <a href="https://vartanliu.blogspot.com/">Vartan Liu</a></footer>
 
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         const fileInput = document.getElementById('fileInput');
-        const dropZone = document.getElementById('dropZone');
         const statusText = document.getElementById('statusText');
-        const loader = document.getElementById('loader');
-        const loaderBar = document.getElementById('loaderBar');
+        const barFill = document.getElementById('barFill');
+        const progressBox = document.getElementById('progressBox');
         const downloadBtn = document.getElementById('downloadBtn');
-        const removeBgToggle = document.getElementById('removeBgToggle');
-        const modeNote = document.getElementById('modeNote');
-        
-        let currentPPTX = null;
 
-        // UI 互動：切換模式提示
-        removeBgToggle.addEventListener('change', (e) => {
-            if(e.target.checked) {
-                modeNote.innerText = "目前模式：去背 (PNG 格式，檔案較大)";
-                modeNote.style.color = "#E74C3C";
-            } else {
-                modeNote.innerText = "目前模式：標準 (JPEG 高速壓縮，相容性最高)";
-                modeNote.style.color = "#999";
-            }
-        });
-
-        // 拖曳處理
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
-        ['dragleave', 'drop'].forEach(() => dropZone.classList.remove('dragover'));
-
-        dropZone.addEventListener('drop', handleDrop, false);
-        fileInput.addEventListener('change', handleFiles, false);
-
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            handleFiles({ target: { files: files } });
-        }
-
-        async function handleFiles(e) {
+        fileInput.addEventListener('change', async function(e) {
             const file = e.target.files[0];
-            if (!file || file.type !== 'application/pdf') {
-                statusText.innerText = "請上傳有效的 PDF 檔案";
-                statusText.style.color = "#E74C3C";
-                return;
-            }
+            if (!file) return;
 
-            // UI Reset
+            // Reset UI
             downloadBtn.style.display = 'none';
-            loader.style.display = 'block';
-            loaderBar.style.width = '0%';
-            statusText.style.color = "var(--text-main)";
-            statusText.innerText = "正在分析 PDF 結構...";
+            progressBox.style.display = 'block';
+            barFill.style.width = '0%';
+            statusText.innerText = "正在初始化引擎...";
 
             try {
-                await convertPdfToPptx(file);
+                await processPDF(file);
             } catch (err) {
                 console.error(err);
-                statusText.innerText = "轉換發生錯誤，請重新整理頁面。";
-                statusText.style.color = "#E74C3C";
+                statusText.innerText = "錯誤：" + err.message;
+                statusText.style.color = "red";
             }
-        }
+        });
 
-        async function convertPdfToPptx(file) {
+        // 強制延遲函式 (關鍵：讓瀏覽器有時間釋放記憶體)
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+
+        async function processPDF(file) {
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
             const totalPages = pdf.numPages;
 
-            // 初始化 PPTX
             let pptx = new PptxGenJS();
             
-            // 步驟 1：讀取第一頁以決定 PPT 尺寸 (解決變形問題)
-            const firstPage = await pdf.getPage(1);
-            const firstPageViewport = firstPage.getViewport({ scale: 1.0 });
-            // PDF.js 單位是 point (1/72 inch)，PPTX 需要 inches
-            const pdfWidthInches = firstPageViewport.width / 72;
-            const pdfHeightInches = firstPageViewport.height / 72;
-            
-            // 設定整個 PPT 的佈局
-            pptx.defineLayout({ name: 'CUSTOM_PDF_SIZE', width: pdfWidthInches, height: pdfHeightInches });
-            pptx.layout = 'CUSTOM_PDF_SIZE';
+            // 設定版面
+            const forceA4 = document.getElementById('forceA4').checked;
+            if (forceA4) {
+                // 強制設定為 A4 橫式 (標準寬高，避免小數點誤差)
+                pptx.defineLayout({ name:'A4', width:11.69, height:8.27 });
+                pptx.layout = 'A4';
+            } else {
+                pptx.layout = 'LAYOUT_16x9';
+            }
 
-            const isRemoveBg = removeBgToggle.checked;
+            const isRemoveBg = document.getElementById('removeBg').checked;
 
             for (let i = 1; i <= totalPages; i++) {
-                statusText.innerText = `正在處理第 ${i} / ${totalPages} 頁...`;
-                loaderBar.style.width = `${(i / totalPages) * 100}%`;
+                // 更新進度
+                statusText.innerText = `正在處理第 ${i} / ${totalPages} 頁 (安全寫入中)...`;
+                barFill.style.width = `${(i / totalPages) * 100}%`;
+
+                // 🌟 關鍵修正1：強制等待，防止 Race Condition
+                await delay(300); 
 
                 const page = await pdf.getPage(i);
                 
-                // 調整 Scale：1.5 對於商務文件已足夠清晰，且能顯著降低記憶體消耗
-                const scale = 1.5; 
-                const viewport = page.getViewport({ scale: scale });
+                // 🌟 關鍵修正2：使用 1.0 倍率，避免圖片過大撐爆 XML
+                const viewport = page.getViewport({ scale: 1.0 });
+                
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                canvas.height = viewport.height;
                 canvas.width = viewport.width;
+                canvas.height = viewport.height;
 
+                // 繪製 PDF
                 await page.render({ canvasContext: ctx, viewport: viewport }).promise;
 
                 let imgData;
-                
                 if (isRemoveBg) {
-                    // 去背模式：必須使用 PNG
-                    imgData = removeWhiteBackground(canvas, ctx);
+                    imgData = removeWhiteBg(ctx, canvas.width, canvas.height);
                 } else {
-                    // 標準模式：使用 JPEG (品質 0.8) 大幅減少檔案大小，修復 Office 崩潰問題
-                    // 注意：canvas 若有透明背景轉 JPEG 會變黑，所以先填滿白色
+                    // 🌟 關鍵修正3：使用 JPEG 0.7 品質，平衡清晰度與檔案大小
                     ctx.globalCompositeOperation = 'destination-over';
                     ctx.fillStyle = '#FFFFFF';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    imgData = canvas.toDataURL('image/jpeg', 0.8); 
+                    imgData = canvas.toDataURL('image/jpeg', 0.7);
                 }
 
-                // 新增投影片
-                let slide = pptx.addSlide();
+                const slide = pptx.addSlide();
                 
-                // 圖片填滿投影片
-                slide.addImage({ 
-                    data: imgData, 
-                    x: 0, 
-                    y: 0, 
-                    w: '100%', 
-                    h: '100%'
+                // 🌟 關鍵修正4：使用單純的定位參數，不使用百分比，減少計算錯誤
+                // 將圖片 "Fit" 到版面中，而不是強制拉伸
+                slide.addImage({
+                    data: imgData,
+                    x: 0,
+                    y: 0,
+                    w: '100%',
+                    h: '100%',
+                    sizing: { type: 'contain', align: 'center' }
                 });
             }
 
-            statusText.innerText = "轉換完成！";
-            loaderBar.style.width = '100%';
+            statusText.innerText = "打包中...";
+            await delay(500); // 最後冷卻
+
             downloadBtn.style.display = 'inline-block';
+            statusText.innerText = "轉換完成！請下載";
             
-            // 下載按鈕邏輯
             downloadBtn.onclick = () => {
-                const fileName = file.name.replace('.pdf', '') + '_v2.pptx';
-                pptx.writeFile({ fileName: fileName });
+                pptx.writeFile({ 
+                    fileName: file.name.replace('.pdf','') + "_Safe.pptx",
+                    compression: true // 啟用壓縮
+                });
             };
         }
 
-        // 智慧去背演算法
-        function removeWhiteBackground(canvas, ctx) {
-            const width = canvas.width;
-            const height = canvas.height;
+        function removeWhiteBg(ctx, width, height) {
             const imgData = ctx.getImageData(0, 0, width, height);
             const data = imgData.data;
-            const threshold = 245; // 稍微提高容許值，讓去背更乾淨
-
+            // 簡化去背邏輯以提升速度
             for (let i = 0; i < data.length; i += 4) {
-                const r = data[i];
-                const g = data[i + 1];
-                const b = data[i + 2];
-                // 判定是否為白色
-                if (r > threshold && g > threshold && b > threshold) {
-                    data[i + 3] = 0; // Alpha 設為 0
+                if (data[i] > 240 && data[i+1] > 240 && data[i+2] > 240) {
+                    data[i+3] = 0;
                 }
             }
             ctx.putImageData(imgData, 0, 0);
-            return canvas.toDataURL('image/png');
+            return ctx.canvas.toDataURL('image/png');
         }
     </script>
 </body>
