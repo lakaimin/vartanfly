@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZenConverter Pro | PDF to PPTX</title>
+    <title>ZenConverter Pro v2.0 | PDF to PPTX</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     
     <style>
         :root {
-            --primary: #2B2B2B; /* 深灰，象徵專業 */
-            --accent: #E74C3C; /* 紅點風格強調色 */
-            --bg: #F4F4F4;
+            --primary: #2C3E50;
+            --accent: #E74C3C;
+            --bg: #ECF0F1;
             --surface: #FFFFFF;
-            --text-main: #333333;
-            --text-sub: #888888;
-            --shadow: 0 10px 30px rgba(0,0,0,0.08);
+            --text-main: #2C3E50;
+            --text-sub: #7F8C8D;
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
             --radius: 12px;
         }
 
@@ -33,7 +33,6 @@
             justify-content: center;
         }
 
-        /* 主容器：懸浮卡片設計 */
         .container {
             background: var(--surface);
             width: 90%;
@@ -45,23 +44,21 @@
             transition: transform 0.3s ease;
         }
 
-        /* 標題區 */
         h1 {
             font-weight: 300;
             letter-spacing: 2px;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             font-size: 24px;
         }
         
-        .badge {
-            display: inline-block;
-            background: var(--primary);
-            color: #fff;
+        .version {
             font-size: 10px;
-            padding: 4px 8px;
-            border-radius: 4px;
+            color: var(--accent);
+            font-weight: bold;
             letter-spacing: 1px;
+            text-transform: uppercase;
             margin-bottom: 20px;
+            display: block;
         }
 
         p.desc {
@@ -71,20 +68,19 @@
             line-height: 1.6;
         }
 
-        /* 上傳區域 */
         .upload-zone {
-            border: 2px dashed #E0E0E0;
+            border: 2px dashed #BDC3C7;
             border-radius: var(--radius);
             padding: 40px 20px;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
-            background: #FAFAFA;
+            background: #F9F9F9;
         }
 
         .upload-zone:hover, .upload-zone.dragover {
             border-color: var(--accent);
-            background: #FFF5F5;
+            background: #FDEDEC;
         }
 
         .icon-upload {
@@ -104,13 +100,13 @@
             cursor: pointer;
         }
 
-        /* 功能選項開關 */
         .options {
             margin-top: 25px;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         .switch-container {
@@ -119,14 +115,18 @@
             font-size: 14px;
             color: var(--text-main);
             cursor: pointer;
+            background: #F0F2F5;
+            padding: 8px 15px;
+            border-radius: 50px;
+            transition: background 0.2s;
         }
 
         .toggle-switch {
             position: relative;
-            width: 44px;
-            height: 24px;
-            background-color: #ddd;
-            border-radius: 24px;
+            width: 36px;
+            height: 20px;
+            background-color: #BDC3C7;
+            border-radius: 20px;
             margin-right: 10px;
             transition: background-color 0.3s;
         }
@@ -136,12 +136,12 @@
             position: absolute;
             top: 2px;
             left: 2px;
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             background-color: white;
             border-radius: 50%;
             transition: transform 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         input[type="checkbox"] { display: none; }
@@ -151,10 +151,9 @@
         }
         
         input[type="checkbox"]:checked + .toggle-switch::after {
-            transform: translateX(20px);
+            transform: translateX(16px);
         }
 
-        /* 狀態顯示 */
         .status-area {
             margin-top: 30px;
             min-height: 20px;
@@ -190,7 +189,7 @@
             cursor: pointer;
             letter-spacing: 1px;
             transition: transform 0.2s, background 0.2s;
-            display: none; /* 預設隱藏 */
+            display: none;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
@@ -199,7 +198,6 @@
             background: #000;
         }
 
-        /* 頁尾 */
         footer {
             margin-top: 40px;
             font-size: 12px;
@@ -215,8 +213,13 @@
         footer a:hover {
             color: var(--accent);
         }
+        
+        .note {
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
 
-        /* RWD Mobile Optimization */
         @media (max-width: 480px) {
             .container { padding: 25px; width: 95%; }
             h1 { font-size: 20px; }
@@ -226,9 +229,9 @@
 <body>
 
     <div class="container">
-        <div class="badge">DESIGN & UTILITY</div>
         <h1>ZenConverter Pro</h1>
-        <p class="desc">將 PDF 轉換為可編輯的 PPTX 投影片。<br>支援智慧去背模式，讓簡報更純淨。</p>
+        <span class="version">V2.0 STABLE • OFFICE COMPATIBLE</span>
+        <p class="desc">高效、穩定的商務文件轉換工具。<br>自動適配頁面尺寸，支援舊版 Office。</p>
 
         <div class="upload-zone" id="dropZone">
             <span class="icon-upload">＋</span>
@@ -240,9 +243,10 @@
             <label class="switch-container">
                 <input type="checkbox" id="removeBgToggle">
                 <div class="toggle-switch"></div>
-                <span>啟用智慧去背 (去除白底)</span>
+                <span>智慧去背模式 (輸出 PNG)</span>
             </label>
         </div>
+        <div class="note" id="modeNote">目前模式：標準 (JPEG 高速壓縮，相容性最高)</div>
 
         <div class="status-area">
             <div id="statusText"></div>
@@ -258,7 +262,6 @@
     </footer>
 
     <script>
-        // 設定 PDF.js worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         const fileInput = document.getElementById('fileInput');
@@ -268,10 +271,22 @@
         const loaderBar = document.getElementById('loaderBar');
         const downloadBtn = document.getElementById('downloadBtn');
         const removeBgToggle = document.getElementById('removeBgToggle');
+        const modeNote = document.getElementById('modeNote');
         
         let currentPPTX = null;
 
-        // 拖曳效果
+        // UI 互動：切換模式提示
+        removeBgToggle.addEventListener('change', (e) => {
+            if(e.target.checked) {
+                modeNote.innerText = "目前模式：去背 (PNG 格式，檔案較大)";
+                modeNote.style.color = "#E74C3C";
+            } else {
+                modeNote.innerText = "目前模式：標準 (JPEG 高速壓縮，相容性最高)";
+                modeNote.style.color = "#999";
+            }
+        });
+
+        // 拖曳處理
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             dropZone.addEventListener(eventName, preventDefaults, false);
         });
@@ -284,7 +299,6 @@
         dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
         ['dragleave', 'drop'].forEach(() => dropZone.classList.remove('dragover'));
 
-        // 檔案監聽
         dropZone.addEventListener('drop', handleDrop, false);
         fileInput.addEventListener('change', handleFiles, false);
 
@@ -302,18 +316,18 @@
                 return;
             }
 
-            // 重置 UI
+            // UI Reset
             downloadBtn.style.display = 'none';
             loader.style.display = 'block';
             loaderBar.style.width = '0%';
             statusText.style.color = "var(--text-main)";
-            statusText.innerText = "正在分析 PDF...";
+            statusText.innerText = "正在分析 PDF 結構...";
 
             try {
                 await convertPdfToPptx(file);
             } catch (err) {
                 console.error(err);
-                statusText.innerText = "轉換失敗，請稍後再試。";
+                statusText.innerText = "轉換發生錯誤，請重新整理頁面。";
                 statusText.style.color = "#E74C3C";
             }
         }
@@ -325,8 +339,17 @@
 
             // 初始化 PPTX
             let pptx = new PptxGenJS();
-            // 設定寬螢幕 16:9
-            pptx.layout = 'LAYOUT_16x9'; 
+            
+            // 步驟 1：讀取第一頁以決定 PPT 尺寸 (解決變形問題)
+            const firstPage = await pdf.getPage(1);
+            const firstPageViewport = firstPage.getViewport({ scale: 1.0 });
+            // PDF.js 單位是 point (1/72 inch)，PPTX 需要 inches
+            const pdfWidthInches = firstPageViewport.width / 72;
+            const pdfHeightInches = firstPageViewport.height / 72;
+            
+            // 設定整個 PPT 的佈局
+            pptx.defineLayout({ name: 'CUSTOM_PDF_SIZE', width: pdfWidthInches, height: pdfHeightInches });
+            pptx.layout = 'CUSTOM_PDF_SIZE';
 
             const isRemoveBg = removeBgToggle.checked;
 
@@ -336,8 +359,9 @@
 
                 const page = await pdf.getPage(i);
                 
-                // 設定高解析度渲染 (Scale 2 for better quality)
-                const viewport = page.getViewport({ scale: 2.0 });
+                // 調整 Scale：1.5 對於商務文件已足夠清晰，且能顯著降低記憶體消耗
+                const scale = 1.5; 
+                const viewport = page.getViewport({ scale: scale });
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 canvas.height = viewport.height;
@@ -345,60 +369,61 @@
 
                 await page.render({ canvasContext: ctx, viewport: viewport }).promise;
 
-                let imgData = canvas.toDataURL('image/png');
-
-                // 如果啟用去背 (簡單的亮度閾值法去除白底)
+                let imgData;
+                
                 if (isRemoveBg) {
+                    // 去背模式：必須使用 PNG
                     imgData = removeWhiteBackground(canvas, ctx);
+                } else {
+                    // 標準模式：使用 JPEG (品質 0.8) 大幅減少檔案大小，修復 Office 崩潰問題
+                    // 注意：canvas 若有透明背景轉 JPEG 會變黑，所以先填滿白色
+                    ctx.globalCompositeOperation = 'destination-over';
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    imgData = canvas.toDataURL('image/jpeg', 0.8); 
                 }
 
                 // 新增投影片
                 let slide = pptx.addSlide();
                 
-                // 計算比例以適應 PPTX (PptxGenJS 使用英吋)
-                // 16:9 layout is 10 x 5.625 inches
+                // 圖片填滿投影片
                 slide.addImage({ 
                     data: imgData, 
                     x: 0, 
                     y: 0, 
                     w: '100%', 
-                    h: '100%',
-                    sizing: { type: 'contain', align: 'center' }
+                    h: '100%'
                 });
             }
 
             statusText.innerText = "轉換完成！";
+            loaderBar.style.width = '100%';
             downloadBtn.style.display = 'inline-block';
             
-            // 綁定下載按鈕
+            // 下載按鈕邏輯
             downloadBtn.onclick = () => {
-                const fileName = file.name.replace('.pdf', '') + '_converted.pptx';
+                const fileName = file.name.replace('.pdf', '') + '_v2.pptx';
                 pptx.writeFile({ fileName: fileName });
             };
         }
 
-        // 智慧去背演算法 (Client-side White Background Removal)
+        // 智慧去背演算法
         function removeWhiteBackground(canvas, ctx) {
             const width = canvas.width;
             const height = canvas.height;
             const imgData = ctx.getImageData(0, 0, width, height);
             const data = imgData.data;
-
-            // 閾值：RGB 都大於 230 即視為白色背景
-            const threshold = 240; 
+            const threshold = 245; // 稍微提高容許值，讓去背更乾淨
 
             for (let i = 0; i < data.length; i += 4) {
                 const r = data[i];
                 const g = data[i + 1];
                 const b = data[i + 2];
-
-                // 檢查是否接近白色
+                // 判定是否為白色
                 if (r > threshold && g > threshold && b > threshold) {
-                    // 將 Alpha 設為 0 (透明)
-                    data[i + 3] = 0;
+                    data[i + 3] = 0; // Alpha 設為 0
                 }
             }
-
             ctx.putImageData(imgData, 0, 0);
             return canvas.toDataURL('image/png');
         }
