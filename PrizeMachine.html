@@ -9,29 +9,28 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
-        /* --- 變數系統：賽博龐克配色 --- */
+        /* --- 變數系統 --- */
         :root {
             --neon-blue: #00f3ff;
             --neon-pink: #bc13fe;
             --neon-green: #0aff0a;
             --glass-bg: rgba(20, 25, 40, 0.6);
             --glass-border: rgba(255, 255, 255, 0.15);
-            --glass-highlight: rgba(255, 255, 255, 0.1);
             --machine-bg: #0b101a;
-            --panel-height: 280px;
+            /* 手機版底部面板高度預留 */
+            --mobile-panel-height: 320px; 
         }
 
         body {
             font-family: 'Rajdhani', 'Noto Sans TC', sans-serif;
             margin: 0;
-            height: 100dvh;
+            height: 100dvh; /* 使用動態視口高度 */
             width: 100vw;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+            overflow: hidden; /* 防止整個網頁彈性拉動 */
             color: white;
-            /* 動態背景：模擬深夜城市流光 */
             background: radial-gradient(circle at 50% -20%, #1a1a2e, #000);
             background-size: 200% 200%;
         }
@@ -60,37 +59,29 @@
             pointer-events: none;
             transition: transform 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045), opacity 0.8s ease-in;
             width: 100px;
-            filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); /* 掉落時發光 */
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
         }
 
-        /* --- 販賣機外殼：霓虹光暈 --- */
+        /* --- 販賣機外殼 --- */
         .vending-machine {
             width: 100%;
             max-width: 1000px;
             height: 95vh;
             background: var(--machine-bg);
             border-radius: 24px;
-            /* 雙層光暈：外層藍光，內層深邃 */
             box-shadow: 
                 0 0 20px rgba(0, 243, 255, 0.3),
                 0 0 60px rgba(188, 19, 254, 0.1),
                 inset 0 0 50px rgba(0,0,0,0.8);
             display: flex;
-            overflow: hidden;
+            /* 關鍵：設定 overflow hidden 確保內部卷軸正常運作 */
+            overflow: hidden; 
             position: relative;
             border: 2px solid rgba(0, 243, 255, 0.3);
             backdrop-filter: blur(10px);
         }
 
-        /* 裝飾線條 */
-        .vending-machine::after {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
-            box-shadow: 0 0 10px var(--neon-blue);
-            opacity: 0.7;
-        }
-
-        /* --- 左側：商品櫥窗 (玻璃質感) --- */
+        /* --- 左側：商品櫥窗 --- */
         .left-panel {
             flex: 2;
             display: flex;
@@ -99,11 +90,11 @@
             background: rgba(0,0,0,0.3);
             border-right: 1px solid var(--glass-border);
             position: relative;
+            min-height: 0; /* 關鍵：防止 Flex 子元素溢出 */
         }
 
         .window-frame {
             flex: 1;
-            /* 玻璃擬態核心 */
             background: var(--glass-bg);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
@@ -111,11 +102,13 @@
             border-radius: 16px;
             box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
             padding: 15px;
+            
+            /* 捲動設定 */
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch; 
+            -webkit-overflow-scrolling: touch; /* iOS 滑動慣性 */
+            min-height: 0; /* 關鍵：讓捲動條出現 */
         }
 
-        /* 隱藏卷軸但保留功能 */
         .window-frame::-webkit-scrollbar { width: 6px; }
         .window-frame::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
 
@@ -126,7 +119,7 @@
             padding-bottom: 30px;
         }
 
-        /* --- 商品卡片：全像投影感 --- */
+        /* --- 商品卡片 --- */
         .item-card {
             background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
             border: 1px solid var(--glass-border);
@@ -140,7 +133,6 @@
             overflow: hidden;
         }
 
-        /* 懸停發光特效 */
         .item-card:hover {
             transform: translateY(-5px);
             border-color: var(--neon-blue);
@@ -180,7 +172,7 @@
             text-shadow: 0 2px 4px black;
         }
 
-        /* 霓虹按鈕 */
+        /* 按鈕樣式 */
         .action-btn {
             width: 100%; padding: 8px 0; border-radius: 6px;
             font-size: 0.9rem; font-weight: 700; font-family: 'Rajdhani';
@@ -195,9 +187,7 @@
             border: 1px solid var(--neon-blue);
             box-shadow: 0 0 5px var(--neon-blue), inset 0 0 5px rgba(0, 243, 255, 0.2);
         }
-        .btn-buy:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
         .btn-buy:active { transform: scale(0.95); }
-        
         .btn-disabled {
             background: rgba(255,255,255,0.05);
             color: rgba(255,255,255,0.3);
@@ -217,7 +207,6 @@
             gap: 25px;
         }
 
-        /* LCD 螢幕：真空管輝光 */
         .lcd-container {
             background: #000;
             padding: 15px 20px;
@@ -227,13 +216,10 @@
             display: flex; justify-content: space-between; align-items: center;
             position: relative;
         }
-        /* 螢幕掃描線特效 */
         .lcd-container::after {
             content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-            border-radius: 10px;
+            background-size: 100% 2px, 3px 100%; pointer-events: none; border-radius: 10px;
         }
         
         .lcd-label { color: var(--neon-pink); font-size: 0.8rem; letter-spacing: 2px; text-shadow: 0 0 5px var(--neon-pink); }
@@ -241,11 +227,10 @@
             color: var(--neon-pink);
             font-family: 'Orbitron', monospace;
             font-size: 2.8rem;
-            text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink); /* 強烈輝光 */
+            text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink);
             line-height: 1;
         }
 
-        /* 控制區 */
         .coin-controls {
             display: flex; flex-direction: column; align-items: center;
             background: rgba(255,255,255,0.03);
@@ -288,7 +273,6 @@
         }
         .insert-btn:active { transform: scale(0.95); box-shadow: 0 0 20px var(--neon-green); }
 
-        /* 退幣與取物 */
         .desktop-footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; width: 100%; }
         .return-lever { 
             width: 60px; height: 60px; border-radius: 50%; 
@@ -302,8 +286,7 @@
         .pickup-slot-desktop { 
             height: 100px; background: #000; margin-top: 15px; border-radius: 12px; 
             border: 1px solid #333; display: flex; justify-content: center; align-items: flex-end; 
-            box-shadow: inset 0 10px 30px rgba(0,0,0,0.9);
-            position: relative; overflow: hidden;
+            box-shadow: inset 0 10px 30px rgba(0,0,0,0.9); position: relative; overflow: hidden;
         }
         .pickup-door { 
             width: 90%; height: 80%; background: linear-gradient(to bottom, #222, #111); 
@@ -314,22 +297,48 @@
         }
         .pickup-door.has-item { 
             border-color: var(--neon-green); color: var(--neon-green); 
-            box-shadow: 0 0 20px var(--neon-green);
-            text-shadow: 0 0 10px var(--neon-green);
+            box-shadow: 0 0 20px var(--neon-green); text-shadow: 0 0 10px var(--neon-green);
         }
 
-        /* ======== 📱 手機版 RWD (Cyberpunk Mobile) ======== */
+        /* ======== 📱 手機版 RWD 核心修正 ======== */
         @media (max-width: 850px) {
-            body { align-items: flex-start; background: #050510; } /* 手機版背景簡化 */
-            .vending-machine { height: 100%; border: none; border-radius: 0; box-shadow: none; flex-direction: column; background: transparent; backdrop-filter: none; }
-            .left-panel { flex: 1; border-right: none; padding: 15px; padding-bottom: calc(var(--panel-height) + 20px); background: transparent; }
-            .window-frame { background: rgba(255,255,255,0.03); border: none; box-shadow: none; padding: 5px; }
+            body { align-items: flex-start; background: #050510; }
+            
+            .vending-machine { 
+                height: 100%; 
+                border: none; border-radius: 0; box-shadow: none; 
+                flex-direction: column; 
+                background: transparent; backdrop-filter: none;
+                overflow: hidden; /* 防止父層捲動 */
+            }
+
+            /* 左側商品區：確保高度正確，允許內部捲動 */
+            .left-panel { 
+                flex: 1; 
+                border-right: none; 
+                padding: 15px; 
+                background: transparent;
+                /* 關鍵修正：預留底部空間給固定面板 */
+                padding-bottom: calc(var(--mobile-panel-height) + 20px); 
+                overflow: hidden; /* 讓子元素 window-frame 負責捲動 */
+                display: flex;
+                flex-direction: column;
+                min-height: 0; /* Flexbox 溢出修正 */
+            }
+
+            .window-frame { 
+                background: rgba(255,255,255,0.03); 
+                border: none; box-shadow: none; padding: 5px; 
+                height: 100%; /* 填滿 left-panel */
+                overflow-y: auto; /* 確保可以滑動 */
+            }
+
             .pickup-slot-desktop, .desktop-footer { display: none; }
 
+            /* 右側控制面板：固定在底部 */
             .right-panel {
                 position: fixed; bottom: 0; left: 0; width: 100%; height: auto;
-                /* 玻璃面板 */
-                background: rgba(10, 15, 30, 0.85);
+                background: rgba(10, 15, 30, 0.95);
                 backdrop-filter: blur(15px);
                 border-top: 1px solid var(--neon-blue);
                 box-shadow: 0 -10px 40px rgba(0, 243, 255, 0.2);
@@ -437,7 +446,6 @@
     </div>
 
     <script>
-        // 資料與邏輯維持不變，僅需更新 UI 渲染
         const initialItems = [
             { id: 1, name: "兒童黏土", price: 150, stock: 5, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjH6JH2Moe1-UnUoSTspzm62HyPyFMFcKZRjfBn8m8-vTuQVvQeJcVlgdS_XPBmrJaDfwVi_f4-JlCKg0bczYF7UxRtVQCd3x6fIzFd4Yckcn9jYtsfLAlK26kQ_ikNZ5CZVSURsPwcPfPnwYGv00PCr2fiPJLuSj5n0r8OoMlIp63tH0lA_1_onkL5/s16000/%E5%85%92%E7%AB%A5%E9%BB%8F%E5%9C%9F.webp" },
             { id: 2, name: "遙控特技車", price: 3000, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgbj4596hitk8w13O0b6CfQZ2jknBEb0-tG6pByf6kLTDTPPoVC8KYIZIxo07fE7eq3gFdYaOjny1ilPdcO633rCGRDky0CIk4afwFkqiqwGLrVRzYZt4At5YshjfgwC_l2IfQNXT0kkQd79hy3u7IsIq9zI67xmlXVpFt04yOTvLJ0xkx1htnGxIuZ/s16000/%E9%81%99%E6%8E%A7%E7%89%B9%E6%8A%80%E8%BB%8A.webp" },
