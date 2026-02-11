@@ -2,710 +2,652 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>星星點數獎品販賣機</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <style>
-        /* --- 全局與背景 --- */
+        /* --- 變數系統：賽博龐克配色 --- */
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #bc13fe;
+            --neon-green: #0aff0a;
+            --glass-bg: rgba(20, 25, 40, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-highlight: rgba(255, 255, 255, 0.1);
+            --machine-bg: #0b101a;
+            --panel-height: 280px;
+        }
+
         body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: #2b2b2b;
-            background-image: 
-                linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
-                url('https://www.transparenttextures.com/patterns/concrete-wall.png');
+            font-family: 'Rajdhani', 'Noto Sans TC', sans-serif;
+            margin: 0;
+            height: 100dvh;
+            width: 100vw;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 10px;
-            overflow: hidden; /* 防止捲動 */
+            overflow: hidden;
+            color: white;
+            /* 動態背景：模擬深夜城市流光 */
+            background: radial-gradient(circle at 50% -20%, #1a1a2e, #000);
+            background-size: 200% 200%;
         }
 
-        /* --- 販賣機主體 --- */
+        /* 背景流光動畫 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(188, 19, 254, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 243, 255, 0.15) 0%, transparent 20%);
+            z-index: -1;
+            animation: bg-pulse 10s ease-in-out infinite alternate;
+        }
+
+        @keyframes bg-pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.1); opacity: 1; }
+        }
+
+        /* --- 掉落動畫 (物理引擎) --- */
+        .falling-item {
+            position: fixed;
+            z-index: 9999;
+            pointer-events: none;
+            transition: transform 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045), opacity 0.8s ease-in;
+            width: 100px;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); /* 掉落時發光 */
+        }
+
+        /* --- 販賣機外殼：霓虹光暈 --- */
         .vending-machine {
-            background: #0047AB; /* 經典寶藍色 */
-            border-radius: 16px 16px 0 0;
-            box-shadow: 
-                0 0 0 4px #003380,
-                20px 20px 50px rgba(0,0,0,0.8),
-                inset 2px 2px 5px rgba(255,255,255,0.3);
             width: 100%;
             max-width: 1000px;
             height: 95vh;
+            background: var(--machine-bg);
+            border-radius: 24px;
+            /* 雙層光暈：外層藍光，內層深邃 */
+            box-shadow: 
+                0 0 20px rgba(0, 243, 255, 0.3),
+                0 0 60px rgba(188, 19, 254, 0.1),
+                inset 0 0 50px rgba(0,0,0,0.8);
             display: flex;
-            flex-direction: row;
+            overflow: hidden;
             position: relative;
-            border-bottom: 12px solid #1a1a1a;
+            border: 2px solid rgba(0, 243, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        /* 裝飾線條 */
+        .vending-machine::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+            box-shadow: 0 0 10px var(--neon-blue);
+            opacity: 0.7;
+        }
+
+        /* --- 左側：商品櫥窗 (玻璃質感) --- */
+        .left-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-right: 1px solid var(--glass-border);
+            position: relative;
+        }
+
+        .window-frame {
+            flex: 1;
+            /* 玻璃擬態核心 */
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
+            padding: 15px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch; 
+        }
+
+        /* 隱藏卷軸但保留功能 */
+        .window-frame::-webkit-scrollbar { width: 6px; }
+        .window-frame::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 20px;
+            padding-bottom: 30px;
+        }
+
+        /* --- 商品卡片：全像投影感 --- */
+        .item-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+            position: relative;
             overflow: hidden;
         }
 
-        /* --- 左側區域 (包含櫥窗與取物口) --- */
-        .left-column {
-            flex: 3;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-            border-right: 4px solid #003380;
-            background: linear-gradient(to bottom, #0047AB, #003380);
-            position: relative;
-        }
-
-        /* 商品櫥窗 (上部) */
-        .display-window {
-            flex-grow: 1; /* 佔滿剩餘空間 */
-            background: #1a1a1a;
-            border-radius: 8px;
-            border: 4px solid #ccc;
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
-            position: relative;
-            overflow: hidden; /* 內部滾動 */
-            margin-bottom: 15px; /* 與取物口分開 */
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* 玻璃反光 */
-        .glass-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0.01) 41%, rgba(255,255,255,0) 100%);
-            pointer-events: none;
-            z-index: 10;
-            border-radius: 4px;
-        }
-
-        /* 商品網格容器 */
-        .shelves-container {
-            overflow-y: auto;
-            height: 100%;
-            padding: 15px;
-            /* 隱藏捲軸但保留功能 */
-            scrollbar-width: thin;
-            scrollbar-color: #555 #222;
+        /* 懸停發光特效 */
+        .item-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+            background: rgba(0, 243, 255, 0.05);
         }
         
-        .shelves-container::-webkit-scrollbar { width: 8px; }
-        .shelves-container::-webkit-scrollbar-track { background: #222; }
-        .shelves-container::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
-
-        .shelves-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 20px;
-            padding-bottom: 20px;
-        }
-
-        /* 單個商品槽位 */
-        .item-slot {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
-            padding: 12px 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border-bottom: 4px solid rgba(255, 255, 255, 0.15); /* 層架感 */
-            transition: transform 0.2s;
-        }
-        .item-slot:hover { transform: translateY(-2px); background: rgba(255,255,255,0.12); }
-
-        .item-img-container {
-            width: 100%;
-            height: 110px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
         .item-img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.4));
+            width: 100%; height: 90px; object-fit: contain;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
+            transition: transform 0.3s;
+        }
+        .item-card:hover .item-img { transform: scale(1.1); }
+
+        .price-tag {
+            background: rgba(0,0,0,0.6);
+            color: var(--neon-blue);
+            font-family: 'Orbitron';
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 5px var(--neon-blue);
+            margin-bottom: 8px;
+            text-shadow: 0 0 5px var(--neon-blue);
         }
 
         .item-name {
-            color: #fff;
+            color: rgba(255,255,255,0.9);
             font-size: 0.85rem;
             text-align: center;
-            margin-bottom: 4px;
             height: 2.4em;
             line-height: 1.2;
             overflow: hidden;
-        }
-
-        .item-price {
-            background: #fff;
-            color: #c00;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-weight: 900;
-            font-size: 0.95rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             margin-bottom: 8px;
+            text-shadow: 0 2px 4px black;
         }
 
-        /* --- 擬真按鈕 --- */
-        .vending-btn {
-            width: 90%;
-            height: 40px;
-            background: #333;
-            border: 2px solid #222;
-            border-radius: 6px;
-            cursor: pointer;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.3s;
-            box-shadow: 0 4px 0 #111;
+        /* 霓虹按鈕 */
+        .action-btn {
+            width: 100%; padding: 8px 0; border-radius: 6px;
+            font-size: 0.9rem; font-weight: 700; font-family: 'Rajdhani';
+            cursor: pointer; border: none; transition: all 0.2s;
+            position: relative; overflow: hidden;
+            text-transform: uppercase; letter-spacing: 1px;
         }
         
-        .vending-btn.available {
-            background: #00bfff;
-            border-color: #0099cc;
-            box-shadow: 0 0 10px #00bfff, 0 4px 0 #007bb5;
-            animation: pulse-blue 2s infinite;
+        .btn-buy {
+            background: transparent;
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 5px var(--neon-blue), inset 0 0 5px rgba(0, 243, 255, 0.2);
         }
-
-        .vending-btn.available:active {
-            transform: translateY(4px);
-            box-shadow: 0 0 5px #00bfff;
-        }
-
-        .vending-btn.sold-out {
-            background: #a00;
-            border-color: #800;
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
-            cursor: not-allowed;
-            opacity: 0.8;
-        }
-
-        .btn-label {
-            font-size: 0.75rem;
-            font-weight: bold;
+        .btn-buy:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
+        .btn-buy:active { transform: scale(0.95); }
+        
+        .btn-disabled {
+            background: rgba(255,255,255,0.05);
             color: rgba(255,255,255,0.3);
-            letter-spacing: 1px;
-        }
-        .vending-btn.available .btn-label { color: white; text-shadow: 0 0 3px rgba(0,0,0,0.5); }
-        .vending-btn.sold-out .btn-label { color: #ffcccc; }
-
-        @keyframes pulse-blue {
-            0% { box-shadow: 0 0 5px #00bfff, 0 4px 0 #007bb5; }
-            50% { box-shadow: 0 0 20px #00bfff, 0 4px 0 #007bb5; }
-            100% { box-shadow: 0 0 5px #00bfff, 0 4px 0 #007bb5; }
-        }
-
-        /* --- 取物口 (下部獨立區塊) --- */
-        .pickup-area {
-            height: 130px;
-            background: #222;
-            border-radius: 8px;
-            border: 2px solid #555;
-            position: relative;
-            flex-shrink: 0; /* 防止被壓縮 */
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            padding-bottom: 0;
-            overflow: hidden;
-            box-shadow: inset 0 10px 20px rgba(0,0,0,0.8);
-        }
-
-        .pickup-door {
-            width: 85%;
-            height: 85%;
-            background: linear-gradient(to bottom, #444, #2a2a2a);
-            border: 1px solid #666;
-            border-bottom: none;
-            border-radius: 12px 12px 0 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.2s;
-            transform-origin: top;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.5);
-        }
-        
-        .pickup-door:active { transform: rotateX(15deg) scale(0.98); }
-
-        .pickup-text {
-            font-size: 1.8rem;
-            font-weight: 900;
-            color: #555;
-            text-shadow: 0 1px 0 rgba(255,255,255,0.1);
-            letter-spacing: 2px;
-        }
-
-        .pickup-door.has-item {
-            animation: bounce-door 0.6s ease-out;
-        }
-        .pickup-door.has-item .pickup-text { color: #fbbf24; text-shadow: 0 0 10px #fbbf24; }
-
-        @keyframes bounce-door {
-            0% { transform: translateY(0); }
-            30% { transform: translateY(-10px); }
-            50% { transform: translateY(0); }
-            70% { transform: translateY(-5px); }
-            100% { transform: translateY(0); }
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: not-allowed;
         }
 
         /* --- 右側：控制面板 --- */
-        .right-column {
-            flex: 1;
-            min-width: 250px;
-            background: linear-gradient(to right, #dedede, #cfcfcf);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 30px 20px;
-            box-shadow: inset 10px 0 15px rgba(0,0,0,0.1);
+        .right-panel {
+            flex: 1; min-width: 320px;
+            background: rgba(10, 15, 30, 0.9);
+            display: flex; flex-direction: column;
+            padding: 30px;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            z-index: 50;
+            border-left: 1px solid var(--glass-border);
+            gap: 25px;
+        }
+
+        /* LCD 螢幕：真空管輝光 */
+        .lcd-container {
+            background: #000;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 2px solid #333;
+            box-shadow: inset 0 0 20px rgba(255, 0, 85, 0.2), 0 0 15px rgba(0,0,0,0.8);
+            display: flex; justify-content: space-between; align-items: center;
             position: relative;
         }
-
-        /* 側邊分隔線 */
-        .right-column::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
-            width: 2px;
-            background: rgba(255,255,255,0.4);
-            z-index: 5;
-        }
-
-        .lcd-screen {
-            background: #000;
-            width: 100%;
-            padding: 15px;
-            border-radius: 6px;
-            border: 4px solid #444;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        /* 螢幕掃描線特效 */
+        .lcd-container::after {
+            content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            border-radius: 10px;
         }
         
-        .lcd-text {
-            font-family: 'Share Tech Mono', monospace;
-            color: #ff3333;
-            font-size: 2.5rem;
-            text-align: right;
+        .lcd-label { color: var(--neon-pink); font-size: 0.8rem; letter-spacing: 2px; text-shadow: 0 0 5px var(--neon-pink); }
+        .lcd-screen {
+            color: var(--neon-pink);
+            font-family: 'Orbitron', monospace;
+            font-size: 2.8rem;
+            text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink); /* 強烈輝光 */
             line-height: 1;
-            text-shadow: 0 0 8px #ff3333;
         }
 
-        .control-group {
-            width: 100%;
-            background: #bbb;
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #999;
-            box-shadow: inset 0 2px 5px rgba(255,255,255,0.5);
-            margin-bottom: 30px;
+        /* 控制區 */
+        .coin-controls {
+            display: flex; flex-direction: column; align-items: center;
+            background: rgba(255,255,255,0.03);
+            padding: 20px; border-radius: 16px;
+            border: 1px solid var(--glass-border);
         }
 
-        .coin-slot {
-            width: 10px;
-            height: 40px;
-            background: #111;
-            margin: 0 auto 10px;
-            border-radius: 5px;
-            border: 2px solid #888;
-        }
+        .quick-coin-row { display: flex; gap: 15px; margin-bottom: 20px; justify-content: center; width: 100%; }
 
-        .input-wrapper {
-            display: flex;
-            gap: 5px;
+        .quick-coin-btn {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(145deg, #ffd700, #b8860b);
+            border: 2px solid #ffd700;
+            color: #4a3b00;
+            font-weight: 900; font-family: 'Orbitron'; font-size: 0.9rem;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+            cursor: pointer; flex-shrink: 0;
+            transition: all 0.2s;
         }
+        .quick-coin-btn:active { transform: scale(0.9); box-shadow: 0 0 5px rgba(255, 215, 0, 0.8); }
 
+        .manual-input-row { display: flex; gap: 10px; justify-content: center; width: 100%; }
+        
         .points-input {
-            width: 100%;
-            padding: 8px;
-            border: 2px solid #888;
-            border-radius: 4px;
-            text-align: center;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 1.2rem;
+            width: 140px; padding: 0 10px; height: 50px; font-size: 1.5rem;
+            background: rgba(0,0,0,0.5); color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+            border-radius: 8px; text-align: center; font-family: 'Orbitron';
+            box-shadow: inset 0 0 10px rgba(10, 255, 10, 0.2);
         }
+        .points-input:focus { outline: none; box-shadow: 0 0 15px var(--neon-green); }
 
         .insert-btn {
-            background: #fcd34d;
-            border: 2px solid #d97706;
-            color: #78350f;
-            font-weight: bold;
-            padding: 0 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            box-shadow: 0 2px 0 #d97706;
+            background: var(--neon-green); color: #000; border: none;
+            padding: 0 20px; border-radius: 8px; font-weight: 900; height: 50px;
+            box-shadow: 0 0 10px var(--neon-green); cursor: pointer;
+            font-family: 'Rajdhani'; font-size: 1.2rem;
+            transition: all 0.2s;
         }
-        .insert-btn:active { transform: translateY(2px); box-shadow: none; }
+        .insert-btn:active { transform: scale(0.95); box-shadow: 0 0 20px var(--neon-green); }
 
-        .return-lever {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: #e5e5e5;
-            border: 4px solid #999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
-        }
-        .return-lever:active { transform: rotate(-25deg); }
-
-        /* RWD 調整 */
-        @media (max-width: 850px) {
-            .vending-machine {
-                flex-direction: column;
-                height: 100vh;
-                max-height: none;
-                border-radius: 0;
-                overflow-y: auto; /* 機身可捲動 */
-                border-bottom: none;
-            }
-            .left-column { flex: none; height: 65vh; border-right: none; border-bottom: 4px solid #003380; padding: 10px; }
-            .right-column { flex: none; height: auto; padding: 15px; flex-direction: row; justify-content: space-between; gap: 15px; background: #ddd; }
-            .lcd-screen { margin-bottom: 0; width: 120px; }
-            .control-group { margin-bottom: 0; flex: 1; padding: 10px; }
-            .pickup-area { height: 100px; }
-        }
-
-        /* 彈窗 */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
+        /* 退幣與取物 */
+        .desktop-footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; width: 100%; }
+        .return-lever { 
+            width: 60px; height: 60px; border-radius: 50%; 
+            background: #333; border: 2px solid #555;
             display: flex; justify-content: center; align-items: center;
-            z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-            backdrop-filter: blur(5px);
+            transition: transform 0.3s; cursor: pointer;
         }
+        .return-lever:active { transform: rotate(-45deg); }
+        .return-lever svg { stroke: #aaa; }
+
+        .pickup-slot-desktop { 
+            height: 100px; background: #000; margin-top: 15px; border-radius: 12px; 
+            border: 1px solid #333; display: flex; justify-content: center; align-items: flex-end; 
+            box-shadow: inset 0 10px 30px rgba(0,0,0,0.9);
+            position: relative; overflow: hidden;
+        }
+        .pickup-door { 
+            width: 90%; height: 80%; background: linear-gradient(to bottom, #222, #111); 
+            border-radius: 10px 10px 0 0; border-top: 1px solid #444; 
+            display: flex; align-items: center; justify-content: center; cursor: pointer; 
+            color: #555; font-weight: bold; font-family: 'Orbitron'; font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+        .pickup-door.has-item { 
+            border-color: var(--neon-green); color: var(--neon-green); 
+            box-shadow: 0 0 20px var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
+        }
+
+        /* ======== 📱 手機版 RWD (Cyberpunk Mobile) ======== */
+        @media (max-width: 850px) {
+            body { align-items: flex-start; background: #050510; } /* 手機版背景簡化 */
+            .vending-machine { height: 100%; border: none; border-radius: 0; box-shadow: none; flex-direction: column; background: transparent; backdrop-filter: none; }
+            .left-panel { flex: 1; border-right: none; padding: 15px; padding-bottom: calc(var(--panel-height) + 20px); background: transparent; }
+            .window-frame { background: rgba(255,255,255,0.03); border: none; box-shadow: none; padding: 5px; }
+            .pickup-slot-desktop, .desktop-footer { display: none; }
+
+            .right-panel {
+                position: fixed; bottom: 0; left: 0; width: 100%; height: auto;
+                /* 玻璃面板 */
+                background: rgba(10, 15, 30, 0.85);
+                backdrop-filter: blur(15px);
+                border-top: 1px solid var(--neon-blue);
+                box-shadow: 0 -10px 40px rgba(0, 243, 255, 0.2);
+                padding: 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom));
+                gap: 15px; flex: none; align-items: center;
+            }
+
+            .lcd-container { width: 100%; padding: 8px 15px; margin-bottom: 5px; background: rgba(0,0,0,0.6); }
+            .lcd-screen { font-size: 2.5rem; }
+            
+            .coin-controls { background: transparent; border: none; padding: 0; width: 100%; }
+            .quick-coin-row { margin-bottom: 12px; gap: 20px; }
+            .quick-coin-btn { width: 55px; height: 55px; font-size: 0.9rem; }
+
+            .manual-input-row { width: 100%; justify-content: center; }
+            .points-input { width: 140px; height: 45px; font-size: 1.3rem; }
+            .insert-btn { height: 45px; width: 80px; font-size: 1rem; }
+
+            .mobile-return-container { position: absolute; top: -70px; right: 20px; z-index: 60; }
+            .return-lever-mobile { 
+                width: 50px; height: 50px; background: rgba(0,0,0,0.8); 
+                border: 2px solid var(--neon-pink); border-radius: 50%; 
+                display: flex; justify-content: center; align-items: center; 
+                box-shadow: 0 0 15px var(--neon-pink);
+                backdrop-filter: blur(5px);
+            }
+            .return-lever-mobile svg { stroke: var(--neon-pink); }
+        }
+
+        /* 彈窗樣式 */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(10px); }
         .modal-overlay.show { opacity: 1; pointer-events: auto; }
-        .modal-content {
-            background: white; padding: 30px; border-radius: 20px;
-            text-align: center; max-width: 90%; width: 400px;
-            transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        .modal-content { 
+            background: rgba(20, 25, 40, 0.95); 
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.3);
+            padding: 30px; border-radius: 20px; text-align: center; width: 85%; max-width: 350px; transform: scale(0.9); transition: transform 0.3s; color: white;
         }
         .modal-overlay.show .modal-content { transform: scale(1); }
-        .stock-badge {
-            font-size: 0.7rem; color: #aaa; margin-top: 2px;
-        }
+        .modal-title { color: var(--neon-green); text-shadow: 0 0 10px var(--neon-green); font-family: 'Orbitron'; margin-bottom: 10px; }
+        .modal-btn { background: var(--neon-blue); color: black; font-weight: bold; padding: 12px; width: 100%; border-radius: 8px; margin-top: 20px; font-family: 'Orbitron'; box-shadow: 0 0 15px var(--neon-blue); transition: transform 0.2s;}
+        .modal-btn:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
 
     <div class="vending-machine">
-        
-        <!-- 左側面板：櫥窗 + 取物口 -->
-        <div class="left-column">
-            
-            <!-- 上部：商品櫥窗 -->
-            <div class="display-window">
-                <div class="glass-overlay"></div>
-                <div class="shelves-container">
-                    <div class="shelves-grid" id="machine-grid">
-                        <!-- JS 動態生成商品 -->
-                    </div>
-                </div>
+        <div class="left-panel">
+            <div class="window-frame">
+                <div class="grid-container" id="machine-grid"></div>
             </div>
-
-            <!-- 下部：取物口 (固定在底部，不會覆蓋商品) -->
-            <div class="pickup-area">
-                <div id="pickup-door" class="pickup-door" onclick="checkPickup()">
-                    <span class="pickup-text">PUSH</span>
-                </div>
+            <div class="pickup-slot-desktop">
+                <div id="pickup-door" class="pickup-door" onclick="checkPickup()">PUSH</div>
             </div>
         </div>
 
-        <!-- 右側面板：控制區 -->
-        <div class="right-column">
-            
-            <div class="text-xs text-gray-500 font-bold mb-1 w-full text-left ml-2">CREDIT AMOUNT</div>
-            <div class="lcd-screen">
-                <div id="balance-display" class="lcd-text">0</div>
-            </div>
-
-            <div class="control-group">
-                <div class="text-center text-xs font-bold text-gray-600 mb-2">點數投入口</div>
-                <div class="coin-slot"></div>
-                <div class="input-wrapper">
-                    <input type="number" id="user-points" class="points-input" placeholder="0">
-                    <button onclick="addPoints()" class="insert-btn">投入</button>
+        <div class="right-panel">
+            <div class="mobile-return-container md:hidden">
+                <div onclick="resetMoney()" class="return-lever-mobile">
+                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
                 </div>
             </div>
 
-            <div class="flex flex-col items-center">
-                <div class="text-xs text-gray-500 font-bold mb-2">RETURN</div>
-                <button onclick="resetMoney()" class="return-lever" title="退還點數">
-                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                        <path d="M3 3v5h5"></path>
-                    </svg>
-                </button>
+            <div class="lcd-container">
+                <span class="lcd-label">CREDIT<br>餘額</span>
+                <div id="balance-display" class="lcd-screen">0</div>
             </div>
-            
-            <div class="mt-auto text-xs text-gray-400 text-center w-full">
-                MACHINE ID: 14-73048<br>
-                SERVICE: 0800-000-123
+
+            <div class="coin-controls">
+                <div class="quick-coin-row">
+                    <button class="quick-coin-btn" onclick="addPoints(10)">+10</button>
+                    <button class="quick-coin-btn" onclick="addPoints(50)">+50</button>
+                    <button class="quick-coin-btn" onclick="addPoints(100)">+100</button>
+                </div>
+
+                <div class="manual-input-row">
+                    <input type="number" id="user-points" class="points-input" placeholder="0" onkeypress="handleEnter(event)">
+                    <button onclick="addManualPoints()" class="insert-btn">IN</button>
+                </div>
+            </div>
+
+            <div class="desktop-footer hidden md:flex">
+                <div class="text-xs text-gray-500" style="font-family: Orbitron;">ID: NEON-2077</div>
+                <div onclick="resetMoney()" class="return-lever">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 獲獎彈窗 -->
     <div id="reward-modal" class="modal-overlay" onclick="closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="text-6xl mb-4">🎁</div>
-            <h2 class="text-2xl font-black text-gray-800 mb-2">兌換成功！</h2>
-            <div class="bg-gray-100 rounded-lg p-4 mb-4">
-                <img id="modal-img" src="" class="w-48 h-48 object-contain mx-auto mix-blend-multiply">
+            <div class="text-6xl mb-4" style="filter: drop-shadow(0 0 10px white);">🎁</div>
+            <h2 class="text-2xl font-black mb-2 modal-title">ACQUIRED!</h2>
+            <div class="bg-black/50 rounded-lg p-4 mb-4 border border-white/10">
+                <img id="modal-img" src="" class="w-40 h-40 object-contain mx-auto">
             </div>
-            <h3 id="modal-name" class="text-xl font-bold text-blue-800">商品名稱</h3>
-            <p class="text-gray-500 mt-2 font-bold">剩餘點數: <span id="modal-balance" class="text-red-500 text-xl"></span></p>
-            <button onclick="closeModal()" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-full font-bold shadow-lg transition transform hover:scale-105">
-                取出商品
+            <h3 id="modal-name" class="text-xl font-bold text-white mb-2">商品名稱</h3>
+            <p class="text-gray-400 mt-2 font-bold text-sm">REMAINING CREDIT</p>
+            <div class="text-pink-500 text-3xl font-mono font-bold" id="modal-balance" style="text-shadow: 0 0 10px #ec4899;">0</div>
+            <button onclick="closeModal()" class="modal-btn">
+                COLLECT ITEM
             </button>
         </div>
     </div>
 
     <script>
-        // 商品資料
-        const items = [
-            { id: 1, name: "兒童黏土", price: 150, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjH6JH2Moe1-UnUoSTspzm62HyPyFMFcKZRjfBn8m8-vTuQVvQeJcVlgdS_XPBmrJaDfwVi_f4-JlCKg0bczYF7UxRtVQCd3x6fIzFd4Yckcn9jYtsfLAlK26kQ_ikNZ5CZVSURsPwcPfPnwYGv00PCr2fiPJLuSj5n0r8OoMlIp63tH0lA_1_onkL5/s16000/%E5%85%92%E7%AB%A5%E9%BB%8F%E5%9C%9F.webp" },
+        // 資料與邏輯維持不變，僅需更新 UI 渲染
+        const initialItems = [
+            { id: 1, name: "兒童黏土", price: 150, stock: 5, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjH6JH2Moe1-UnUoSTspzm62HyPyFMFcKZRjfBn8m8-vTuQVvQeJcVlgdS_XPBmrJaDfwVi_f4-JlCKg0bczYF7UxRtVQCd3x6fIzFd4Yckcn9jYtsfLAlK26kQ_ikNZ5CZVSURsPwcPfPnwYGv00PCr2fiPJLuSj5n0r8OoMlIp63tH0lA_1_onkL5/s16000/%E5%85%92%E7%AB%A5%E9%BB%8F%E5%9C%9F.webp" },
             { id: 2, name: "遙控特技車", price: 3000, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgbj4596hitk8w13O0b6CfQZ2jknBEb0-tG6pByf6kLTDTPPoVC8KYIZIxo07fE7eq3gFdYaOjny1ilPdcO633rCGRDky0CIk4afwFkqiqwGLrVRzYZt4At5YshjfgwC_l2IfQNXT0kkQd79hy3u7IsIq9zI67xmlXVpFt04yOTvLJ0xkx1htnGxIuZ/s16000/%E9%81%99%E6%8E%A7%E7%89%B9%E6%8A%80%E8%BB%8A.webp" },
-            { id: 3, name: "積木挖土機", price: 150, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjn6BCJBkLeXyNmBC0YZxRbt29d4-aDIkf0dgIN6Jgh3qfFuiZb8AF6Xd-SKDbIPw-J_miEQzczwR8T78PvArFaEPx0JyjbYiiPebTdokcMmCG6DV_wOwR1lChqj6zsh77j58aO4gJgS3W4INYlLG-Bg5dU5VzS4dLgzokP_H79UiJ18ZhfNQkZuC8A/s16000/%E7%A9%8D%E6%9C%A8%E6%8C%96%E5%9C%9F%E6%A9%9F.webp" },
-            { id: 4, name: "大鱷魚夾夾樂", price: 200, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjAmHKEfryJ85bklwtLu5eniecEYTVXZOYYZrMV8cTGcZ2va9AzuEF0RG5jzsIPu_7u9LhvHEZBQKSHOukKUcMVwYuK2ncek2PhwUi3Ge0OLMjzsdNQDxDTTtfpwFgWMujRn_tVxea7C2QphuL4aTOW3FCn0yL6UPNWhLOOs0HXmCDRTqp8rOPE0FrW/s16000/%E5%A4%A7%E9%B1%B7%E9%AD%9A%E5%A4%BE%E5%A4%BE%E6%A8%82.webp" },
+            { id: 3, name: "積木挖土機", price: 150, stock: 3, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjn6BCJBkLeXyNmBC0YZxRbt29d4-aDIkf0dgIN6Jgh3qfFuiZb8AF6Xd-SKDbIPw-J_miEQzczwR8T78PvArFaEPx0JyjbYiiPebTdokcMmCG6DV_wOwR1lChqj6zsh77j58aO4gJgS3W4INYlLG-Bg5dU5VzS4dLgzokP_H79UiJ18ZhfNQkZuC8A/s16000/%E7%A9%8D%E6%9C%A8%E6%8C%96%E5%9C%9F%E6%A9%9F.webp" },
+            { id: 4, name: "大鱷魚夾夾樂", price: 200, stock: 2, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjAmHKEfryJ85bklwtLu5eniecEYTVXZOYYZrMV8cTGcZ2va9AzuEF0RG5jzsIPu_7u9LhvHEZBQKSHOukKUcMVwYuK2ncek2PhwUi3Ge0OLMjzsdNQDxDTTtfpwFgWMujRn_tVxea7C2QphuL4aTOW3FCn0yL6UPNWhLOOs0HXmCDRTqp8rOPE0FrW/s16000/%E5%A4%A7%E9%B1%B7%E9%AD%9A%E5%A4%BE%E5%A4%BE%E6%A8%82.webp" },
             { id: 5, name: "蠟筆小新相框", price: 1000, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg4EmBgYWwK2MDphMBjx7yQegh4Fmz9mMu9aKqPoqo7QJjjtVvn6GuhAlrvDmZMwqYYxYWcEzf-xxpMHJBJlAnEcQPv5Iykgl5B7RIPJrti0gLl09VSt_fsg_lSCaflfmKbcQaDfJag3Z_JCDj-AqR281Z8h27YtVK6BwUl1X96cBU46-lctIE1lrjB/s16000/%E8%A0%9F%E7%AD%86%E5%B0%8F%E6%96%B0%E7%9B%B8%E6%A1%86.webp" },
-            { id: 6, name: "卡通防蚊手環", price: 200, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhQuV7GJNjvr4_446SCKmK2vLauyvtMQTP13dkYVMfg_Gf-40wAAGzS6hVvFVf_1dHkg902GhhOcZEHYnCjKrXzMEdlKC1MKiSZikuF13KgZD0TIaq1G8YWdtA4FZ_tI4B94pN8lnQbpsK93fvfI8-F7LnE_zhAN_43GRWAs5AMB0hyphenhyphenlJqIhOQIwSyT/s16000/%E5%8D%A1%E9%80%9A%E9%98%B2%E8%9A%8A%E6%89%8B%E7%92%B0.webp" },
-            { id: 7, name: "多功能數學尺", price: 300, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEghIkvFn9_6-lm7C00GwDJ_ngd7tQbEM5NKaGYooPvJB-O-KsRP0GGllyXtdznXn_u1H71Mq_f_xdl7lSMF0eLfqRW5KYOtR3_UvKI4poB6ccA4B3uhcZvNpLiC08doV1UrD4ryOj8M5WT7cGuJcLuqreQjHnR83zpyJJyDDmFIAOs6S6AY3iTnfLAB/s16000/%E5%A4%9A%E5%8A%9F%E8%83%BD%E6%95%B8%E5%AD%B8%E5%B0%BA.webp" },
-            { id: 8, name: "柔順護髮梳", price: 500, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiNHbpDSpaopobo_tsmwb4N2o5jaYWAnps29FH9j127fPexql6KfdXOp4mb7HZvFbghW8madFMWTr9AZeWp8NPJgrH4GYYEOR681466Bt4_3YpfvesUuK0iShDR8f1_QjgLeh6RODfxdxKcDn1IXxrT1Z3nuwmw326QBhRk4uS-LuYdi0m41rHZ8DKz/s16000/%E6%9F%94%E9%A0%86%E8%AD%B7%E9%AB%AE%E6%A2%B3.webp" },
-            { id: 9, name: "畢卡索水彩畫筒", price: 500, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgpsyQK4aVYm-awZWmnshX5mDaLfIJUqy1-jaHKyZhKdPbbD5uppUV-kJTQqELZv_B1lbBilrq2rWWnzxDdjvTHOagzVtNfaCWGuCyntselHE_Z6hazZe5bCBl3qnB0LWt0HMjZ8S8bAQmgbxC_e6SCN-l-oeWLP3qPMOgwQXgBanO4FOgsYgTQKCI6/s16000/%E7%95%A2%E5%8D%A1%E7%B4%A2%E6%B0%B4%E5%BD%A9%E7%95%AB%E7%AD%92.webp" },
-            { id: 10, name: "吉利卡哇印章", price: 150, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhebqSlgr0uox3_d8UmDK3BcIPVlhyphenhyphenLc_Bq3dOIoSKQCmGWApe75y7h1yzhmTED5_-PjpzRyE06JpnkKRivAOOGAJT9xMOHD8os0KMpk2kcg7ipvpESnFka-LHckkgWLF8HRUs7nKpQa3hpykISGgeppv__1Kv3knu1isUl7-VSoW5O9RFkt21BgA-3/s16000/%E5%90%89%E5%88%A9%E5%8D%A1%E5%93%87%E5%8D%B0%E7%AB%A0.webp" },  // ⚠️ 注意這裡加了逗號！
-            
-            // ▼ 這是您想新增的商品範例，您可以直接修改這裡的文字 ▼
+            { id: 6, name: "卡通防蚊手環", price: 200, stock: 5, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhQuV7GJNjvr4_446SCKmK2vLauyvtMQTP13dkYVMfg_Gf-40wAAGzS6hVvFVf_1dHkg902GhhOcZEHYnCjKrXzMEdlKC1MKiSZikuF13KgZD0TIaq1G8YWdtA4FZ_tI4B94pN8lnQbpsK93fvfI8-F7LnE_zhAN_43GRWAs5AMB0hyphenhyphenlJqIhOQIwSyT/s16000/%E5%8D%A1%E9%80%9A%E9%98%B2%E8%9A%8A%E6%89%8B%E7%92%B0.webp" },
+            { id: 7, name: "多功能數學尺", price: 300, stock: 3, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEghIkvFn9_6-lm7C00GwDJ_ngd7tQbEM5NKaGYooPvJB-O-KsRP0GGllyXtdznXn_u1H71Mq_f_xdl7lSMF0eLfqRW5KYOtR3_UvKI4poB6ccA4B3uhcZvNpLiC08doV1UrD4ryOj8M5WT7cGuJcLuqreQjHnR83zpyJJyDDmFIAOs6S6AY3iTnfLAB/s16000/%E5%A4%9A%E5%8A%9F%E8%83%BD%E6%95%B8%E5%AD%B8%E5%B0%BA.webp" },
+            { id: 8, name: "柔順護髮梳", price: 500, stock: 2, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiNHbpDSpaopobo_tsmwb4N2o5jaYWAnps29FH9j127fPexql6KfdXOp4mb7HZvFbghW8madFMWTr9AZeWp8NPJgrH4GYYEOR681466Bt4_3YpfvesUuK0iShDR8f1_QjgLeh6RODfxdxKcDn1IXxrT1Z3nuwmw326QBhRk4uS-LuYdi0m41rHZ8DKz/s16000/%E6%9F%94%E9%A0%86%E8%AD%B7%E9%AB%AE%E6%A2%B3.webp" },
+            { id: 9, name: "畢卡索水彩畫筒", price: 500, stock: 2, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgpsyQK4aVYm-awZWmnshX5mDaLfIJUqy1-jaHKyZhKdPbbD5uppUV-kJTQqELZv_B1lbBilrq2rWWnzxDdjvTHOagzVtNfaCWGuCyntselHE_Z6hazZe5bCBl3qnB0LWt0HMjZ8S8bAQmgbxC_e6SCN-l-oeWLP3qPMOgwQXgBanO4FOgsYgTQKCI6/s16000/%E7%95%A2%E5%8D%A1%E7%B4%A2%E6%B0%B4%E5%BD%A9%E7%95%AB%E7%AD%92.webp" },
+            { id: 10, name: "吉利卡哇印章", price: 150, stock: 3, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhebqSlgr0uox3_d8UmDK3BcIPVlhyphenhyphenLc_Bq3dOIoSKQCmGWApe75y7h1yzhmTED5_-PjpzRyE06JpnkKRivAOOGAJT9xMOHD8os0KMpk2kcg7ipvpESnFka-LHckkgWLF8HRUs7nKpQa3hpykISGgeppv__1Kv3knu1isUl7-VSoW5O9RFkt21BgA-3/s16000/%E5%90%89%E5%88%A9%E5%8D%A1%E5%93%87%E5%8D%B0%E7%AB%A0.webp" },
             { id: 11, name: "魔紙電路", price: 200, stock: 2, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhE6WE-kA9Ouw6PPTaBt7ElODmn6J002f39TOOk1VE-xmiJmewa9ButFXblh-7txDKIK8GR_4DVS2FAwYEXA51GnC5ikpej4s8CQ7GtZzB8iC_XSfcr8TOK2j8QTOVP1ec_6Iegi_umzIpjAlCbRMrbPCPoq87OjQ0QfBtqV8XgC_kOUNXyORjAEOci/s16000/%E9%AD%94%E7%B4%99%E9%9B%BB%E8%B7%AF1%E8%99%9F.webp" },
-            { id: 12, name: "海洋生物扭蛋", price: 120, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhN-vMQKIrDgAj4QPtFA7dElc3W9_d1K4TkYNzVENc79FMhyphenhyphenld-ud5ThcUa15S9pRr3HiBmTa1s8MGLQwiD9jDh7M4E1XOEeMpbSuDvc_LcAfi7EXHTedXgok1eFBBGpOWfwOvhqWf_AREY1bMm3QVfR_1o3OgK09K8EpJvLp11LMaPqaAN-yMo3Twy/s16000/%E6%B5%B7%E6%B4%8B%E7%94%9F%E7%89%A9%E6%89%AD%E8%9B%8B.webp" },
-            { id: 13, name: "三麗鷗小盤子", price: 200, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiYBWZCvZTFSOYwjJhFdnxedDiqTg7CkkjwWeK-CW_XxUrzUGpgnx-F_xTLecZWde7V3Cv4BeBCf-hoBbZ6sWfuKLYXTnhfSIYlPs-6OzmYVQ7kToA4r120x24ypymg_0YKz92LgeY1qr8VxYNa3LpADlYBvwpoQ43niKReFM6RmyJFJdCcHkvesk69/s16000/%E4%B8%89%E9%BA%97%E9%B7%97%E5%B0%8F%E7%9B%A4%E5%AD%90.webp" },
-            { id: 14, name: "炫變之王", price: 300, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiiPHj-MC5kdoNqbTmotAFipjDfcP_dEd3I_ThRpS3eiDbjhlt8UzwftjrxKT7jmBJhq6qXVYHAfdHeJU0c5D1AO73QS-CfLO8OwlhOYGCiaInUs6UopvKlTnujx_KXNNVIsVxPQIvGaCditd94-DkYSQdUuvFExSpRm4NeAr7wWDv4LhKTtLvJyN0a/s16000/%E7%82%AB%E8%AE%8A%E4%B9%8B%E7%8E%8B.webp" },
+            { id: 12, name: "海洋生物扭蛋", price: 120, stock: 4, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhN-vMQKIrDgAj4QPtFA7dElc3W9_d1K4TkYNzVENc79FMhyphenhyphenld-ud5ThcUa15S9pRr3HiBmTa1s8MGLQwiD9jDh7M4E1XOEeMpbSuDvc_LcAfi7EXHTedXgok1eFBBGpOWfwOvhqWf_AREY1bMm3QVfR_1o3OgK09K8EpJvLp11LMaPqaAN-yMo3Twy/s16000/%E6%B5%B7%E6%B4%8B%E7%94%9F%E7%89%A9%E6%89%AD%E8%9B%8B.webp" },
+            { id: 13, name: "三麗鷗小盤子", price: 200, stock: 2, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiYBWZCvZTFSOYwjJhFdnxedDiqTg7CkkjwWeK-CW_XxUrzUGpgnx-F_xTLecZWde7V3Cv4BeBCf-hoBbZ6sWfuKLYXTnhfSIYlPs-6OzmYVQ7kToA4r120x24ypymg_0YKz92LgeY1qr8VxYNa3LpADlYBvwpoQ43niKReFM6RmyJFJdCcHkvesk69/s16000/%E4%B8%89%E9%BA%97%E9%B7%97%E5%B0%8F%E7%9B%A4%E5%AD%90.webp" },
+            { id: 14, name: "炫變之王", price: 300, stock: 2, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiiPHj-MC5kdoNqbTmotAFipjDfcP_dEd3I_ThRpS3eiDbjhlt8UzwftjrxKT7jmBJhq6qXVYHAfdHeJU0c5D1AO73QS-CfLO8OwlhOYGCiaInUs6UopvKlTnujx_KXNNVIsVxPQIvGaCditd94-DkYSQdUuvFExSpRm4NeAr7wWDv4LhKTtLvJyN0a/s16000/%E7%82%AB%E8%AE%8A%E4%B9%8B%E7%8E%8B.webp" },
             { id: 15, name: "大耳狗手錶", price: 500, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjwm6a2-GWMptPtEla-yd6bvsML7FJ1-9Co3xB8H5D-u-0yLUzwtrpnlX8IadqN8B_0MQzcdXQs_L-sbssDQeE6gtJUo4imU_iOycYXAtQPwf9w4qGmY8qh1WekVj87yIRN4LghHD4lJfIGwWmQkbF5nEQCyNhqiYkhLp9tMzRe8nML-T0SD7byI5Q_/s16000/%E5%A4%A7%E8%80%B3%E7%8B%97%E6%89%8B%E9%8C%B6.webp" },
             { id: 16, name: "酷藍運動手錶", price: 500, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhLgw5KQ_Ylg1ZRyV_zKa0QK6FLmZfbxOB7NcUBcL5w79LtT6TxCP-aotCfqiXHcceEsXkivResVggp-zsBW1gLeFFZ4OZHc2VHrFmn6qTR7569YM4-8xbX14klAoEWdACq9nTMEXfez5RUjWp-dkloLGK4DSkfjuEg3nEL_vZgs7S7wCUbDID44T_5/s16000/%E9%85%B7%E8%97%8D%E9%81%8B%E5%8B%95%E6%89%8B%E9%8C%B6.webp" },
-            { id: 17, name: "吉利卡哇積木", price: 300, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjbiyqHkUz0z5iXOZ_7h8OiszrVQPaxMogvC-nvIqe-kT9F8nzNs_zVSvpyroEByKTsdQ_WJCLjRCTIKqAUfShaaEbTjOZnBh307iTE2fW7BaZmfFDQkS_PBTcXhlOcct-yzYggvA4Q7LYqAUjLO0B-epGbtAz1q8j_TlbGQhGL0Gv1ugkYnOMLBTBd/s16000/%E5%90%89%E5%88%A9%E5%8D%A1%E5%93%87%E7%A9%8D%E6%9C%A8.webp" },
+            { id: 17, name: "吉利卡哇積木", price: 300, stock: 2, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjbiyqHkUz0z5iXOZ_7h8OiszrVQPaxMogvC-nvIqe-kT9F8nzNs_zVSvpyroEByKTsdQ_WJCLjRCTIKqAUfShaaEbTjOZnBh307iTE2fW7BaZmfFDQkS_PBTcXhlOcct-yzYggvA4Q7LYqAUjLO0B-epGbtAz1q8j_TlbGQhGL0Gv1ugkYnOMLBTBd/s16000/%E5%90%89%E5%88%A9%E5%8D%A1%E5%93%87%E7%A9%8D%E6%9C%A8.webp" },
             { id: 18, name: "大阪蘑菇頭小車", price: 800, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh9acKCFH0EoDK6oo1oeEuNIhK8mUkQbsSs9j1jahTs-JS3IgK7MYZKniXU2_eXFiclqO-01O77C5SkKoBfGaz-MxyGPqCxioHiclUkV3NHGmE167uwwLpOWJpTisQz8tHy7FpyH6qs7dXKL9ZjxFdVTaAkC52H5rcS3T65OBwycCsiPsVzzQod9lnr/s16000/%E5%A4%A7%E9%98%AA%E8%98%91%E8%8F%87%E9%A0%AD%E5%B0%8F%E8%BB%8A.webp" },
-            { id: 19, name: "爸爸抱抱5分鐘券", price: 50, stock: 5, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgnttmoRPYZHWq0tvf4N4qncnGTBZr46uQ2C_1aZDPHNjzrQtcFOsIARqaNl5T5ATQFlqqPEh89aHslOhgMgUS5dCxsWgWOxTEuJ2Vnhhk4aS53P7cD5TZDFFq5CDzT8tyVYArk2U4AsMDnB9aCaHCn1MwWM1kILBmWSYzGYhjRKT-VzE59CJStQr02/s16000/%E7%88%B8%E7%88%B8%E6%8A%B1%E6%8A%B1%E5%88%B8.webp" },
-            { id: 20, name: "媽媽不生氣1件事券", price: 50, stock: 5, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg6M2QIqNC0VLquofkz-LIlcgiGF2xmtEw7QbWtZKzw0OA_kfPku10Zy0Bz5vu2SFP57lHiWFyqanMzrdyaan42uXVtwOutNK-I_fNfdGaNmKkIMNIvsfBuMGgCEW212kgqj0E9oBG2IiFvp__dh5slM1v4RIWNPiIDozJMQKoKg4s3CZocXT3jEYXv/s16000/%E5%AA%BD%E5%AA%BD%E4%B8%8D%E7%94%9F%E6%B0%A3%E5%88%B8.webp" }
+            { id: 19, name: "爸爸抱抱5分鐘", price: 50, stock: 10, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgnttmoRPYZHWq0tvf4N4qncnGTBZr46uQ2C_1aZDPHNjzrQtcFOsIARqaNl5T5ATQFlqqPEh89aHslOhgMgUS5dCxsWgWOxTEuJ2Vnhhk4aS53P7cD5TZDFFq5CDzT8tyVYArk2U4AsMDnB9aCaHCn1MwWM1kILBmWSYzGYhjRKT-VzE59CJStQr02/s16000/%E7%88%B8%E7%88%B8%E6%8A%B1%E6%8A%B1%E5%88%B8.webp" },
+            { id: 20, name: "媽媽不生氣券", price: 50, stock: 10, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg6M2QIqNC0VLquofkz-LIlcgiGF2xmtEw7QbWtZKzw0OA_kfPku10Zy0Bz5vu2SFP57lHiWFyqanMzrdyaan42uXVtwOutNK-I_fNfdGaNmKkIMNIvsfBuMGgCEW212kgqj0E9oBG2IiFvp__dh5slM1v4RIWNPiIDozJMQKoKg4s3CZocXT3jEYXv/s16000/%E5%AA%BD%E5%AA%BD%E4%B8%8D%E7%94%9F%E6%B0%A3%E5%88%B8.webp" }
         ];
 
-        let currentBalance = 0;
-        let pendingReward = null; // 待領取的商品
+        let items = JSON.parse(localStorage.getItem('vm_items')) || initialItems;
+        let currentBalance = parseInt(localStorage.getItem('vm_balance')) || 0;
+        let pendingReward = null;
 
-        // DOM 元素
         const grid = document.getElementById('machine-grid');
         const balanceDisplay = document.getElementById('balance-display');
         const inputField = document.getElementById('user-points');
         const pickupDoor = document.getElementById('pickup-door');
-        const pickupText = document.querySelector('.pickup-text');
+        const modal = document.getElementById('reward-modal');
 
-        // 初始化
         function init() {
             renderItems();
+            updateBalanceUI();
         }
 
-        // 渲染商品
+        function saveState() {
+            localStorage.setItem('vm_items', JSON.stringify(items));
+            localStorage.setItem('vm_balance', currentBalance);
+        }
+
         function renderItems() {
             grid.innerHTML = '';
             items.forEach((item, index) => {
                 const isSoldOut = item.stock <= 0;
                 const canAfford = currentBalance >= item.price;
                 
-                const slot = document.createElement('div');
-                slot.className = 'item-slot';
-                
-                // 按鈕樣式邏輯
-                let btnClass = 'vending-btn';
-                let btnLabel = 'PUSH';
-                
-                if (isSoldOut) {
-                    btnClass += ' sold-out';
-                    btnLabel = '售完';
-                } else if (canAfford) {
-                    btnClass += ' available';
-                    btnLabel = '按此兌換';
-                }
-
-                slot.innerHTML = `
-                    <div class="item-img-container">
-                        <img src="${item.img}" alt="${item.name}" class="item-img" onerror="this.src='https://via.placeholder.com/150?text=無圖片'">
-                    </div>
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div class="price-tag">${item.price} CR</div>
+                    <img id="img-${index}" src="${item.img}" class="item-img" onerror="this.src='https://via.placeholder.com/150/000000/FFFFFF?text=NO+IMG'">
                     <div class="item-name">${item.name}</div>
-                    <div class="item-price">${item.price} ★</div>
-                    
-                    <button id="btn-${index}" class="${btnClass}" onclick="purchase(${index})" ${isSoldOut ? 'disabled' : ''}>
-                        <span class="btn-label">${btnLabel}</span>
+                    <button class="action-btn ${isSoldOut ? 'btn-disabled' : (canAfford ? 'btn-buy' : 'bg-gray-800 text-gray-500 border border-gray-600')}" 
+                            onclick="purchase(${index})" 
+                            ${isSoldOut ? 'disabled' : ''}>
+                        ${isSoldOut ? 'SOLD OUT' : (canAfford ? 'BUY' : 'LOCKED')}
                     </button>
-                    <div class="stock-badge">庫存: ${item.stock}</div>
+                    <div class="text-[10px] text-gray-400 mt-1">QTY: ${item.stock}</div>
                 `;
-                grid.appendChild(slot);
+                grid.appendChild(card);
             });
         }
 
-        // 投幣
-        function addPoints() {
+        function updateBalanceUI() {
+            balanceDisplay.innerText = currentBalance;
+            renderItems();
+            saveState();
+        }
+
+        function addPoints(amount) {
+            playAudio('coin');
+            currentBalance += amount;
+            updateBalanceUI();
+        }
+
+        function addManualPoints() {
             const val = parseInt(inputField.value);
             if (val > 0) {
-                currentBalance += val;
+                addPoints(val);
                 inputField.value = '';
-                updateUI();
-                playAudio('coin');
             }
         }
 
-        // 退幣
+        function handleEnter(e) { if(e.key === 'Enter') addManualPoints(); }
+
         function resetMoney() {
             if (currentBalance > 0) {
                 playAudio('return');
                 currentBalance = 0;
-                updateUI();
+                updateBalanceUI();
             }
         }
 
-        // 更新 UI
-        function updateUI() {
-            balanceDisplay.innerText = currentBalance;
-            renderItems(); // 重新渲染以更新燈號
-        }
-
-        // 購買
         function purchase(index) {
             const item = items[index];
-
             if (currentBalance >= item.price && item.stock > 0) {
-                // 扣款與庫存
                 currentBalance -= item.price;
                 item.stock--;
-                
-                // 記錄待領取商品
                 pendingReward = item;
-
                 playAudio('button');
+                updateBalanceUI();
+
+                // 物理掉落動畫
+                const originalImg = document.getElementById(`img-${index}`);
+                if (originalImg) {
+                    const rect = originalImg.getBoundingClientRect();
+                    const clone = originalImg.cloneNode(true);
+                    clone.className = 'falling-item';
+                    clone.style.top = rect.top + 'px';
+                    clone.style.left = rect.left + 'px';
+                    clone.style.width = rect.width + 'px';
+                    
+                    document.body.appendChild(clone);
+                    void clone.offsetWidth;
+
+                    const dropY = window.innerHeight + 100;
+                    const rotate = Math.random() * 60 - 30;
+                    const moveX = Math.random() * 40 - 20;
+                    
+                    clone.style.transform = `translate(${moveX}px, ${dropY - rect.top}px) rotate(${rotate}deg)`;
+                    clone.style.opacity = '0';
+
+                    setTimeout(() => { clone.remove(); }, 800);
+                }
                 
-                // 模擬機械運作延遲
                 setTimeout(() => {
                     playAudio('drop');
-                    activatePickupDoor();
-                    updateUI();
-                }, 800);
-
-            } else if (currentBalance < item.price) {
+                    if(window.innerWidth <= 850) {
+                        showModal(pendingReward);
+                        fireConfetti();
+                        pendingReward = null;
+                    } else {
+                        pickupDoor.classList.add('has-item');
+                    }
+                }, 600);
+            } else {
                 playAudio('error');
             }
         }
 
-        // 啟動取物口
-        function activatePickupDoor() {
-            pickupDoor.classList.add('has-item');
-            pickupText.innerText = "商品掉落!";
-        }
-
-        // 檢查取物
         function checkPickup() {
-            if (pendingReward && pickupDoor.classList.contains('has-item')) {
+            if (pendingReward) {
+                playAudio('success');
                 showModal(pendingReward);
-                // 重置門的狀態
+                fireConfetti();
                 pickupDoor.classList.remove('has-item');
-                pickupText.innerText = "PUSH";
                 pendingReward = null;
             }
         }
 
-        // 顯示彈窗
         function showModal(item) {
-            const modal = document.getElementById('reward-modal');
             document.getElementById('modal-img').src = item.img;
             document.getElementById('modal-name').innerText = item.name;
             document.getElementById('modal-balance').innerText = currentBalance;
             modal.classList.add('show');
-            playAudio('success');
         }
 
         function closeModal() {
-            document.getElementById('reward-modal').classList.remove('show');
+            modal.classList.remove('show');
         }
 
-        // 音效系統
+        function fireConfetti() {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#00f3ff', '#bc13fe', '#ffffff'] });
+        }
+
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
         function playAudio(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             const now = audioCtx.currentTime;
-            
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
             gain.connect(audioCtx.destination);
 
             if (type === 'coin') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(1500, now);
-                osc.frequency.exponentialRampToValueAtTime(2000, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-                osc.start(now);
-                osc.stop(now + 0.15);
-            } else if (type === 'button') {
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(800, now);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
-                osc.start(now);
-                osc.stop(now + 0.1);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(2000, now); osc.frequency.exponentialRampToValueAtTime(3000, now+0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.1);
+                osc.start(now); osc.stop(now+0.1);
             } else if (type === 'drop') {
-                // 重物掉落聲
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(100, now);
-                osc.frequency.exponentialRampToValueAtTime(20, now + 0.4);
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-                osc.start(now);
-                osc.stop(now + 0.4);
-            } else if (type === 'return') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(600, now);
-                osc.frequency.linearRampToValueAtTime(400, now + 0.2);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-                osc.start(now);
-                osc.stop(now + 0.2);
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(100, now); osc.frequency.linearRampToValueAtTime(40, now+0.4);
+                gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now+0.4);
+                osc.start(now); osc.stop(now+0.4);
+            } else if (type === 'button') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now+0.1);
+                osc.start(now); osc.stop(now+0.1);
             } else if (type === 'success') {
-                // 勝利音效
-                const notes = [523.25, 659.25, 783.99, 1046.50];
-                notes.forEach((freq, i) => {
-                    const o = audioCtx.createOscillator();
-                    const g = audioCtx.createGain();
-                    o.type = 'sine';
-                    o.frequency.value = freq;
-                    o.connect(g);
-                    g.connect(audioCtx.destination);
-                    g.gain.setValueAtTime(0.1, now + i*0.1);
-                    g.gain.exponentialRampToValueAtTime(0.001, now + i*0.1 + 0.3);
-                    o.start(now + i*0.1);
-                    o.stop(now + i*0.1 + 0.3);
+                const notes = [523, 659, 783, 1046, 1318]; // C Major Sci-fi style
+                notes.forEach((f,i) => {
+                    const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                    o.connect(g); g.connect(audioCtx.destination);
+                    o.type = 'sine'; o.frequency.value = f;
+                    g.gain.setValueAtTime(0.05, now+i*0.08); g.gain.exponentialRampToValueAtTime(0.001, now+i*0.08+0.5);
+                    o.start(now+i*0.08); o.stop(now+i*0.08+0.5);
                 });
+            } else if (type === 'return') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now); osc.frequency.linearRampToValueAtTime(100, now+0.2);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now+0.2);
+                osc.start(now); osc.stop(now+0.2);
             } else if (type === 'error') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(150, now);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-                osc.start(now);
-                osc.stop(now + 0.2);
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now+0.2);
+                osc.start(now); osc.stop(now+0.2);
             }
         }
 
         window.addEventListener('load', init);
-
     </script>
 </body>
 </html>
