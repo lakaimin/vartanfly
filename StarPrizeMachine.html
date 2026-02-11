@@ -469,7 +469,7 @@
             { id: 20, name: "媽媽不生氣1件事券", price: 80, stock: 5, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg6M2QIqNC0VLquofkz-LIlcgiGF2xmtEw7QbWtZKzw0OA_kfPku10Zy0Bz5vu2SFP57lHiWFyqanMzrdyaan42uXVtwOutNK-I_fNfdGaNmKkIMNIvsfBuMGgCEW212kgqj0E9oBG2IiFvp__dh5slM1v4RIWNPiIDozJMQKoKg4s3CZocXT3jEYXv/s16000/%E5%AA%BD%E5%AA%BD%E4%B8%8D%E7%94%9F%E6%B0%A3%E5%88%B8.webp" }
         ];
 
-        let items = JSON.parse(localStorage.getItem('vm_items')) || initialItems;
+        let items = JSON.parse(localStorage.getItem('vm_items_v2')) || initialItems;
         let currentBalance = parseInt(localStorage.getItem('vm_balance')) || 0;
         let pendingReward = null;
 
