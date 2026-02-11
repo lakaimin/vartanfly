@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>星星點數獎品販賣機</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* --- 全局與背景 --- */
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #2b2b2b;
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+                url('https://www.transparenttextures.com/patterns/concrete-wall.png');
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+            overflow: hidden; /* 防止捲動 */
+        }
+
+        /* --- 販賣機主體 --- */
+        .vending-machine {
+            background: #0047AB; /* 經典寶藍色 */
+            border-radius: 16px 16px 0 0;
+            box-shadow: 
+                0 0 0 4px #003380,
+                20px 20px 50px rgba(0,0,0,0.8),
+                inset 2px 2px 5px rgba(255,255,255,0.3);
+            width: 100%;
+            max-width: 1000px;
+            height: 95vh;
+            display: flex;
+            flex-direction: row;
+            position: relative;
+            border-bottom: 12px solid #1a1a1a;
+            overflow: hidden;
+        }
+
+        /* --- 左側區域 (包含櫥窗與取物口) --- */
+        .left-column {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            border-right: 4px solid #003380;
+            background: linear-gradient(to bottom, #0047AB, #003380);
+            position: relative;
+        }
+
+        /* 商品櫥窗 (上部) */
+        .display-window {
+            flex-grow: 1; /* 佔滿剩餘空間 */
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 4px solid #ccc;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+            position: relative;
+            overflow: hidden; /* 內部滾動 */
+            margin-bottom: 15px; /* 與取物口分開 */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 玻璃反光 */
+        .glass-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0.01) 41%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+            z-index: 10;
+            border-radius: 4px;
+        }
+
+        /* 商品網格容器 */
+        .shelves-container {
+            overflow-y: auto;
+            height: 100%;
+            padding: 15px;
+            /* 隱藏捲軸但保留功能 */
+            scrollbar-width: thin;
+            scrollbar-color: #555 #222;
+        }
+        
+        .shelves-container::-webkit-scrollbar { width: 8px; }
+        .shelves-container::-webkit-scrollbar-track { background: #222; }
+        .shelves-container::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+
+        .shelves-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 20px;
+            padding-bottom: 20px;
+        }
+
+        /* 單個商品槽位 */
+        .item-slot {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-bottom: 4px solid rgba(255, 255, 255, 0.15); /* 層架感 */
+            transition: transform 0.2s;
+        }
+        .item-slot:hover { transform: translateY(-2px); background: rgba(255,255,255,0.12); }
+
+        .item-img-container {
+            width: 100%;
+            height: 110px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .item-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.4));
+        }
+
+        .item-name {
+            color: #fff;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 4px;
+            height: 2.4em;
+            line-height: 1.2;
+            overflow: hidden;
+        }
+
+        .item-price {
+            background: #fff;
+            color: #c00;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            margin-bottom: 8px;
+        }
+
+        /* --- 擬真按鈕 --- */
+        .vending-btn {
+            width: 90%;
+            height: 40px;
+            background: #333;
+            border: 2px solid #222;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 #111;
+        }
+        
+        .vending-btn.available {
+            background: #00bfff;
+            border-color: #0099cc;
+            box-shadow: 0 0 10px #00bfff, 0 4px 0 #007bb5;
+            animation: pulse-blue 2s infinite;
+        }
+
+        .vending-btn.available:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 5px #00bfff;
+        }
+
+        .vending-btn.sold-out {
+            background: #a00;
+            border-color: #800;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .btn-label {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 1px;
+        }
+        .vending-btn.available .btn-label { color: white; text-shadow: 0 0 3px rgba(0,0,0,0.5); }
+        .vending-btn.sold-out .btn-label { color: #ffcccc; }
+
+        @keyframes pulse-blue {
+            0% { box-shadow: 0 0 5px #00bfff, 0 4px 0 #007bb5; }
+            50% { box-shadow: 0 0 20px #00bfff, 0 4px 0 #007bb5; }
+            100% { box-shadow: 0 0 5px #00bfff, 0 4px 0 #007bb5; }
+        }
+
+        /* --- 取物口 (下部獨立區塊) --- */
+        .pickup-area {
+            height: 130px;
+            background: #222;
+            border-radius: 8px;
+            border: 2px solid #555;
+            position: relative;
+            flex-shrink: 0; /* 防止被壓縮 */
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 0;
+            overflow: hidden;
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.8);
+        }
+
+        .pickup-door {
+            width: 85%;
+            height: 85%;
+            background: linear-gradient(to bottom, #444, #2a2a2a);
+            border: 1px solid #666;
+            border-bottom: none;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            transform-origin: top;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.5);
+        }
+        
+        .pickup-door:active { transform: rotateX(15deg) scale(0.98); }
+
+        .pickup-text {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #555;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.1);
+            letter-spacing: 2px;
+        }
+
+        .pickup-door.has-item {
+            animation: bounce-door 0.6s ease-out;
+        }
+        .pickup-door.has-item .pickup-text { color: #fbbf24; text-shadow: 0 0 10px #fbbf24; }
+
+        @keyframes bounce-door {
+            0% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+            50% { transform: translateY(0); }
+            70% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+
+        /* --- 右側：控制面板 --- */
+        .right-column {
+            flex: 1;
+            min-width: 250px;
+            background: linear-gradient(to right, #dedede, #cfcfcf);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            box-shadow: inset 10px 0 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* 側邊分隔線 */
+        .right-column::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 2px;
+            background: rgba(255,255,255,0.4);
+            z-index: 5;
+        }
+
+        .lcd-screen {
+            background: #000;
+            width: 100%;
+            padding: 15px;
+            border-radius: 6px;
+            border: 4px solid #444;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .lcd-text {
+            font-family: 'Share Tech Mono', monospace;
+            color: #ff3333;
+            font-size: 2.5rem;
+            text-align: right;
+            line-height: 1;
+            text-shadow: 0 0 8px #ff3333;
+        }
+
+        .control-group {
+            width: 100%;
+            background: #bbb;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #999;
+            box-shadow: inset 0 2px 5px rgba(255,255,255,0.5);
+            margin-bottom: 30px;
+        }
+
+        .coin-slot {
+            width: 10px;
+            height: 40px;
+            background: #111;
+            margin: 0 auto 10px;
+            border-radius: 5px;
+            border: 2px solid #888;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 5px;
+        }
+
+        .points-input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #888;
+            border-radius: 4px;
+            text-align: center;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2rem;
+        }
+
+        .insert-btn {
+            background: #fcd34d;
+            border: 2px solid #d97706;
+            color: #78350f;
+            font-weight: bold;
+            padding: 0 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 2px 0 #d97706;
+        }
+        .insert-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        .return-lever {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #e5e5e5;
+            border: 4px solid #999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        .return-lever:active { transform: rotate(-25deg); }
+
+        /* RWD 調整 */
+        @media (max-width: 850px) {
+            .vending-machine {
+                flex-direction: column;
+                height: 100vh;
+                max-height: none;
+                border-radius: 0;
+                overflow-y: auto; /* 機身可捲動 */
+                border-bottom: none;
+            }
+            .left-column { flex: none; height: 65vh; border-right: none; border-bottom: 4px solid #003380; padding: 10px; }
+            .right-column { flex: none; height: auto; padding: 15px; flex-direction: row; justify-content: space-between; gap: 15px; background: #ddd; }
+            .lcd-screen { margin-bottom: 0; width: 120px; }
+            .control-group { margin-bottom: 0; flex: 1; padding: 10px; }
+            .pickup-area { height: 100px; }
+        }
+
+        /* 彈窗 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        .modal-overlay.show { opacity: 1; pointer-events: auto; }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 20px;
+            text-align: center; max-width: 90%; width: 400px;
+            transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+        .stock-badge {
+            font-size: 0.7rem; color: #aaa; margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="vending-machine">
+        
+        <!-- 左側面板：櫥窗 + 取物口 -->
+        <div class="left-column">
+            
+            <!-- 上部：商品櫥窗 -->
+            <div class="display-window">
+                <div class="glass-overlay"></div>
+                <div class="shelves-container">
+                    <div class="shelves-grid" id="machine-grid">
+                        <!-- JS 動態生成商品 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 下部：取物口 (固定在底部，不會覆蓋商品) -->
+            <div class="pickup-area">
+                <div id="pickup-door" class="pickup-door" onclick="checkPickup()">
+                    <span class="pickup-text">PUSH</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側面板：控制區 -->
+        <div class="right-column">
+            
+            <div class="text-xs text-gray-500 font-bold mb-1 w-full text-left ml-2">CREDIT AMOUNT</div>
+            <div class="lcd-screen">
+                <div id="balance-display" class="lcd-text">0</div>
+            </div>
+
+            <div class="control-group">
+                <div class="text-center text-xs font-bold text-gray-600 mb-2">點數投入口</div>
+                <div class="coin-slot"></div>
+                <div class="input-wrapper">
+                    <input type="number" id="user-points" class="points-input" placeholder="0">
+                    <button onclick="addPoints()" class="insert-btn">投入</button>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center">
+                <div class="text-xs text-gray-500 font-bold mb-2">RETURN</div>
+                <button onclick="resetMoney()" class="return-lever" title="退還點數">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                        <path d="M3 3v5h5"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="mt-auto text-xs text-gray-400 text-center w-full">
+                MACHINE ID: 14-73048<br>
+                SERVICE: 0800-000-123
+            </div>
+        </div>
+    </div>
+
+    <!-- 獲獎彈窗 -->
+    <div id="reward-modal" class="modal-overlay" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="text-6xl mb-4">🎁</div>
+            <h2 class="text-2xl font-black text-gray-800 mb-2">兌換成功！</h2>
+            <div class="bg-gray-100 rounded-lg p-4 mb-4">
+                <img id="modal-img" src="" class="w-48 h-48 object-contain mx-auto mix-blend-multiply">
+            </div>
+            <h3 id="modal-name" class="text-xl font-bold text-blue-800">商品名稱</h3>
+            <p class="text-gray-500 mt-2 font-bold">剩餘點數: <span id="modal-balance" class="text-red-500 text-xl"></span></p>
+            <button onclick="closeModal()" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-full font-bold shadow-lg transition transform hover:scale-105">
+                取出商品
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 商品資料
+        const items = [
+            { id: 1, name: "兒童黏土", price: 150, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjH6JH2Moe1-UnUoSTspzm62HyPyFMFcKZRjfBn8m8-vTuQVvQeJcVlgdS_XPBmrJaDfwVi_f4-JlCKg0bczYF7UxRtVQCd3x6fIzFd4Yckcn9jYtsfLAlK26kQ_ikNZ5CZVSURsPwcPfPnwYGv00PCr2fiPJLuSj5n0r8OoMlIp63tH0lA_1_onkL5/s16000/%E5%85%92%E7%AB%A5%E9%BB%8F%E5%9C%9F.webp" },
+            { id: 2, name: "遙控特技車", price: 3000, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgbj4596hitk8w13O0b6CfQZ2jknBEb0-tG6pByf6kLTDTPPoVC8KYIZIxo07fE7eq3gFdYaOjny1ilPdcO633rCGRDky0CIk4afwFkqiqwGLrVRzYZt4At5YshjfgwC_l2IfQNXT0kkQd79hy3u7IsIq9zI67xmlXVpFt04yOTvLJ0xkx1htnGxIuZ/s16000/%E9%81%99%E6%8E%A7%E7%89%B9%E6%8A%80%E8%BB%8A.webp" },
+            { id: 3, name: "積木挖土機", price: 150, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjn6BCJBkLeXyNmBC0YZxRbt29d4-aDIkf0dgIN6Jgh3qfFuiZb8AF6Xd-SKDbIPw-J_miEQzczwR8T78PvArFaEPx0JyjbYiiPebTdokcMmCG6DV_wOwR1lChqj6zsh77j58aO4gJgS3W4INYlLG-Bg5dU5VzS4dLgzokP_H79UiJ18ZhfNQkZuC8A/s16000/%E7%A9%8D%E6%9C%A8%E6%8C%96%E5%9C%9F%E6%A9%9F.webp" },
+            { id: 4, name: "大鱷魚夾夾樂", price: 200, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjAmHKEfryJ85bklwtLu5eniecEYTVXZOYYZrMV8cTGcZ2va9AzuEF0RG5jzsIPu_7u9LhvHEZBQKSHOukKUcMVwYuK2ncek2PhwUi3Ge0OLMjzsdNQDxDTTtfpwFgWMujRn_tVxea7C2QphuL4aTOW3FCn0yL6UPNWhLOOs0HXmCDRTqp8rOPE0FrW/s16000/%E5%A4%A7%E9%B1%B7%E9%AD%9A%E5%A4%BE%E5%A4%BE%E6%A8%82.webp" },
+            { id: 5, name: "蠟筆小新相框", price: 1000, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg4EmBgYWwK2MDphMBjx7yQegh4Fmz9mMu9aKqPoqo7QJjjtVvn6GuhAlrvDmZMwqYYxYWcEzf-xxpMHJBJlAnEcQPv5Iykgl5B7RIPJrti0gLl09VSt_fsg_lSCaflfmKbcQaDfJag3Z_JCDj-AqR281Z8h27YtVK6BwUl1X96cBU46-lctIE1lrjB/s16000/%E8%A0%9F%E7%AD%86%E5%B0%8F%E6%96%B0%E7%9B%B8%E6%A1%86.webp" },
+            { id: 6, name: "卡通防蚊手環", price: 200, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhQuV7GJNjvr4_446SCKmK2vLauyvtMQTP13dkYVMfg_Gf-40wAAGzS6hVvFVf_1dHkg902GhhOcZEHYnCjKrXzMEdlKC1MKiSZikuF13KgZD0TIaq1G8YWdtA4FZ_tI4B94pN8lnQbpsK93fvfI8-F7LnE_zhAN_43GRWAs5AMB0hyphenhyphenlJqIhOQIwSyT/s16000/%E5%8D%A1%E9%80%9A%E9%98%B2%E8%9A%8A%E6%89%8B%E7%92%B0.webp" },
+            { id: 7, name: "多功能數學尺", price: 300, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEghIkvFn9_6-lm7C00GwDJ_ngd7tQbEM5NKaGYooPvJB-O-KsRP0GGllyXtdznXn_u1H71Mq_f_xdl7lSMF0eLfqRW5KYOtR3_UvKI4poB6ccA4B3uhcZvNpLiC08doV1UrD4ryOj8M5WT7cGuJcLuqreQjHnR83zpyJJyDDmFIAOs6S6AY3iTnfLAB/s16000/%E5%A4%9A%E5%8A%9F%E8%83%BD%E6%95%B8%E5%AD%B8%E5%B0%BA.webp" },
+            { id: 8, name: "柔順護髮梳", price: 500, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiNHbpDSpaopobo_tsmwb4N2o5jaYWAnps29FH9j127fPexql6KfdXOp4mb7HZvFbghW8madFMWTr9AZeWp8NPJgrH4GYYEOR681466Bt4_3YpfvesUuK0iShDR8f1_QjgLeh6RODfxdxKcDn1IXxrT1Z3nuwmw326QBhRk4uS-LuYdi0m41rHZ8DKz/s16000/%E6%9F%94%E9%A0%86%E8%AD%B7%E9%AB%AE%E6%A2%B3.webp" },
+            { id: 9, name: "畢卡索水彩畫筒", price: 500, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgpsyQK4aVYm-awZWmnshX5mDaLfIJUqy1-jaHKyZhKdPbbD5uppUV-kJTQqELZv_B1lbBilrq2rWWnzxDdjvTHOagzVtNfaCWGuCyntselHE_Z6hazZe5bCBl3qnB0LWt0HMjZ8S8bAQmgbxC_e6SCN-l-oeWLP3qPMOgwQXgBanO4FOgsYgTQKCI6/s16000/%E7%95%A2%E5%8D%A1%E7%B4%A2%E6%B0%B4%E5%BD%A9%E7%95%AB%E7%AD%92.webp" },
+            { id: 10, name: "吉利卡哇印章", price: 150, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhebqSlgr0uox3_d8UmDK3BcIPVlhyphenhyphenLc_Bq3dOIoSKQCmGWApe75y7h1yzhmTED5_-PjpzRyE06JpnkKRivAOOGAJT9xMOHD8os0KMpk2kcg7ipvpESnFka-LHckkgWLF8HRUs7nKpQa3hpykISGgeppv__1Kv3knu1isUl7-VSoW5O9RFkt21BgA-3/s16000/%E5%90%89%E5%88%A9%E5%8D%A1%E5%93%87%E5%8D%B0%E7%AB%A0.webp" },  // ⚠️ 注意這裡加了逗號！
+            
+            // ▼ 這是您想新增的商品範例，您可以直接修改這裡的文字 ▼
+            { id: 11, name: "魔紙電路", price: 200, stock: 2, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhE6WE-kA9Ouw6PPTaBt7ElODmn6J002f39TOOk1VE-xmiJmewa9ButFXblh-7txDKIK8GR_4DVS2FAwYEXA51GnC5ikpej4s8CQ7GtZzB8iC_XSfcr8TOK2j8QTOVP1ec_6Iegi_umzIpjAlCbRMrbPCPoq87OjQ0QfBtqV8XgC_kOUNXyORjAEOci/s16000/%E9%AD%94%E7%B4%99%E9%9B%BB%E8%B7%AF1%E8%99%9F.webp" },
+            { id: 12, name: "海洋生物扭蛋", price: 120, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhN-vMQKIrDgAj4QPtFA7dElc3W9_d1K4TkYNzVENc79FMhyphenhyphenld-ud5ThcUa15S9pRr3HiBmTa1s8MGLQwiD9jDh7M4E1XOEeMpbSuDvc_LcAfi7EXHTedXgok1eFBBGpOWfwOvhqWf_AREY1bMm3QVfR_1o3OgK09K8EpJvLp11LMaPqaAN-yMo3Twy/s16000/%E6%B5%B7%E6%B4%8B%E7%94%9F%E7%89%A9%E6%89%AD%E8%9B%8B.webp" },
+            { id: 13, name: "三麗鷗小盤子", price: 200, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiYBWZCvZTFSOYwjJhFdnxedDiqTg7CkkjwWeK-CW_XxUrzUGpgnx-F_xTLecZWde7V3Cv4BeBCf-hoBbZ6sWfuKLYXTnhfSIYlPs-6OzmYVQ7kToA4r120x24ypymg_0YKz92LgeY1qr8VxYNa3LpADlYBvwpoQ43niKReFM6RmyJFJdCcHkvesk69/s16000/%E4%B8%89%E9%BA%97%E9%B7%97%E5%B0%8F%E7%9B%A4%E5%AD%90.webp" },
+            { id: 14, name: "炫變之王", price: 300, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiiPHj-MC5kdoNqbTmotAFipjDfcP_dEd3I_ThRpS3eiDbjhlt8UzwftjrxKT7jmBJhq6qXVYHAfdHeJU0c5D1AO73QS-CfLO8OwlhOYGCiaInUs6UopvKlTnujx_KXNNVIsVxPQIvGaCditd94-DkYSQdUuvFExSpRm4NeAr7wWDv4LhKTtLvJyN0a/s16000/%E7%82%AB%E8%AE%8A%E4%B9%8B%E7%8E%8B.webp" },
+            { id: 15, name: "大耳狗手錶", price: 500, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjwm6a2-GWMptPtEla-yd6bvsML7FJ1-9Co3xB8H5D-u-0yLUzwtrpnlX8IadqN8B_0MQzcdXQs_L-sbssDQeE6gtJUo4imU_iOycYXAtQPwf9w4qGmY8qh1WekVj87yIRN4LghHD4lJfIGwWmQkbF5nEQCyNhqiYkhLp9tMzRe8nML-T0SD7byI5Q_/s16000/%E5%A4%A7%E8%80%B3%E7%8B%97%E6%89%8B%E9%8C%B6.webp" },
+            { id: 16, name: "酷藍運動手錶", price: 500, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhLgw5KQ_Ylg1ZRyV_zKa0QK6FLmZfbxOB7NcUBcL5w79LtT6TxCP-aotCfqiXHcceEsXkivResVggp-zsBW1gLeFFZ4OZHc2VHrFmn6qTR7569YM4-8xbX14klAoEWdACq9nTMEXfez5RUjWp-dkloLGK4DSkfjuEg3nEL_vZgs7S7wCUbDID44T_5/s16000/%E9%85%B7%E8%97%8D%E9%81%8B%E5%8B%95%E6%89%8B%E9%8C%B6.webp" },
+            { id: 17, name: "吉利卡哇積木", price: 300, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjbiyqHkUz0z5iXOZ_7h8OiszrVQPaxMogvC-nvIqe-kT9F8nzNs_zVSvpyroEByKTsdQ_WJCLjRCTIKqAUfShaaEbTjOZnBh307iTE2fW7BaZmfFDQkS_PBTcXhlOcct-yzYggvA4Q7LYqAUjLO0B-epGbtAz1q8j_TlbGQhGL0Gv1ugkYnOMLBTBd/s16000/%E5%90%89%E5%88%A9%E5%8D%A1%E5%93%87%E7%A9%8D%E6%9C%A8.webp" },
+            { id: 18, name: "大阪蘑菇頭小車", price: 800, stock: 1, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh9acKCFH0EoDK6oo1oeEuNIhK8mUkQbsSs9j1jahTs-JS3IgK7MYZKniXU2_eXFiclqO-01O77C5SkKoBfGaz-MxyGPqCxioHiclUkV3NHGmE167uwwLpOWJpTisQz8tHy7FpyH6qs7dXKL9ZjxFdVTaAkC52H5rcS3T65OBwycCsiPsVzzQod9lnr/s16000/%E5%A4%A7%E9%98%AA%E8%98%91%E8%8F%87%E9%A0%AD%E5%B0%8F%E8%BB%8A.webp" },
+            { id: 19, name: "爸爸抱抱5分鐘券", price: 50, stock: 5, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgnttmoRPYZHWq0tvf4N4qncnGTBZr46uQ2C_1aZDPHNjzrQtcFOsIARqaNl5T5ATQFlqqPEh89aHslOhgMgUS5dCxsWgWOxTEuJ2Vnhhk4aS53P7cD5TZDFFq5CDzT8tyVYArk2U4AsMDnB9aCaHCn1MwWM1kILBmWSYzGYhjRKT-VzE59CJStQr02/s16000/%E7%88%B8%E7%88%B8%E6%8A%B1%E6%8A%B1%E5%88%B8.webp" },
+            { id: 20, name: "媽媽不生氣1件事券", price: 50, stock: 5, img: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg6M2QIqNC0VLquofkz-LIlcgiGF2xmtEw7QbWtZKzw0OA_kfPku10Zy0Bz5vu2SFP57lHiWFyqanMzrdyaan42uXVtwOutNK-I_fNfdGaNmKkIMNIvsfBuMGgCEW212kgqj0E9oBG2IiFvp__dh5slM1v4RIWNPiIDozJMQKoKg4s3CZocXT3jEYXv/s16000/%E5%AA%BD%E5%AA%BD%E4%B8%8D%E7%94%9F%E6%B0%A3%E5%88%B8.webp" }
+        ];
+
+        let currentBalance = 0;
+        let pendingReward = null; // 待領取的商品
+
+        // DOM 元素
+        const grid = document.getElementById('machine-grid');
+        const balanceDisplay = document.getElementById('balance-display');
+        const inputField = document.getElementById('user-points');
+        const pickupDoor = document.getElementById('pickup-door');
+        const pickupText = document.querySelector('.pickup-text');
+
+        // 初始化
+        function init() {
+            renderItems();
+        }
+
+        // 渲染商品
+        function renderItems() {
+            grid.innerHTML = '';
+            items.forEach((item, index) => {
+                const isSoldOut = item.stock <= 0;
+                const canAfford = currentBalance >= item.price;
+                
+                const slot = document.createElement('div');
+                slot.className = 'item-slot';
+                
+                // 按鈕樣式邏輯
+                let btnClass = 'vending-btn';
+                let btnLabel = 'PUSH';
+                
+                if (isSoldOut) {
+                    btnClass += ' sold-out';
+                    btnLabel = '售完';
+                } else if (canAfford) {
+                    btnClass += ' available';
+                    btnLabel = '按此兌換';
+                }
+
+                slot.innerHTML = `
+                    <div class="item-img-container">
+                        <img src="${item.img}" alt="${item.name}" class="item-img" onerror="this.src='https://via.placeholder.com/150?text=無圖片'">
+                    </div>
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-price">${item.price} ★</div>
+                    
+                    <button id="btn-${index}" class="${btnClass}" onclick="purchase(${index})" ${isSoldOut ? 'disabled' : ''}>
+                        <span class="btn-label">${btnLabel}</span>
+                    </button>
+                    <div class="stock-badge">庫存: ${item.stock}</div>
+                `;
+                grid.appendChild(slot);
+            });
+        }
+
+        // 投幣
+        function addPoints() {
+            const val = parseInt(inputField.value);
+            if (val > 0) {
+                currentBalance += val;
+                inputField.value = '';
+                updateUI();
+                playAudio('coin');
+            }
+        }
+
+        // 退幣
+        function resetMoney() {
+            if (currentBalance > 0) {
+                playAudio('return');
+                currentBalance = 0;
+                updateUI();
+            }
+        }
+
+        // 更新 UI
+        function updateUI() {
+            balanceDisplay.innerText = currentBalance;
+            renderItems(); // 重新渲染以更新燈號
+        }
+
+        // 購買
+        function purchase(index) {
+            const item = items[index];
+
+            if (currentBalance >= item.price && item.stock > 0) {
+                // 扣款與庫存
+                currentBalance -= item.price;
+                item.stock--;
+                
+                // 記錄待領取商品
+                pendingReward = item;
+
+                playAudio('button');
+                
+                // 模擬機械運作延遲
+                setTimeout(() => {
+                    playAudio('drop');
+                    activatePickupDoor();
+                    updateUI();
+                }, 800);
+
+            } else if (currentBalance < item.price) {
+                playAudio('error');
+            }
+        }
+
+        // 啟動取物口
+        function activatePickupDoor() {
+            pickupDoor.classList.add('has-item');
+            pickupText.innerText = "商品掉落!";
+        }
+
+        // 檢查取物
+        function checkPickup() {
+            if (pendingReward && pickupDoor.classList.contains('has-item')) {
+                showModal(pendingReward);
+                // 重置門的狀態
+                pickupDoor.classList.remove('has-item');
+                pickupText.innerText = "PUSH";
+                pendingReward = null;
+            }
+        }
+
+        // 顯示彈窗
+        function showModal(item) {
+            const modal = document.getElementById('reward-modal');
+            document.getElementById('modal-img').src = item.img;
+            document.getElementById('modal-name').innerText = item.name;
+            document.getElementById('modal-balance').innerText = currentBalance;
+            modal.classList.add('show');
+            playAudio('success');
+        }
+
+        function closeModal() {
+            document.getElementById('reward-modal').classList.remove('show');
+        }
+
+        // 音效系統
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playAudio(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'coin') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1500, now);
+                osc.frequency.exponentialRampToValueAtTime(2000, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } else if (type === 'button') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'drop') {
+                // 重物掉落聲
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(20, now + 0.4);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'return') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.linearRampToValueAtTime(400, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'success') {
+                // 勝利音效
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, i) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.type = 'sine';
+                    o.frequency.value = freq;
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    g.gain.setValueAtTime(0.1, now + i*0.1);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + i*0.1 + 0.3);
+                    o.start(now + i*0.1);
+                    o.stop(now + i*0.1 + 0.3);
+                });
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+        }
+
+        window.addEventListener('load', init);
+
+    </script>
+</body>
+</html>
