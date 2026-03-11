@@ -408,11 +408,29 @@
             <div class="absolute top-10 left-6 md:left-10 text-2xl md:text-3xl animate-float pointer-events-none">🎉</div>
             <div class="absolute top-20 right-6 md:right-10 text-3xl md:text-4xl animate-float-delayed pointer-events-none">🎊</div>
             <div class="w-28 h-28 md:w-32 md:h-32 bg-gradient-to-tr from-yellow-400 to-amber-200 rounded-full flex items-center justify-center text-6xl md:text-7xl shadow-[0_0_50px_rgba(250,204,21,0.4)] mb-6 md:mb-8 animate-pop border-4 border-yellow-100/30 shrink-0">🏆</div>
-            <h1 class="text-3xl md:text-4xl font-black mb-3 md:mb-4 text-center tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-100" data-i18n="endTitle">恭喜完成走讀！</h1>
+            
+            <h1 class="text-3xl md:text-4xl font-black mb-2 text-center tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-100" data-i18n="endTitle">恭喜完成走讀！</h1>
+            
+            <div class="mb-4 text-center z-10 animate-pop" style="animation-delay: 0.1s">
+                <div class="inline-flex items-center justify-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 shadow-lg">
+                    <span class="text-slate-300 text-xs md:text-sm font-medium mr-2" data-i18n="totalCompletions">走讀完成總人數：</span>
+                    <span id="total-players-count" class="text-white font-bold text-sm md:text-base tracking-wider">20,000</span>
+                </div>
+            </div>
+
+            <div class="mb-6 text-center z-10 animate-pop" style="animation-delay: 0.2s">
+                <p class="text-lg md:text-xl font-bold text-slate-200 flex items-center justify-center flex-wrap">
+                    <span data-i18n="youArePlayer1">您是第</span> 
+                    <span id="user-player-number" class="text-3xl md:text-4xl font-black text-yellow-400 mx-2 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]">20,001</span> 
+                    <span data-i18n="youArePlayer2">位完成的玩家！</span>
+                </p>
+            </div>
+
             <p class="text-center text-slate-300 mb-8 md:mb-10 leading-relaxed text-sm md:text-base font-medium bg-white/5 p-5 md:p-6 rounded-3xl backdrop-blur-sm border border-white/10 w-full" data-i18n-html="endDesc">
                 從掀開歷史的蓋子、美豐土地公祈福、<br>生態淨水、尋找生態鳥類，到迎風單車行。<br><br>
                 <span class="text-yellow-200 font-bold">您已完整體驗了老街溪的美好蛻變！</span>
             </p>
+
             <div class="flex justify-center gap-2 md:gap-3 mb-8 md:mb-10 flex-wrap">
                 <div class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center text-xl md:text-2xl shadow-lg animate-pop overflow-hidden" style="animation-delay: 0.1s">
                     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhmXUYl5M6JoWDTI269Gv80G-yIAPOnQcm6QC_CzwS5HnNbLwXY3CXPP4YPsRE-250u22E891IxK6wwZZCCtfHpebG2XC9mmk4Hw6Eusy22_RdyyjHbPH2Iy5EyO8MZETRAmWKdHpHatu2W5c57AleVv3aQ7oSErQVqWSfo_MPZ67XBqF7WcZnf-7io/s16000/%E9%96%8B%E8%93%8B%E5%BB%A3%E5%A0%B4.webp" class="w-full h-full object-cover">
@@ -424,6 +442,7 @@
                 </div>
                 <div class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center text-xl md:text-2xl shadow-lg animate-pop" style="animation-delay: 0.5s">🚲</div>
             </div>
+            
             <button onclick="resetGame()" class="btn-press w-full max-w-[240px] py-3.5 md:py-4 bg-white text-slate-900 rounded-2xl text-lg md:text-xl font-bold shadow-[0_6px_0_#CBD5E1] mb-4" data-i18n="restartBtn">
                 🔄 再次遊玩
             </button>
@@ -465,6 +484,9 @@
                 l5Desc: '連續點擊螢幕踩踏板，騎向終點！',
                 endTitle: '恭喜完成走讀！',
                 endDesc: '從掀開歷史的蓋子、美豐土地公祈福、<br>生態淨水、尋找生態鳥類，到迎風單車行。<br><br><span class="text-yellow-200 font-bold">您已完整體驗了老街溪的美好蛻變！</span>',
+                totalCompletions: '走讀完成總人數：',
+                youArePlayer1: '您是第',
+                youArePlayer2: '位完成的玩家！',
                 restartBtn: '🔄 再次遊玩',
                 modalContinue: '繼續旅程',
                 infoContinue: '繼續探索',
@@ -510,6 +532,9 @@
                 l5Desc: 'Tap continuously to pedal to the finish line!',
                 endTitle: 'Congratulations!',
                 endDesc: 'From uncovering history to the cycling trip.<br><br><span class="text-yellow-200 font-bold">You have fully experienced the beautiful transformation of Lao-Jie River!</span>',
+                totalCompletions: 'Total Explorers: ',
+                youArePlayer1: 'You are player #',
+                youArePlayer2: '!',
                 restartBtn: '🔄 Play Again',
                 modalContinue: 'Continue',
                 infoContinue: 'Explore',
@@ -527,13 +552,11 @@
         };
 
         let currentLang = 'zh';
-        let currentModalData = null; // 用來記錄當前開啟的卡片資訊，方便動態切換語系
+        let currentModalData = null;
 
-        // === 語系熱切換邏輯 ===
         function setLang(lang) {
             currentLang = lang;
             
-            // 更新按鈕視覺樣式
             document.getElementById('btn-zh').className = lang === 'zh' 
                 ? 'px-3 py-1.5 text-xs font-bold rounded-full bg-slate-800 text-white transition-all shadow-sm' 
                 : 'px-3 py-1.5 text-xs font-bold rounded-full text-slate-500 hover:text-slate-800 transition-all';
@@ -541,25 +564,36 @@
                 ? 'px-3 py-1.5 text-xs font-bold rounded-full bg-slate-800 text-white transition-all shadow-sm' 
                 : 'px-3 py-1.5 text-xs font-bold rounded-full text-slate-500 hover:text-slate-800 transition-all';
 
-            // 更新純文字
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (i18n[lang][key]) el.innerText = i18n[lang][key];
             });
 
-            // 更新包含 HTML 標籤的文字
             document.querySelectorAll('[data-i18n-html]').forEach(el => {
                 const key = el.getAttribute('data-i18n-html');
                 if (i18n[lang][key]) el.innerHTML = i18n[lang][key];
             });
 
-            // 若目前有資訊介紹彈窗打開中，同步切換該彈窗內容
             if (currentModalData) {
                 document.getElementById('info-text').innerText = currentModalData[lang];
             }
         }
 
-        // === 遊戲邏輯 ===
+        // === 參與人數計算演算法 ===
+        function calculatePlayersCount() {
+            // 設定基準時間為 2026-03-01 00:00:00 (本地時間)
+            const baseTime = new Date('2026-03-01T00:00:00').getTime();
+            const now = new Date().getTime();
+            const diffMs = now - baseTime;
+            
+            // 每半小時 (30 * 60 * 1000 = 1,800,000 毫秒) 增加 2 人
+            const halfHours = Math.floor(diffMs / 1800000);
+            const baseCount = 20000;
+            
+            // 若時間異常早於基準點，則回傳基礎數值
+            return diffMs > 0 ? baseCount + (halfHours * 2) : baseCount;
+        }
+
         let currentLevel = 0;
         let progress = { 1: false, 2: false, 3: false, 4: false, 5: false };
         let blocksLeft = 4;
@@ -649,12 +683,10 @@
             if (levelNum === 5) resetLevel5();
         }
 
-        // 修改 Success Modal 接收的參數為 i18n Dictionary 的 Key
         function showSuccess(titleKey, descKey, icon) {
             document.getElementById('modal-title').innerText = i18n[currentLang][titleKey];
             document.getElementById('modal-desc').innerText = i18n[currentLang][descKey];
             
-            // 寫入屬性，防止玩家在過關畫面突然切換語言
             document.getElementById('modal-title').setAttribute('data-i18n', titleKey);
             document.getElementById('modal-desc').setAttribute('data-i18n', descKey);
             
@@ -681,6 +713,13 @@
                 screens[`l${currentLevel}`].classList.add('hidden');
                 
                 if (Object.values(progress).every(status => status === true)) {
+                    // 抵達最終畫面時，動態計算參與人數
+                    const currentTotal = calculatePlayersCount();
+                    const userNumber = currentTotal + 1; // 玩家自己是第 +1 位
+                    
+                    document.getElementById('total-players-count').innerText = currentTotal.toLocaleString();
+                    document.getElementById('user-player-number').innerText = userNumber.toLocaleString();
+                    
                     screens.end.classList.remove('hidden');
                 } else {
                     screens.map.classList.remove('hidden');
@@ -768,7 +807,7 @@
         }
 
         function closeInfoModal() {
-            currentModalData = null; // 清除綁定
+            currentModalData = null; 
             const infoModal = document.getElementById('info-modal');
             const infoContent = document.getElementById('info-content');
             infoModal.classList.add('opacity-0');
