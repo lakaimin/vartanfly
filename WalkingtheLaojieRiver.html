@@ -10,11 +10,14 @@
         
         body {
             font-family: 'Noto Sans TC', system-ui, -apple-system, sans-serif;
-            background-color: #E2E8F0;
+            /* 桌機版背景設定為沉穩的深色 */
+            background-color: #0F172A; 
             color: #1E293B;
             overflow: hidden;
             touch-action: manipulation;
             user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none; /* 禁用長按選單 */
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -85,15 +88,21 @@
             stroke-dasharray: 12 12;
             animation: river-flow 40s linear infinite;
         }
+
+        /* 確保高度計算能兼容手機瀏覽器工具列 */
+        .h-screen-dynamic {
+            height: 100vh;
+            height: 100dvh; 
+        }
     </style>
 </head>
-<body class="h-screen w-full flex justify-center items-center">
+<body class="h-screen-dynamic w-full flex justify-center items-center bg-noise">
 
-    <div id="app-container" class="relative w-full h-full sm:max-w-md sm:max-h-[880px] sm:h-[90vh] bg-white sm:rounded-3xl sm:border sm:border-white/60 sm:shadow-[0_20px_50px_rgba(30,41,59,0.1)] overflow-hidden flex flex-col bg-noise">
+    <div id="app-container" class="relative w-full h-full sm:h-[92dvh] sm:max-h-[900px] sm:max-w-[420px] md:max-w-[460px] lg:max-w-[480px] bg-white sm:rounded-[3rem] sm:border-[10px] sm:border-slate-800 sm:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col transition-all duration-300">
         
         <div id="screen-home" class="absolute inset-0 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-[#E0F2FE] via-[#F0FDF4] to-[#FEF3C7] z-50 transition-all duration-700 ease-in-out">
-            <div class="absolute top-[-5%] right-[-10%] w-64 h-64 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-float"></div>
-            <div class="absolute bottom-[-10%] left-[-10%] w-72 h-72 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-float-delayed"></div>
+            <div class="absolute top-[-5%] right-[-10%] w-64 h-64 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-float pointer-events-none"></div>
+            <div class="absolute bottom-[-10%] left-[-10%] w-72 h-72 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-float-delayed pointer-events-none"></div>
             
             <div class="relative z-10 flex flex-col items-center w-full animate-pop">
                 <div class="w-36 h-36 glass rounded-[2.5rem] flex items-center justify-center mb-8 shadow-xl animate-float relative overflow-hidden group">
@@ -101,109 +110,109 @@
                     <span class="text-7xl group-hover:scale-110 transition-transform duration-300">🌊</span>
                 </div>
                 
-                <h1 class="text-4xl font-black text-slate-800 tracking-tight mb-3 text-center">漫步老街溪</h1>
-                <p class="text-lg text-slate-500 mb-14 font-medium tracking-wide flex items-center gap-2">
+                <h1 class="text-4xl md:text-5xl font-black text-slate-800 tracking-tight mb-3 text-center transition-all">漫步老街溪</h1>
+                <p class="text-lg md:text-xl text-slate-500 mb-14 font-medium tracking-wide flex items-center gap-2">
                     <span class="w-8 h-[2px] bg-slate-300 rounded"></span>
                     城市水脈走讀
                     <span class="w-8 h-[2px] bg-slate-300 rounded"></span>
                 </p>
                 
-                <button onclick="startGame()" class="btn-press group relative w-full py-5 bg-slate-800 text-white rounded-3xl text-xl font-bold shadow-[0_8px_0_#0F172A] flex items-center justify-center gap-3 overflow-hidden">
+                <button onclick="startGame()" class="btn-press group relative w-full max-w-[320px] py-5 bg-slate-800 text-white rounded-3xl text-xl font-bold shadow-[0_8px_0_#0F172A] flex items-center justify-center gap-3 overflow-hidden">
                     <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
                     開始探索之旅
                     <svg class="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                 </button>
             </div>
 
-            <div class="absolute bottom-6 w-full text-center z-10">
-                <a href="https://vartanliu.blogspot.com/" target="_blank" class="text-[13px] text-slate-400 font-semibold tracking-wider hover:text-slate-600 transition-colors drop-shadow-sm">
+            <div class="absolute bottom-8 md:bottom-10 w-full text-center z-10">
+                <a href="https://vartanliu.blogspot.com/" target="_blank" class="text-[13px] md:text-[14px] text-slate-400 font-semibold tracking-wider hover:text-slate-600 transition-colors drop-shadow-sm">
                     Designed by Vartan Liu
                 </a>
             </div>
         </div>
 
         <div id="screen-map" class="absolute inset-0 flex flex-col bg-slate-50 hidden z-40">
-            <div class="pt-6 pb-3 px-6 glass rounded-b-[1.5rem] z-20 flex flex-col gap-2 relative shadow-sm">
+            <div class="pt-8 sm:pt-6 pb-4 px-6 glass rounded-b-[1.5rem] z-20 flex flex-col gap-3 relative shadow-sm">
                 <div class="flex justify-between items-end">
                     <div>
-                        <h2 class="text-2xl font-black text-slate-800">走讀路線</h2>
-                        <p class="text-xs font-medium text-slate-500 mt-1">點擊解鎖下一個地標</p>
+                        <h2 class="text-2xl md:text-3xl font-black text-slate-800">走讀路線</h2>
+                        <p class="text-xs md:text-sm font-medium text-slate-500 mt-1">點擊解鎖下一個地標</p>
                     </div>
                 </div>
                 <div class="flex justify-between items-center bg-white/50 p-2 rounded-2xl" id="badge-container">
-                    <div id="badge-1" class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-sm grayscale opacity-40 transition-all duration-500 shadow-inner overflow-hidden">
+                    <div id="badge-1" class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-200 flex items-center justify-center text-sm grayscale opacity-40 transition-all duration-500 shadow-inner overflow-hidden">
                         <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhmXUYl5M6JoWDTI269Gv80G-yIAPOnQcm6QC_CzwS5HnNbLwXY3CXPP4YPsRE-250u22E891IxK6wwZZCCtfHpebG2XC9mmk4Hw6Eusy22_RdyyjHbPH2Iy5EyO8MZETRAmWKdHpHatu2W5c57AleVv3aQ7oSErQVqWSfo_MPZ67XBqF7WcZnf-7io/s16000/%E9%96%8B%E8%93%8B%E5%BB%A3%E5%A0%B4.webp" alt="開蓋廣場" class="w-full h-full object-cover">
                     </div>
-                    <div class="w-3 h-1 rounded-full bg-slate-200"></div>
-                    <div id="badge-2" class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-sm grayscale opacity-40 transition-all duration-500 shadow-inner">🏮</div>
-                    <div class="w-3 h-1 rounded-full bg-slate-200"></div>
-                    <div id="badge-3" class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-sm grayscale opacity-40 transition-all duration-500 shadow-inner">💧</div>
-                    <div class="w-3 h-1 rounded-full bg-slate-200"></div>
-                    <div id="badge-4" class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-sm grayscale opacity-40 transition-all duration-500 shadow-inner overflow-hidden">
+                    <div class="w-2 md:w-3 h-1 rounded-full bg-slate-200 flex-1 mx-1"></div>
+                    <div id="badge-2" class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-200 flex items-center justify-center text-sm grayscale opacity-40 transition-all duration-500 shadow-inner">🏮</div>
+                    <div class="w-2 md:w-3 h-1 rounded-full bg-slate-200 flex-1 mx-1"></div>
+                    <div id="badge-3" class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-200 flex items-center justify-center text-sm grayscale opacity-40 transition-all duration-500 shadow-inner">💧</div>
+                    <div class="w-2 md:w-3 h-1 rounded-full bg-slate-200 flex-1 mx-1"></div>
+                    <div id="badge-4" class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-200 flex items-center justify-center text-sm grayscale opacity-40 transition-all duration-500 shadow-inner overflow-hidden">
                         <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhHXa9e2HwLz4SOolPKsuVJSt6IZ-G7twKlRy325A7GKaOyAPlTUnnjjULBAXtTYyDAfKJyGxJktIU_L2sRwJlWrD9PqjtSCW85UKhE4MyEiIoGkYtw0YOxQDkjbfOXj1M7UTFe_-05gXD9mBTospwlpFbQg1f2kGYetpqUOjwFEIHz6lTTJf9VU8M9/s16000/%E6%96%B0%E5%8B%A2%E5%85%AC%E5%9C%92.webp" alt="新勢公園" class="w-full h-full object-cover">
                     </div>
-                    <div class="w-3 h-1 rounded-full bg-slate-200"></div>
-                    <div id="badge-5" class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-sm grayscale opacity-40 transition-all duration-500 shadow-inner">🚲</div>
+                    <div class="w-2 md:w-3 h-1 rounded-full bg-slate-200 flex-1 mx-1"></div>
+                    <div id="badge-5" class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-200 flex items-center justify-center text-sm grayscale opacity-40 transition-all duration-500 shadow-inner">🚲</div>
                 </div>
             </div>
 
             <div class="flex-1 relative overflow-hidden bg-[#F8FAFC]">
-                <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+                <svg class="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
                     <path d="M 60,-10 C 30,20 30,40 50,55 C 70,70 30,85 60,110" fill="none" stroke="#E2E8F0" stroke-width="12" stroke-linecap="round"/>
                     <path d="M 60,-10 C 30,20 30,40 50,55 C 70,70 30,85 60,110" fill="none" stroke="#38BDF8" stroke-width="4" stroke-linecap="round" class="path-line opacity-60"/>
                 </svg>
 
                 <button onclick="startLevel(1)" id="node-1" class="absolute top-[54%] left-[65%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group btn-press z-10">
-                    <div class="relative w-16 h-16">
+                    <div class="relative w-14 h-14 md:w-16 md:h-16">
                         <div id="ping-1" class="absolute -inset-2 rounded-full border border-slate-500 opacity-40 animate-ping"></div>
-                        <div id="icon-1" class="absolute inset-0 bg-white rounded-full shadow-lg border-4 border-slate-800 flex items-center justify-center text-2xl z-10 overflow-hidden">
+                        <div id="icon-1" class="absolute inset-0 bg-white rounded-full shadow-lg border-4 border-slate-800 flex items-center justify-center text-xl md:text-2xl z-10 overflow-hidden">
                             <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhmXUYl5M6JoWDTI269Gv80G-yIAPOnQcm6QC_CzwS5HnNbLwXY3CXPP4YPsRE-250u22E891IxK6wwZZCCtfHpebG2XC9mmk4Hw6Eusy22_RdyyjHbPH2Iy5EyO8MZETRAmWKdHpHatu2W5c57AleVv3aQ7oSErQVqWSfo_MPZ67XBqF7WcZnf-7io/s16000/%E9%96%8B%E8%93%8B%E5%BB%A3%E5%A0%B4.webp" alt="開蓋廣場" class="w-full h-full object-cover">
                         </div>
                     </div>
-                    <span class="mt-2 font-bold text-slate-800 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-sm shadow-sm">開蓋廣場</span>
+                    <span class="mt-2 font-bold text-slate-800 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-xs md:text-sm shadow-sm whitespace-nowrap">開蓋廣場</span>
                 </button>
 
                 <button onclick="startLevel(2)" id="node-2" class="absolute top-[72%] left-[26%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group opacity-40 pointer-events-none transition-all duration-500 btn-press z-10">
-                    <div class="relative w-16 h-16">
+                    <div class="relative w-14 h-14 md:w-16 md:h-16">
                         <div id="ping-2" class="absolute -inset-2 rounded-full border border-red-500 opacity-40 animate-ping hidden"></div>
-                        <div id="icon-2" class="absolute inset-0 bg-white rounded-full shadow-lg border-4 border-red-500 flex items-center justify-center text-2xl z-10 overflow-hidden">🏮</div>
+                        <div id="icon-2" class="absolute inset-0 bg-white rounded-full shadow-lg border-4 border-red-500 flex items-center justify-center text-xl md:text-2xl z-10 overflow-hidden">🏮</div>
                     </div>
-                    <span class="mt-2 font-bold text-slate-800 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-sm shadow-sm">美豐土地公</span>
+                    <span class="mt-2 font-bold text-slate-800 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-xs md:text-sm shadow-sm whitespace-nowrap">美豐土地公</span>
                 </button>
 
                 <button onclick="startLevel(3)" id="node-3" class="absolute top-[40%] left-[22%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group opacity-40 pointer-events-none transition-all duration-500 btn-press z-10">
-                    <div class="relative w-16 h-16">
+                    <div class="relative w-14 h-14 md:w-16 md:h-16">
                         <div id="ping-3" class="absolute -inset-2 rounded-full border border-blue-500 opacity-40 animate-ping hidden"></div>
-                        <div id="icon-3" class="absolute inset-0 bg-white rounded-full shadow-lg border-4 border-blue-500 flex items-center justify-center text-2xl z-10 overflow-hidden">💧</div>
+                        <div id="icon-3" class="absolute inset-0 bg-white rounded-full shadow-lg border-4 border-blue-500 flex items-center justify-center text-xl md:text-2xl z-10 overflow-hidden">💧</div>
                     </div>
-                    <span class="mt-2 font-bold text-slate-800 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-sm shadow-sm">河川教育中心</span>
+                    <span class="mt-2 font-bold text-slate-800 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-xs md:text-sm shadow-sm whitespace-nowrap">河川教育中心</span>
                 </button>
 
                 <button onclick="startLevel(4)" id="node-4" class="absolute top-[10%] left-[20%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group opacity-40 pointer-events-none transition-all duration-500 btn-press z-10">
-                    <div class="relative w-16 h-16">
+                    <div class="relative w-14 h-14 md:w-16 md:h-16">
                         <div id="ping-4" class="absolute -inset-2 rounded-full border border-green-500 opacity-40 animate-ping hidden"></div>
-                        <div id="icon-4" class="absolute inset-0 bg-white rounded-full shadow-lg border-4 border-green-500 flex items-center justify-center text-2xl z-10 overflow-hidden">
+                        <div id="icon-4" class="absolute inset-0 bg-white rounded-full shadow-lg border-4 border-green-500 flex items-center justify-center text-xl md:text-2xl z-10 overflow-hidden">
                             <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhHXa9e2HwLz4SOolPKsuVJSt6IZ-G7twKlRy325A7GKaOyAPlTUnnjjULBAXtTYyDAfKJyGxJktIU_L2sRwJlWrD9PqjtSCW85UKhE4MyEiIoGkYtw0YOxQDkjbfOXj1M7UTFe_-05gXD9mBTospwlpFbQg1f2kGYetpqUOjwFEIHz6lTTJf9VU8M9/s16000/%E6%96%B0%E5%8B%A2%E5%85%AC%E5%9C%92.webp" alt="新勢公園" class="w-full h-full object-cover">
                         </div>
                     </div>
-                    <span class="mt-2 font-bold text-slate-800 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-sm shadow-sm">新勢公園</span>
+                    <span class="mt-2 font-bold text-slate-800 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-xs md:text-sm shadow-sm whitespace-nowrap">新勢公園</span>
                 </button>
 
                 <button onclick="startLevel(5)" id="node-5" class="absolute top-[78%] left-[65%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group opacity-40 pointer-events-none transition-all duration-500 btn-press z-10">
-                    <div class="relative w-16 h-16">
+                    <div class="relative w-14 h-14 md:w-16 md:h-16">
                         <div id="ping-5" class="absolute -inset-2 rounded-full border border-teal-500 opacity-40 animate-ping hidden"></div>
-                        <div id="icon-5" class="absolute inset-0 bg-white rounded-full shadow-lg border-4 border-teal-500 flex items-center justify-center text-2xl z-10 overflow-hidden">🚲</div>
+                        <div id="icon-5" class="absolute inset-0 bg-white rounded-full shadow-lg border-4 border-teal-500 flex items-center justify-center text-xl md:text-2xl z-10 overflow-hidden">🚲</div>
                     </div>
-                    <span class="mt-2 font-bold text-slate-800 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-sm shadow-sm whitespace-nowrap">青埔自行車道</span>
+                    <span class="mt-2 font-bold text-slate-800 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-xs md:text-sm shadow-sm whitespace-nowrap">青埔自行車道</span>
                 </button>
             </div>
         </div>
 
         <div id="level-1" class="absolute inset-0 bg-[#161C2D] flex flex-col hidden z-50">
-            <div class="p-8 text-white text-center mt-6 relative z-20 pointer-events-none">
-                <div class="inline-block px-5 py-1.5 bg-white/10 rounded-full text-sm font-bold tracking-widest text-slate-300 mb-5">第一站</div>
-                <h2 class="text-3xl font-black mb-3 text-yellow-500 drop-shadow-md">掀開歷史的記憶</h2>
-                <p class="text-slate-400 font-medium leading-relaxed">老街溪曾被沈重的水泥加蓋。<br>請點擊敲碎它們，讓溪水重見天日！</p>
+            <div class="p-6 md:p-8 text-white text-center mt-6 md:mt-8 relative z-20 pointer-events-none">
+                <div class="inline-block px-5 py-1.5 bg-white/10 rounded-full text-xs md:text-sm font-bold tracking-widest text-slate-300 mb-4">第一站</div>
+                <h2 class="text-2xl md:text-3xl font-black mb-3 text-yellow-500 drop-shadow-md">掀開歷史的記憶</h2>
+                <p class="text-sm md:text-base text-slate-400 font-medium leading-relaxed">老街溪曾被沈重的水泥加蓋。<br>請點擊敲碎它們，讓溪水重見天日！</p>
             </div>
             
             <div class="flex-1 relative flex items-center justify-center p-6 overflow-hidden">
@@ -211,87 +220,79 @@
                     <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#161C2D] to-transparent"></div>
                 </div>
                 
-                <div class="relative z-10 grid grid-cols-2 gap-4 w-full max-w-[280px]" id="concrete-grid">
-                    <div class="concrete-block bg-[#3B4A5A] h-36 rounded-3xl shadow-[0_8px_0_#232F3D] flex items-center justify-center cursor-pointer active:translate-y-2 active:shadow-none transition-all" onclick="breakBlock(this)">
-                        <div class="hammer-icon">
-                            <svg class="w-14 h-14 text-[#8A9BAE] transform rotate-[-45deg]" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="8" width="4" height="14" rx="1.5" /><rect x="4" y="2" width="16" height="8" rx="2" /></svg>
-                        </div>
-                        <div class="boom-icon hidden text-5xl">💥</div>
+                <div class="relative z-10 grid grid-cols-2 gap-4 md:gap-6 w-full max-w-[280px] md:max-w-[320px]" id="concrete-grid">
+                    <div class="concrete-block bg-[#3B4A5A] aspect-square rounded-3xl shadow-[0_8px_0_#232F3D] flex items-center justify-center cursor-pointer active:translate-y-2 active:shadow-none transition-all" onclick="breakBlock(this)">
+                        <div class="hammer-icon"><svg class="w-12 h-12 md:w-14 md:h-14 text-[#8A9BAE] transform rotate-[-45deg]" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="8" width="4" height="14" rx="1.5" /><rect x="4" y="2" width="16" height="8" rx="2" /></svg></div>
+                        <div class="boom-icon hidden text-4xl md:text-5xl">💥</div>
                     </div>
-                    <div class="concrete-block bg-[#3B4A5A] h-36 rounded-3xl shadow-[0_8px_0_#232F3D] flex items-center justify-center cursor-pointer active:translate-y-2 active:shadow-none transition-all" onclick="breakBlock(this)">
-                        <div class="hammer-icon">
-                            <svg class="w-14 h-14 text-[#8A9BAE] transform rotate-[-45deg]" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="8" width="4" height="14" rx="1.5" /><rect x="4" y="2" width="16" height="8" rx="2" /></svg>
-                        </div>
-                        <div class="boom-icon hidden text-5xl">💥</div>
+                    <div class="concrete-block bg-[#3B4A5A] aspect-square rounded-3xl shadow-[0_8px_0_#232F3D] flex items-center justify-center cursor-pointer active:translate-y-2 active:shadow-none transition-all" onclick="breakBlock(this)">
+                        <div class="hammer-icon"><svg class="w-12 h-12 md:w-14 md:h-14 text-[#8A9BAE] transform rotate-[-45deg]" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="8" width="4" height="14" rx="1.5" /><rect x="4" y="2" width="16" height="8" rx="2" /></svg></div>
+                        <div class="boom-icon hidden text-4xl md:text-5xl">💥</div>
                     </div>
-                    <div class="concrete-block bg-[#3B4A5A] h-36 rounded-3xl shadow-[0_8px_0_#232F3D] flex items-center justify-center cursor-pointer active:translate-y-2 active:shadow-none transition-all" onclick="breakBlock(this)">
-                        <div class="hammer-icon">
-                            <svg class="w-14 h-14 text-[#8A9BAE] transform rotate-[-45deg]" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="8" width="4" height="14" rx="1.5" /><rect x="4" y="2" width="16" height="8" rx="2" /></svg>
-                        </div>
-                        <div class="boom-icon hidden text-5xl">💥</div>
+                    <div class="concrete-block bg-[#3B4A5A] aspect-square rounded-3xl shadow-[0_8px_0_#232F3D] flex items-center justify-center cursor-pointer active:translate-y-2 active:shadow-none transition-all" onclick="breakBlock(this)">
+                        <div class="hammer-icon"><svg class="w-12 h-12 md:w-14 md:h-14 text-[#8A9BAE] transform rotate-[-45deg]" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="8" width="4" height="14" rx="1.5" /><rect x="4" y="2" width="16" height="8" rx="2" /></svg></div>
+                        <div class="boom-icon hidden text-4xl md:text-5xl">💥</div>
                     </div>
-                    <div class="concrete-block bg-[#3B4A5A] h-36 rounded-3xl shadow-[0_8px_0_#232F3D] flex items-center justify-center cursor-pointer active:translate-y-2 active:shadow-none transition-all" onclick="breakBlock(this)">
-                        <div class="hammer-icon">
-                            <svg class="w-14 h-14 text-[#8A9BAE] transform rotate-[-45deg]" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="8" width="4" height="14" rx="1.5" /><rect x="4" y="2" width="16" height="8" rx="2" /></svg>
-                        </div>
-                        <div class="boom-icon hidden text-5xl">💥</div>
+                    <div class="concrete-block bg-[#3B4A5A] aspect-square rounded-3xl shadow-[0_8px_0_#232F3D] flex items-center justify-center cursor-pointer active:translate-y-2 active:shadow-none transition-all" onclick="breakBlock(this)">
+                        <div class="hammer-icon"><svg class="w-12 h-12 md:w-14 md:h-14 text-[#8A9BAE] transform rotate-[-45deg]" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="8" width="4" height="14" rx="1.5" /><rect x="4" y="2" width="16" height="8" rx="2" /></svg></div>
+                        <div class="boom-icon hidden text-4xl md:text-5xl">💥</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="level-2" class="absolute inset-0 bg-gradient-to-b from-stone-100 to-red-50 flex flex-col hidden z-50">
-            <div class="p-8 text-center mt-6 z-20">
-                <div class="inline-block px-4 py-1.5 bg-red-100 rounded-full text-sm font-bold tracking-widest text-red-600 mb-4">第二站</div>
-                <h2 class="text-3xl font-black mb-3 text-red-900">點亮祈福平安燈</h2>
-                <p class="text-slate-600 font-medium">在美豐土地公前，<br>點亮 3 盞燈籠，祈求溪水長流。</p>
-                <div class="mt-6 inline-flex items-center gap-2 bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-red-100">
+            <div class="p-6 md:p-8 text-center mt-6 md:mt-8 z-20">
+                <div class="inline-block px-4 py-1.5 bg-red-100 rounded-full text-xs md:text-sm font-bold tracking-widest text-red-600 mb-4">第二站</div>
+                <h2 class="text-2xl md:text-3xl font-black mb-3 text-red-900">點亮祈福平安燈</h2>
+                <p class="text-sm md:text-base text-slate-600 font-medium">在美豐土地公前，<br>點亮 3 盞燈籠，祈求溪水長流。</p>
+                <div class="mt-4 md:mt-6 inline-flex items-center gap-2 bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-red-100">
                     <span class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></span>
-                    <span class="font-bold text-slate-800">已點亮：<span id="lantern-count" class="text-red-600 text-lg">0</span> / 3</span>
+                    <span class="font-bold text-slate-800 text-sm md:text-base">已點亮：<span id="lantern-count" class="text-red-600 text-lg md:text-xl">0</span> / 3</span>
                 </div>
             </div>
             
-            <div class="flex-1 relative flex items-center justify-center gap-4 sm:gap-6 p-6 pb-32">
-                <div class="text-7xl cursor-pointer lantern-off animate-float" onclick="lightLantern(this)">🏮</div>
-                <div class="text-7xl cursor-pointer lantern-off animate-float-delayed" style="margin-top: -80px;" onclick="lightLantern(this)">🏮</div>
-                <div class="text-7xl cursor-pointer lantern-off animate-float" style="animation-delay: 1s;" onclick="lightLantern(this)">🏮</div>
+            <div class="flex-1 relative flex items-center justify-center gap-2 md:gap-6 p-4 pb-24 md:pb-32">
+                <div class="text-6xl md:text-7xl cursor-pointer lantern-off animate-float" onclick="lightLantern(this)">🏮</div>
+                <div class="text-6xl md:text-7xl cursor-pointer lantern-off animate-float-delayed" style="margin-top: -60px;" onclick="lightLantern(this)">🏮</div>
+                <div class="text-6xl md:text-7xl cursor-pointer lantern-off animate-float" style="animation-delay: 1s;" onclick="lightLantern(this)">🏮</div>
             </div>
             
-            <div class="absolute bottom-0 w-full h-40 bg-red-800 rounded-t-[40%] flex justify-center items-end pb-8 shadow-[0_-20px_50px_rgba(220,38,38,0.2)]">
-                <div class="w-32 h-4 bg-yellow-500 rounded-full shadow-lg"></div>
+            <div class="absolute bottom-0 w-full h-32 md:h-40 bg-red-800 rounded-t-[40%] flex justify-center items-end pb-6 md:pb-8 shadow-[0_-20px_50px_rgba(220,38,38,0.2)]">
+                <div class="w-24 md:w-32 h-3 md:h-4 bg-yellow-500 rounded-full shadow-lg"></div>
             </div>
         </div>
 
         <div id="level-3" class="absolute inset-0 bg-blue-50 flex flex-col hidden z-50 overflow-hidden">
-            <div class="p-8 text-center mt-6 z-20">
-                <div class="inline-block px-4 py-1.5 bg-blue-100 rounded-full text-sm font-bold tracking-widest text-blue-600 mb-4 glass">第三站</div>
-                <h2 class="text-3xl font-black mb-3 text-blue-900 drop-shadow-sm">生態淨水任務</h2>
-                <p class="text-slate-700 font-medium drop-shadow-sm">點擊水面上的漂浮物，<br>恢復老街溪的清澈面貌！</p>
-                <div class="mt-6 inline-flex items-center gap-2 bg-white/90 backdrop-blur px-5 py-2.5 rounded-2xl shadow-lg border border-blue-100">
-                    <span class="font-bold text-slate-800">剩餘垃圾：<span id="trash-count" class="text-blue-600 text-xl font-black">5</span></span>
+            <div class="p-6 md:p-8 text-center mt-6 md:mt-8 z-20">
+                <div class="inline-block px-4 py-1.5 bg-blue-100 rounded-full text-xs md:text-sm font-bold tracking-widest text-blue-600 mb-4 glass">第三站</div>
+                <h2 class="text-2xl md:text-3xl font-black mb-3 text-blue-900 drop-shadow-sm">生態淨水任務</h2>
+                <p class="text-sm md:text-base text-slate-700 font-medium drop-shadow-sm">點擊水面上的漂浮物，<br>恢復老街溪的清澈面貌！</p>
+                <div class="mt-4 md:mt-6 inline-flex items-center gap-2 bg-white/90 backdrop-blur px-5 py-2.5 rounded-2xl shadow-lg border border-blue-100">
+                    <span class="font-bold text-slate-800 text-sm md:text-base">剩餘垃圾：<span id="trash-count" class="text-blue-600 text-lg md:text-xl font-black">5</span></span>
                 </div>
             </div>
             
             <div class="flex-1 relative bg-gradient-to-b from-sky-200 to-blue-500">
-                <svg class="absolute inset-0 w-full h-full opacity-40 mix-blend-overlay" preserveAspectRatio="none" viewBox="0 0 100 100">
+                <svg class="absolute inset-0 w-full h-full opacity-40 mix-blend-overlay pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
                     <path d="M0,50 Q25,60 50,50 T100,50 L100,100 L0,100 Z" fill="#ffffff" class="animate-pulse"/>
                     <path d="M0,70 Q25,80 50,70 T100,70 L100,100 L0,100 Z" fill="#ffffff" opacity="0.5"/>
                 </svg>
                 
                 <div id="trash-container" class="absolute inset-0">
-                    <div class="trash-item absolute top-[25%] left-[20%] w-24 h-24 cursor-pointer animate-float drop-shadow-lg" onclick="cleanTrash(this)">
+                    <div class="trash-item absolute top-[15%] left-[10%] md:left-[20%] w-20 h-20 md:w-24 md:h-24 cursor-pointer animate-float drop-shadow-lg" onclick="cleanTrash(this)">
                         <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj44TCkpUE1i7pgzEHlCw1WH_B4SQrDOfhN8GpEbgHvM4x2tfVU4etxiSBEc_SruU_3ar6J9uTVM5DiSeBM-m9lWzeteYS4x9C_CqtLQ5cyfQMuei_F437vtsToCVTptcEcuevTdx7osEo1nP75dabvPG5fD8FhUBrm6hVH6vjUo8ucY078rg-k7zgV/s16000/%E5%85%8D%E6%B4%97%E9%A4%90%E5%85%B7.webp" alt="免洗餐具" class="w-full h-full object-contain pointer-events-none">
                     </div>
-                    <div class="trash-item absolute top-[45%] left-[65%] w-20 h-20 cursor-pointer animate-float-delayed drop-shadow-lg" onclick="cleanTrash(this)">
+                    <div class="trash-item absolute top-[35%] right-[15%] md:right-[20%] w-16 h-16 md:w-20 md:h-20 cursor-pointer animate-float-delayed drop-shadow-lg" onclick="cleanTrash(this)">
                         <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhebSF7DBxxwIcCRaxA1JwYaaZo7GT23GGSxh6R8Z6yYicmGrex8xgtJaQU7bKqA1zVYIU-XhHAHWzLltUHD-0Naf5lKxcB940qwNyEqTPzLlLHsecs8gzXTYmCXs1X5uQmQYoCfZ3bCObA9spIp-jbnI8C9xSPAotolsulpCVjBo4uuNmZJKSsqy5I/s16000/%E4%BF%9D%E9%BA%97%E9%BE%8D.webp" alt="保麗龍" class="w-full h-full object-contain pointer-events-none">
                     </div>
-                    <div class="trash-item absolute bottom-[30%] left-[25%] w-28 h-28 cursor-pointer animate-float drop-shadow-lg" style="animation-delay: 1s;" onclick="cleanTrash(this)">
+                    <div class="trash-item absolute bottom-[20%] left-[15%] md:left-[25%] w-24 h-24 md:w-28 md:h-28 cursor-pointer animate-float drop-shadow-lg" style="animation-delay: 1s;" onclick="cleanTrash(this)">
                         <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgr_xZvyfrD-oTnIfR3zRpiPicvBPNvokNrfzbQ5i9qlP_YS2k4R51RtzQRtcUHQUMtQ1NlyNNe_axCr_ziAKFUFUZLO5Srg6NUnPDRSb6j23QgFFoeZ-WK1aU7Px30NmEUc1Xjz_iCPqB_6NjkgwFSRwz6KfXJ5DGLZNV4njcg0eVPzmPmtlK6bxBt/s16000/%E7%B4%85%E7%99%BD%E5%A1%91%E8%86%A0%E8%A2%8B.webp" alt="紅白塑膠袋" class="w-full h-full object-contain pointer-events-none">
                     </div>
-                    <div class="trash-item absolute top-[65%] left-[60%] w-24 h-24 cursor-pointer animate-float-delayed drop-shadow-lg" onclick="cleanTrash(this)">
+                    <div class="trash-item absolute top-[55%] md:top-[60%] right-[25%] md:right-[30%] w-20 h-20 md:w-24 md:h-24 cursor-pointer animate-float-delayed drop-shadow-lg" onclick="cleanTrash(this)">
                         <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhZYyBNCJUD_rLzV2Qrn3GLLOkj_o5VdsCfAmeuOvXTbDcH4VbTp-u2Hw_HTLViNsGgPi7Ob2_xC1T76hdr6tzFjETpPJtFV6RSwnKL724irDWlSAUPJeIjDHxCk6hA_czmOwhNAu_P16vBrrOZpxhTQb5svihJi4aDEIzqUMPfUvJoqlWLIZfTx9YD/s16000/%E5%AE%B6%E5%BA%AD%E5%9E%83%E5%9C%BE%E8%A2%8B.webp" alt="家庭垃圾袋" class="w-full h-full object-contain pointer-events-none">
                     </div>
-                    <div class="trash-item absolute top-[20%] right-[10%] w-16 h-16 cursor-pointer animate-float drop-shadow-lg" style="animation-delay: 0.5s;" onclick="cleanTrash(this)">
+                    <div class="trash-item absolute top-[10%] right-[10%] w-12 h-12 md:w-16 md:h-16 cursor-pointer animate-float drop-shadow-lg" style="animation-delay: 0.5s;" onclick="cleanTrash(this)">
                         <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiITWYaUxqsFhsm0jz6Wwk019p1ZckdcRcMRxugkKD00KhUnWjxs_7WFDE-d9ws22EroiKjW7d5KDWMdQOxe4NrjmIbMnneM_ckX654wLzkxli0ggX3HvGPXtMeHFEBSsrFAR7ANaWRQCq56eYx48g6AtqEJkyjlwoM3yq4hoM18vE1e5LzGz-GeocK/s16000/%E5%AF%B6%E7%89%B9%E7%93%B6.webp" alt="寶特瓶" class="w-full h-full object-contain pointer-events-none">
                     </div>
                 </div>
@@ -299,53 +300,53 @@
         </div>
 
         <div id="level-4" class="absolute inset-0 bg-emerald-50 flex flex-col hidden z-50">
-            <div class="p-8 text-center mt-6 z-20 glass mx-6 rounded-3xl mt-10 shadow-xl border-white/60">
-                <div class="inline-block px-4 py-1.5 bg-emerald-100 rounded-full text-sm font-bold tracking-widest text-emerald-700 mb-3">第四站</div>
-                <h2 class="text-3xl font-black mb-2 text-emerald-900">尋找老街溪鳥類</h2>
-                <p class="text-slate-600 font-medium">環境變好了，鳥兒們也回來了。<br>在草叢中找出 <span class="text-emerald-600 font-black">3種</span> 特色鳥類！</p>
-                <div class="mt-4 font-bold text-emerald-700 bg-emerald-100/50 py-1.5 rounded-xl">已找到：<span id="bird-count" class="text-xl">0</span> / 3</div>
+            <div class="p-6 md:p-8 text-center mt-6 md:mt-8 z-20 glass mx-4 md:mx-6 rounded-3xl shadow-xl border-white/60">
+                <div class="inline-block px-4 py-1.5 bg-emerald-100 rounded-full text-xs md:text-sm font-bold tracking-widest text-emerald-700 mb-3">第四站</div>
+                <h2 class="text-2xl md:text-3xl font-black mb-2 text-emerald-900">尋找老街溪鳥類</h2>
+                <p class="text-sm md:text-base text-slate-600 font-medium">環境變好了，鳥兒們也回來了。<br>在草叢中找出 <span class="text-emerald-600 font-black">3種</span> 特色鳥類！</p>
+                <div class="mt-4 font-bold text-emerald-700 bg-emerald-100/50 py-1.5 px-4 rounded-xl inline-block text-sm md:text-base">已找到：<span id="bird-count" class="text-lg md:text-xl">0</span> / 3</div>
             </div>
             
-            <div class="flex-1 relative overflow-hidden bg-gradient-to-t from-emerald-600 to-emerald-200 mt-10 rounded-t-[3rem]">
-                <div class="absolute bottom-0 w-full h-[60%] bg-emerald-500 rounded-t-[100px] shadow-[0_-10px_30px_rgba(4,120,87,0.2)]"></div>
-                <div class="absolute bottom-[-5%] left-[-15%] w-64 h-64 bg-emerald-700 rounded-full opacity-80 mix-blend-multiply"></div>
-                <div class="absolute bottom-[10%] right-[-10%] w-48 h-48 bg-emerald-400 rounded-full opacity-90"></div>
-                <div class="absolute top-[20%] left-[10%] w-32 h-32 bg-emerald-300 rounded-full opacity-60 mix-blend-screen"></div>
+            <div class="flex-1 relative overflow-hidden bg-gradient-to-t from-emerald-600 to-emerald-200 mt-6 md:mt-10 rounded-t-[3rem]">
+                <div class="absolute bottom-0 w-full h-[60%] bg-emerald-500 rounded-t-[80px] md:rounded-t-[100px] shadow-[0_-10px_30px_rgba(4,120,87,0.2)]"></div>
+                <div class="absolute bottom-[-5%] left-[-15%] w-48 h-48 md:w-64 md:h-64 bg-emerald-700 rounded-full opacity-80 mix-blend-multiply pointer-events-none"></div>
+                <div class="absolute bottom-[10%] right-[-10%] w-36 h-36 md:w-48 md:h-48 bg-emerald-400 rounded-full opacity-90 pointer-events-none"></div>
+                <div class="absolute top-[20%] left-[10%] w-24 h-24 md:w-32 md:h-32 bg-emerald-300 rounded-full opacity-60 mix-blend-screen pointer-events-none"></div>
 
-                <div class="bird-target absolute bottom-[25%] left-[8%] w-32 h-32 cursor-pointer bird-hidden" onclick="findBird(this, 0)">
+                <div class="bird-target absolute bottom-[25%] left-[5%] md:left-[8%] w-28 h-28 md:w-32 md:h-32 cursor-pointer bird-hidden" onclick="findBird(this, 0)">
                     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgIB7z7xdMI_HcJrZJOmlMpy32VigH0TcyDLKMrVQH1Zd1qs9TnU2w24P-d8o2Wa6lugm3bD-bTGl614hjBDF5GZ7OtCNk7BI8c7NEfhGorH37LCNJudr3zYw2laXokRRTfrGnNZyzeLmiOgyrME-3wAksTLFjlsB_OdEq3xWgvJUF5DM0wiWuJmMYd/s16000/%E8%80%81%E8%A1%97%E6%BA%AA%E9%B3%A5%E9%A1%9E%E4%BB%A3%E8%A1%A8-%E5%A4%A7%E7%99%BD%E9%B7%BA.webp" alt="大白鷺" class="w-full h-full object-contain pointer-events-none">
                 </div>
-                <div class="bird-target absolute bottom-[15%] right-[12%] w-24 h-24 cursor-pointer bird-hidden z-10" onclick="findBird(this, 1)">
+                <div class="bird-target absolute bottom-[15%] right-[8%] md:right-[12%] w-20 h-20 md:w-24 md:h-24 cursor-pointer bird-hidden z-10" onclick="findBird(this, 1)">
                     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg3eyFBImQgffIh7n0x9DsEV8YiJI4QU0arm9pbORqG1Vd9uJXGcAvpmr0rZVO9rrpmAr96Q0_e1VMeCswC4QzLcr5SJ-dFSyiT3X53q3_s66BiVNkwcNMJKNVOCLAIKDy5LYMQOnTad2_uVcpYnYE2rUKViLbNMGbEYAQ0RzENog1Nu88gTzKM21QU/s16000/%E8%80%81%E8%A1%97%E6%BA%AA%E9%B3%A5%E9%A1%9E%E4%BB%A3%E8%A1%A8-%E5%A4%9C%E9%B7%BA.webp" alt="夜鷺" class="w-full h-full object-contain pointer-events-none">
                 </div>
-                <div class="bird-target absolute top-[25%] right-[25%] w-16 h-16 cursor-pointer bird-hidden" onclick="findBird(this, 2)">
+                <div class="bird-target absolute top-[25%] right-[20%] md:right-[25%] w-14 h-14 md:w-16 md:h-16 cursor-pointer bird-hidden" onclick="findBird(this, 2)">
                     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi94O5qXoMvB5j9dIlzJuqvtOYeXOjbg3AvC-OwTLZQ9thu-6hAjPJTwtTnGcRUGKUTS_7ygvw1LhlF3LpYaLLKvJZAD9K-qZjZrw5nq0yiZX9d4Xk70mh0Se1yhL3xN-uk3Fj9_cyvmbFRSPxPQ_JKbT923-BR_Fu6dLfpCooejCRBDlaQ57A1Du9z/s16000/%E8%80%81%E8%A1%97%E6%BA%AA%E9%B3%A5%E9%A1%9E%E4%BB%A3%E8%A1%A8-%E7%B6%A0%E7%B9%A1%E7%9C%BC.webp" alt="綠繡眼" class="w-full h-full object-contain pointer-events-none">
                 </div>
             </div>
         </div>
 
         <div id="level-5" class="absolute inset-0 bg-gradient-to-b from-sky-300 to-sky-100 flex flex-col hidden z-50 cursor-pointer" onclick="rideBike()">
-            <div class="p-8 text-center mt-6 z-20 pointer-events-none">
-                <div class="inline-block px-4 py-1.5 bg-white/40 rounded-full text-sm font-bold tracking-widest text-slate-800 mb-4 glass">最終站</div>
-                <h2 class="text-3xl font-black mb-3 text-slate-800 drop-shadow-md">迎風騎行</h2>
-                <p class="text-slate-700 font-bold bg-white/50 py-2 px-4 rounded-2xl inline-block backdrop-blur-sm">連續點擊螢幕踩踏板，騎向終點！</p>
+            <div class="p-6 md:p-8 text-center mt-6 md:mt-8 z-20 pointer-events-none">
+                <div class="inline-block px-4 py-1.5 bg-white/40 rounded-full text-xs md:text-sm font-bold tracking-widest text-slate-800 mb-4 glass">最終站</div>
+                <h2 class="text-2xl md:text-3xl font-black mb-3 text-slate-800 drop-shadow-md">迎風騎行</h2>
+                <p class="text-sm md:text-base text-slate-700 font-bold bg-white/50 py-2 px-4 rounded-2xl inline-block backdrop-blur-sm">連續點擊螢幕踩踏板，騎向終點！</p>
                 
-                <div class="w-full max-w-xs mx-auto h-3 bg-white/40 rounded-full mt-6 overflow-hidden border border-white/50">
+                <div class="w-full max-w-[240px] md:max-w-xs mx-auto h-3 bg-white/40 rounded-full mt-6 overflow-hidden border border-white/50">
                     <div id="bike-progress-bar" class="h-full bg-slate-800 w-0 transition-all duration-300 ease-out rounded-full"></div>
                 </div>
             </div>
             
-            <div class="flex-1 relative overflow-hidden flex flex-col justify-end pb-20 pointer-events-none">
-                <div class="absolute top-10 right-10 text-7xl animate-float-delayed drop-shadow-xl">☀️</div>
-                <div class="absolute top-24 left-5 text-6xl animate-float opacity-80">☁️</div>
-                <div class="absolute top-40 right-1/4 text-5xl animate-float opacity-70" style="animation-delay: 1.5s">☁️</div>
+            <div class="flex-1 relative overflow-hidden flex flex-col justify-end pb-16 md:pb-20 pointer-events-none">
+                <div class="absolute top-10 right-10 text-6xl md:text-7xl animate-float-delayed drop-shadow-xl">☀️</div>
+                <div class="absolute top-24 left-5 text-5xl md:text-6xl animate-float opacity-80">☁️</div>
+                <div class="absolute top-40 right-1/4 text-4xl md:text-5xl animate-float opacity-70" style="animation-delay: 1.5s">☁️</div>
 
-                <div class="absolute bottom-10 w-full h-28 bg-[#94A3B8] border-t-[12px] border-[#64748B] shadow-2xl flex flex-col justify-center">
+                <div class="absolute bottom-10 w-full h-24 md:h-28 bg-[#94A3B8] border-t-[10px] md:border-t-[12px] border-[#64748B] shadow-2xl flex flex-col justify-center">
                     <div class="w-full h-2 border-t-8 border-dashed border-white/60"></div>
-                    <div class="absolute right-4 bottom-6 text-6xl">🏁</div>
+                    <div class="absolute right-4 bottom-4 md:bottom-6 text-5xl md:text-6xl">🏁</div>
                 </div>
 
-                <div id="bike-player" class="absolute bottom-14 left-0 z-10 bike-move flex items-center justify-center w-32 h-32" style="left: -10%;">
+                <div id="bike-player" class="absolute bottom-12 md:bottom-14 left-0 z-10 bike-move flex items-center justify-center w-28 h-28 md:w-32 md:h-32" style="left: -10%;">
                     <svg width="100%" height="100%" viewBox="0 0 110 70" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-xl">
                         <path d="M 25 45 L 45 25 L 75 25 L 85 45" fill="none" stroke="#F43F5E" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
                         <path d="M 45 25 L 55 45 L 85 45" fill="none" stroke="#F43F5E" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
@@ -372,11 +373,11 @@
         </div>
 
         <div id="success-modal" class="absolute inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-6 z-[100] hidden opacity-0 transition-opacity duration-300">
-            <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl transform scale-95 transition-all duration-400 ease-out border border-white/50" id="modal-content">
-                <div id="modal-icon" class="text-7xl mb-5 inline-block animate-pop drop-shadow-xl bg-slate-50 w-28 h-28 rounded-full flex items-center justify-center mx-auto border-4 border-slate-100 overflow-hidden">✨</div>
-                <h3 id="modal-title" class="text-2xl font-black text-slate-800 mb-2 tracking-tight">任務完成！</h3>
-                <p id="modal-desc" class="text-slate-500 mb-8 font-medium leading-relaxed">獲得專屬徽章</p>
-                <button onclick="nextLevel()" class="btn-press w-full py-4 bg-slate-800 text-white rounded-2xl text-xl font-bold shadow-[0_6px_0_#0F172A] flex justify-center items-center gap-2">
+            <div class="bg-white w-full max-w-[320px] md:max-w-sm rounded-[2.5rem] p-6 md:p-8 text-center shadow-2xl transform scale-95 transition-all duration-400 ease-out border border-white/50" id="modal-content">
+                <div id="modal-icon" class="text-6xl md:text-7xl mb-4 md:mb-5 inline-block animate-pop drop-shadow-xl bg-slate-50 w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center mx-auto border-4 border-slate-100 overflow-hidden">✨</div>
+                <h3 id="modal-title" class="text-xl md:text-2xl font-black text-slate-800 mb-2 tracking-tight">任務完成！</h3>
+                <p id="modal-desc" class="text-sm md:text-base text-slate-500 mb-6 md:mb-8 font-medium leading-relaxed">獲得專屬徽章</p>
+                <button onclick="nextLevel()" class="btn-press w-full py-3.5 md:py-4 bg-slate-800 text-white rounded-2xl text-lg md:text-xl font-bold shadow-[0_6px_0_#0F172A] flex justify-center items-center gap-2">
                     繼續旅程
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
                 </button>
@@ -384,42 +385,42 @@
         </div>
 
         <div id="info-modal" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6 z-[105] hidden opacity-0 transition-opacity duration-300">
-            <div class="bg-white w-full max-w-sm rounded-[2rem] overflow-hidden shadow-2xl transform scale-95 transition-all duration-400 ease-out border border-white/50" id="info-content">
-                <div class="w-full aspect-square bg-slate-100 relative overflow-hidden flex items-center justify-center">
+            <div class="bg-white w-full max-w-[320px] md:max-w-sm rounded-[2rem] overflow-hidden shadow-2xl transform scale-95 transition-all duration-400 ease-out border border-white/50 flex flex-col max-h-[85dvh]" id="info-content">
+                <div class="w-full aspect-square bg-slate-100 relative overflow-hidden flex items-center justify-center shrink-0">
                     <img id="info-img" src="" alt="圖片介紹" class="w-full h-full object-cover">
                 </div>
-                <div class="p-6 text-center">
-                    <p id="info-zh" class="text-slate-800 font-bold mb-3 leading-relaxed text-[15px]"></p>
-                    <p id="info-en" class="text-slate-500 text-[13px] leading-relaxed mb-6 font-medium"></p>
-                    <button onclick="closeInfoModal()" class="btn-press w-full py-3.5 bg-red-600 text-white rounded-2xl text-lg font-bold shadow-[0_6px_0_#991B1B] flex justify-center items-center gap-2">
+                <div class="p-5 md:p-6 text-center overflow-y-auto no-scrollbar flex-1 flex flex-col">
+                    <p id="info-zh" class="text-slate-800 font-bold mb-2 md:mb-3 leading-relaxed text-[14px] md:text-[15px]"></p>
+                    <p id="info-en" class="text-slate-500 text-[12px] md:text-[13px] leading-relaxed mb-4 md:mb-6 font-medium"></p>
+                    <button onclick="closeInfoModal()" class="mt-auto btn-press w-full py-3 md:py-3.5 bg-red-600 text-white rounded-2xl text-base md:text-lg font-bold shadow-[0_6px_0_#991B1B] flex justify-center items-center gap-2">
                         繼續探索
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+                        <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"></path></svg>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div id="screen-end" class="absolute inset-0 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-slate-800 to-slate-900 hidden z-[110] overflow-y-auto no-scrollbar text-white">
-            <div class="absolute top-10 left-10 text-3xl animate-float">🎉</div>
-            <div class="absolute top-20 right-10 text-4xl animate-float-delayed">🎊</div>
-            <div class="w-32 h-32 bg-gradient-to-tr from-yellow-400 to-amber-200 rounded-full flex items-center justify-center text-7xl shadow-[0_0_50px_rgba(250,204,21,0.4)] mb-8 animate-pop border-4 border-yellow-100/30">🏆</div>
-            <h1 class="text-4xl font-black mb-4 text-center tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-100">恭喜完成走讀！</h1>
-            <p class="text-center text-slate-300 mb-10 leading-relaxed font-medium bg-white/5 p-6 rounded-3xl backdrop-blur-sm border border-white/10">
+        <div id="screen-end" class="absolute inset-0 flex flex-col items-center justify-center p-6 md:p-8 bg-gradient-to-br from-slate-800 to-slate-900 hidden z-[110] overflow-y-auto no-scrollbar text-white">
+            <div class="absolute top-10 left-6 md:left-10 text-2xl md:text-3xl animate-float pointer-events-none">🎉</div>
+            <div class="absolute top-20 right-6 md:right-10 text-3xl md:text-4xl animate-float-delayed pointer-events-none">🎊</div>
+            <div class="w-28 h-28 md:w-32 md:h-32 bg-gradient-to-tr from-yellow-400 to-amber-200 rounded-full flex items-center justify-center text-6xl md:text-7xl shadow-[0_0_50px_rgba(250,204,21,0.4)] mb-6 md:mb-8 animate-pop border-4 border-yellow-100/30 shrink-0">🏆</div>
+            <h1 class="text-3xl md:text-4xl font-black mb-3 md:mb-4 text-center tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-100">恭喜完成走讀！</h1>
+            <p class="text-center text-slate-300 mb-8 md:mb-10 leading-relaxed text-sm md:text-base font-medium bg-white/5 p-5 md:p-6 rounded-3xl backdrop-blur-sm border border-white/10 w-full">
                 從掀開歷史的蓋子、美豐土地公祈福、<br>生態淨水、尋找生態鳥類，到迎風單車行。<br><br>
                 <span class="text-yellow-200 font-bold">您已完整體驗了老街溪的美好蛻變！</span>
             </p>
-            <div class="flex justify-center gap-3 mb-10">
-                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-lg animate-pop overflow-hidden" style="animation-delay: 0.1s">
+            <div class="flex justify-center gap-2 md:gap-3 mb-8 md:mb-10 flex-wrap">
+                <div class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center text-xl md:text-2xl shadow-lg animate-pop overflow-hidden" style="animation-delay: 0.1s">
                     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhmXUYl5M6JoWDTI269Gv80G-yIAPOnQcm6QC_CzwS5HnNbLwXY3CXPP4YPsRE-250u22E891IxK6wwZZCCtfHpebG2XC9mmk4Hw6Eusy22_RdyyjHbPH2Iy5EyO8MZETRAmWKdHpHatu2W5c57AleVv3aQ7oSErQVqWSfo_MPZ67XBqF7WcZnf-7io/s16000/%E9%96%8B%E8%93%8B%E5%BB%A3%E5%A0%B4.webp" alt="開蓋廣場" class="w-full h-full object-cover">
                 </div>
-                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-lg animate-pop" style="animation-delay: 0.2s">🏮</div>
-                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-lg animate-pop" style="animation-delay: 0.3s">💧</div>
-                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-lg animate-pop overflow-hidden" style="animation-delay: 0.4s">
+                <div class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center text-xl md:text-2xl shadow-lg animate-pop" style="animation-delay: 0.2s">🏮</div>
+                <div class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center text-xl md:text-2xl shadow-lg animate-pop" style="animation-delay: 0.3s">💧</div>
+                <div class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center text-xl md:text-2xl shadow-lg animate-pop overflow-hidden" style="animation-delay: 0.4s">
                     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhHXa9e2HwLz4SOolPKsuVJSt6IZ-G7twKlRy325A7GKaOyAPlTUnnjjULBAXtTYyDAfKJyGxJktIU_L2sRwJlWrD9PqjtSCW85UKhE4MyEiIoGkYtw0YOxQDkjbfOXj1M7UTFe_-05gXD9mBTospwlpFbQg1f2kGYetpqUOjwFEIHz6lTTJf9VU8M9/s16000/%E6%96%B0%E5%8B%A2%E5%85%AC%E5%9C%92.webp" alt="新勢公園" class="w-full h-full object-cover">
                 </div>
-                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-lg animate-pop" style="animation-delay: 0.5s">🚲</div>
+                <div class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center text-xl md:text-2xl shadow-lg animate-pop" style="animation-delay: 0.5s">🚲</div>
             </div>
-            <button onclick="resetGame()" class="btn-press w-full max-w-[240px] py-4 bg-white text-slate-900 rounded-2xl text-xl font-bold shadow-[0_6px_0_#CBD5E1] mb-6">
+            <button onclick="resetGame()" class="btn-press w-full max-w-[240px] py-3.5 md:py-4 bg-white text-slate-900 rounded-2xl text-lg md:text-xl font-bold shadow-[0_6px_0_#CBD5E1] mb-4">
                 🔄 再次遊玩
             </button>
         </div>
@@ -427,6 +428,7 @@
     </div>
 
     <script>
+        // 腳本邏輯與原版完全一致，維持無 Bug 運行
         let currentLevel = 0;
         let progress = { 1: false, 2: false, 3: false, 4: false, 5: false };
         
@@ -485,7 +487,6 @@
             }
         ];
 
-        // 統一替換地圖設定的新勢公園圖片
         const mapNodes = [
             {id: 1, icon: '<img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhmXUYl5M6JoWDTI269Gv80G-yIAPOnQcm6QC_CzwS5HnNbLwXY3CXPP4YPsRE-250u22E891IxK6wwZZCCtfHpebG2XC9mmk4Hw6Eusy22_RdyyjHbPH2Iy5EyO8MZETRAmWKdHpHatu2W5c57AleVv3aQ7oSErQVqWSfo_MPZ67XBqF7WcZnf-7io/s16000/%E9%96%8B%E8%93%8B%E5%BB%A3%E5%A0%B4.webp" alt="開蓋廣場" class="w-full h-full object-cover">', colorClass: 'border-slate-800'},
             {id: 2, icon: '🏮', colorClass: 'border-red-500'},
@@ -568,7 +569,7 @@
                 if(progress[i]) {
                     nodeBtn.classList.remove('opacity-40', 'pointer-events-none');
                     pingDiv.classList.add('hidden'); 
-                    iconDiv.className = `absolute inset-0 bg-slate-100 rounded-full shadow-inner border-4 border-slate-300 flex items-center justify-center text-2xl z-10 grayscale overflow-hidden`;
+                    iconDiv.className = `absolute inset-0 bg-slate-100 rounded-full shadow-inner border-4 border-slate-300 flex items-center justify-center text-xl md:text-2xl z-10 grayscale overflow-hidden`;
                     iconDiv.innerHTML = '✔️';
 
                     if(i < 5 && !progress[i+1]) {
@@ -643,7 +644,6 @@
                 if(currentLevel === 2 && lanternsLit === 3 && !progress[2]) {
                     setTimeout(() => showSuccess('祈求平安！', '點亮平安燈，獲得土地公滿滿的祝福。', '🏮'), 300);
                 } else if (currentLevel === 4 && birdsFound === 3 && !progress[4]) {
-                    // 第四關過關彈窗：更新為新勢公園圖片
                     setTimeout(() => showSuccess('生態觀察家！', '您成功找出了棲息在老街溪畔的特色鳥類。', '<img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhHXa9e2HwLz4SOolPKsuVJSt6IZ-G7twKlRy325A7GKaOyAPlTUnnjjULBAXtTYyDAfKJyGxJktIU_L2sRwJlWrD9PqjtSCW85UKhE4MyEiIoGkYtw0YOxQDkjbfOXj1M7UTFe_-05gXD9mBTospwlpFbQg1f2kGYetpqUOjwFEIHz6lTTJf9VU8M9/s16000/%E6%96%B0%E5%8B%A2%E5%85%AC%E5%9C%92.webp" class="w-full h-full object-cover">'), 300);
                 }
             }, 300);
@@ -764,17 +764,17 @@
                 const iconDiv = document.getElementById(`icon-${i}`);
                 const badge = document.getElementById(`badge-${i}`);
                 
-                badge.className = `w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-sm grayscale opacity-40 transition-all duration-500 shadow-inner overflow-hidden`;
+                badge.className = `w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-200 flex items-center justify-center text-sm grayscale opacity-40 transition-all duration-500 shadow-inner overflow-hidden`;
                 
                 if(i === 1) {
                     nodeBtn.classList.remove('opacity-40', 'pointer-events-none');
                     pingDiv.classList.remove('hidden'); 
-                    iconDiv.className = `absolute inset-0 bg-white rounded-full shadow-lg border-4 ${mapNodes[i-1].colorClass} flex items-center justify-center text-2xl z-10 overflow-hidden`;
+                    iconDiv.className = `absolute inset-0 bg-white rounded-full shadow-lg border-4 ${mapNodes[i-1].colorClass} flex items-center justify-center text-xl md:text-2xl z-10 overflow-hidden`;
                     iconDiv.innerHTML = mapNodes[i-1].icon;
                 } else {
                     nodeBtn.classList.add('opacity-40', 'pointer-events-none');
                     pingDiv.classList.add('hidden'); 
-                    iconDiv.className = `absolute inset-0 bg-white rounded-full shadow-lg border-4 ${mapNodes[i-1].colorClass} flex items-center justify-center text-2xl z-10 overflow-hidden`;
+                    iconDiv.className = `absolute inset-0 bg-white rounded-full shadow-lg border-4 ${mapNodes[i-1].colorClass} flex items-center justify-center text-xl md:text-2xl z-10 overflow-hidden`;
                     iconDiv.innerHTML = mapNodes[i-1].icon;
                 }
             }
