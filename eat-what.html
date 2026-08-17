@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>今天吃什麼？ | 質感餐點隨機選擇器</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #FECA57;
+            --bg-color: #1A1A2E;
+            --surface: rgba(255, 255, 255, 0.1);
+            --text-main: #FFFFFF;
+            --text-muted: #A0A0B5;
+            --radius: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top right, #2a2a4a, transparent),
+                              radial-gradient(circle at bottom left, #361b28, transparent);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* 標題與版面 */
+        header {
+            position: absolute;
+            top: 5vh;
+            text-align: center;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* 主顯示區 (毛玻璃卡片) */
+        .glass-card {
+            background: var(--surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius);
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 10;
+        }
+
+        .result-container {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .result-text {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: -webkit-linear-gradient(45deg, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+            white-space: nowrap;
+            transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+        }
+
+        /* 按鈕設計 */
+        .btn {
+            border: none;
+            outline: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .btn-spin {
+            background: linear-gradient(135deg, var(--primary), #FF4757);
+            color: white;
+            font-size: 1.25rem;
+            padding: 16px 48px;
+            width: 100%;
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.4);
+            letter-spacing: 1px;
+        }
+
+        .btn-spin:active {
+            transform: scale(0.96);
+            box-shadow: 0 5px 10px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-spin:disabled {
+            background: #555;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 設定按鈕 (右上角) */
+        .btn-settings {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            border-radius: 50%;
+            z-index: 20;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-settings:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 設定選單 Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 25, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--bg-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            width: 90%;
+            max-width: 400px;
+            padding: 30px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.2rem;
+        }
+
+        .btn-close {
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            padding: 5px;
+        }
+
+        /* 清單編輯區 */
+        textarea {
+            width: 100%;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            padding: 15px;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: none;
+            margin-bottom: 20px;
+            outline: none;
+        }
+        
+        textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-save {
+            background: var(--secondary);
+            color: #333;
+            padding: 12px;
+            font-size: 1rem;
+        }
+
+        /* 慶祝特效 (Confetti) 容器 */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* RWD 調整 */
+        @media (max-width: 480px) {
+            .result-text { font-size: 2rem; }
+            .glass-card { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 背景彩帶特效用 Canvas -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- 右上角設定按鈕 -->
+    <button class="btn btn-settings" onclick="toggleModal(true)" aria-label="設定">⚙️</button>
+
+    <header>
+        <h1>今天吃什麼？</h1>
+        <h1>What do you want to eat today?</h1>
+    </header>
+
+    <!-- 主遊戲卡片 -->
+    <main class="glass-card">
+        <div class="result-container">
+            <div id="result-display" class="result-text">點擊下方按鈕開始</div>
+        </div>
+        <button id="spin-btn" class="btn btn-spin" onclick="startSpin()">抽餐點 !</button>
+    </main>
+
+    <!-- 編輯清單的 Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🍔 編輯餐點清單</h2>
+                <button class="btn btn-close" onclick="toggleModal(false)">&times;</button>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px;">請輸入餐點名稱，每行一項。系統會自動記憶您的最愛清單！</p>
+            <textarea id="food-list-input"></textarea>
+            <button class="btn btn-save" onclick="saveList()">儲存並更新</button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * 程式碼架構 (符合 Web Information Architect 的乾淨分離原則)
+         * 1. 預設資料設定
+         * 2. 狀態管理 (State)
+         * 3. 核心邏輯 (抽籤動畫演算法)
+         * 4. UI 互動與本地儲存 (LocalStorage)
+         * 5. 視覺特效 (Particle/Confetti)
+         */
+
+        // ==========================================
+        // 1. 預設資料 (從你的 TXT 檔匯入的初始菜單)
+        // ==========================================
+        const defaultFoods = [
+            "梅亭小吃",
+            "八方雲集",
+            "上野烤肉飯",
+            "中山路燒肉飯",
+            "正忠排骨",
+            "中央排骨",
+            "牛轉乾坤牛肉麵",
+            "彭記炒飯",
+            "牛小恬牛肉麵",
+            "粥神",
+            "欣園便當",
+            "尹大叔麵食"
+        ]; //[cite: 1]
+
+        // ==========================================
+        // 2. 狀態管理
+        // ==========================================
+        let foods = [];
+        let isSpinning = false;
+
+        // 初始化：優先從 LocalStorage 讀取，若無則使用預設
+        function init() {
+            const savedFoods = localStorage.getItem('myFoodList');
+            if (savedFoods) {
+                foods = JSON.parse(savedFoods);
+            } else {
+                foods = [...defaultFoods];
+            }
+            updateResultText("準備好開吃了嗎？");
+        }
+
+        // ==========================================
+        // 3. 核心邏輯：老虎機風格抽籤動畫
+        // ==========================================
+        function startSpin() {
+            if (isSpinning || foods.length === 0) {
+                if (foods.length === 0) alert("請先到設定中新增餐點！");
+                return;
+            }
+
+            isSpinning = true;
+            const btn = document.getElementById('spin-btn');
+            btn.disabled = true;
+            btn.innerText = "選擇中...";
+
+            let duration = 3000; // 總旋轉時間 3秒
+            let intervalTime = 50; // 初始切換速度
+            let timer;
+            let elapsed = 0;
+
+            const display = document.getElementById('result-display');
+            
+            // 隨機切換文字的迴圈
+            function tick() {
+                // 產生隨機索引，確保視覺上有在跳動
+                const randomIndex = Math.floor(Math.random() * foods.length);
+                display.innerText = foods[randomIndex];
+                
+                // 動態增加一點 Y 軸位移，營造滾動感
+                const offset = Math.random() > 0.5 ? 5 : -5;
+                display.style.transform = `translateY(${offset}px)`;
+                display.style.opacity = 0.8;
+
+                setTimeout(() => {
+                    display.style.transform = `translateY(0px)`;
+                    display.style.opacity = 1;
+                }, intervalTime / 2);
+
+                elapsed += intervalTime;
+
+                // 模擬物理減速效果 (Easing)
+                if (elapsed >= duration) {
+                    clearTimeout(timer);
+                    finishSpin();
+                } else {
+                    // 隨著時間增加，速度變慢 (intervalTime 變大)
+                    if (elapsed > duration * 0.6) {
+                        intervalTime *= 1.2; 
+                    }
+                    timer = setTimeout(tick, intervalTime);
+                }
+            }
+            
+            tick();
+        }
+
+        // 結束旋轉
+        function finishSpin() {
+            isSpinning = false;
+            const btn = document.getElementById('spin-btn');
+            btn.disabled = false;
+            btn.innerText = "再抽一次 !";
+            
+            // 確保最終結果是完全隨機且清晰的
+            const finalResult = foods[Math.floor(Math.random() * foods.length)];
+            const display = document.getElementById('result-display');
+            
+            display.style.transform = "scale(1.1)";
+            display.innerText = finalResult;
+            
+            setTimeout(() => {
+                display.style.transform = "scale(1)";
+            }, 300);
+
+            // 觸發慶祝特效
+            fireConfetti();
+        }
+
+        function updateResultText(text) {
+            document.getElementById('result-display').innerText = text;
+        }
+
+        // ==========================================
+        // 4. UI 互動與 LocalStorage 管理
+        // ==========================================
+        const modal = document.getElementById('settings-modal');
+        const inputArea = document.getElementById('food-list-input');
+
+        function toggleModal(show) {
+            if (show) {
+                // 打開時，將陣列轉換為換行字串放入 Textarea
+                inputArea.value = foods.join('\n');
+                modal.classList.add('active');
+            } else {
+                modal.classList.remove('active');
+            }
+        }
+
+        function saveList() {
+            // 讀取 Textarea，去除空白與空行
+            const rawText = inputArea.value;
+            const newList = rawText.split('\n')
+                                   .map(item => item.trim())
+                                   .filter(item => item !== "");
+            
+            if (newList.length === 0) {
+                alert("至少保留一個餐點選項喔！");
+                return;
+            }
+
+            foods = newList;
+            localStorage.setItem('myFoodList', JSON.stringify(foods));
+            
+            updateResultText("清單已更新！");
+            document.getElementById('spin-btn').innerText = "抽餐點 !";
+            toggleModal(false);
+        }
+
+        // 點擊 Modal 背景關閉
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) toggleModal(false);
+        });
+
+        // ==========================================
+        // 5. 輕量級視覺特效 (微型粒子 Confetti)
+        // ==========================================
+        function fireConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const colors = ['#FF6B6B', '#FECA57', '#48DBFB', '#1DD1A1', '#FFFFFF'];
+
+            for (let i = 0; i < 60; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2 + 50,
+                    r: Math.random() * 6 + 2,
+                    dx: Math.random() * 10 - 5,
+                    dy: Math.random() * -10 - 5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    life: 1
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let alive = false;
+                
+                particles.forEach(p => {
+                    if (p.life > 0) {
+                        alive = true;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                        ctx.fillStyle = p.color;
+                        ctx.globalAlpha = p.life;
+                        ctx.fill();
+                        
+                        p.x += p.dx;
+                        p.y += p.dy;
+                        p.dy += 0.4; // 重力
+                        p.life -= 0.02; // 消失速度
+                    }
+                });
+
+                if (alive) {
+                    requestAnimationFrame(animate);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+            animate();
+        }
+
+        // 啟動應用
+        window.onload = init;
+
+    </script>
+</body>
+</html>
