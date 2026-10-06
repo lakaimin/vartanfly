@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python 基礎探索指南</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Fira+Code&display=swap" rel="stylesheet">
+    <title>Python Basics Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Inter:wght@400;500;700&family=Be+Vietnam+Pro:wght@400;500;700&family=Fira+Code&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #F7F9FC;
@@ -26,12 +26,44 @@
         }
 
         body {
-            font-family: 'Noto Sans TC', sans-serif;
+            /* 預設字體，會根據語言切換時動態調整 */
+            font-family: 'Noto Sans TC', 'Inter', 'Be Vietnam Pro', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             padding: 5vw;
+            position: relative;
+        }
+
+        /* 語言切換按鈕設計 */
+        .lang-switch {
+            display: flex;
+            justify-content: center;
+            background: white;
+            padding: 5px;
+            border-radius: 50px;
+            box-shadow: var(--shadow);
+            width: fit-content;
+            margin: 0 auto 30px auto;
+        }
+
+        .lang-switch button {
+            background: transparent;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        .lang-switch button.active {
+            background: var(--accent-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
         header {
@@ -45,12 +77,14 @@
             margin-bottom: 10px;
             color: var(--text-main);
             letter-spacing: -0.5px;
+            transition: var(--transition);
         }
 
         p.subtitle {
             color: var(--text-muted);
             font-size: 1.1rem;
             margin-bottom: 30px;
+            transition: var(--transition);
         }
 
         .search-container {
@@ -174,14 +208,31 @@
             h1 { font-size: 2rem; }
             .grid { grid-template-columns: 1fr; }
             body { padding: 5vw 24px; }
+            .lang-switch { margin-top: 10px; }
+        }
+        
+        /* 桌面版語言切換器可置於右上方 */
+        @media (min-width: 1024px) {
+            .lang-switch {
+                position: absolute;
+                top: 5vw;
+                right: 5vw;
+                margin: 0;
+            }
         }
     </style>
 </head>
 <body>
 
+    <div class="lang-switch">
+        <button onclick="setLang('zh')" id="btn-zh" class="active">中文</button>
+        <button onclick="setLang('en')" id="btn-en">English</button>
+        <button onclick="setLang('vi')" id="btn-vi">Tiếng Việt</button>
+    </div>
+
     <header>
-        <h1>🐍 Python 基礎探索指南</h1>
-        <p class="subtitle">點擊卡片展開學習內容，發掘程式設計的樂趣</p>
+        <h1 id="ui-title">🐍 Python 基礎探索指南</h1>
+        <p class="subtitle" id="ui-subtitle">點擊卡片展開學習內容，發掘程式設計的樂趣</p>
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="搜尋概念 (例如：迴圈, 變數, AI...)">
         </div>
@@ -193,59 +244,384 @@
     </main>
 
     <script>
+        // UI 靜態文字多語系字典
+        const uiText = {
+            zh: {
+                title: "🐍 Python 基礎探索指南",
+                subtitle: "點擊卡片展開學習內容，發掘程式設計的樂趣",
+                placeholder: "搜尋概念 (例如：迴圈, 變數, AI...)",
+                noResults: "找不到相關概念 🥺 換個關鍵字試試看吧！",
+                fontFamily: "'Noto Sans TC', sans-serif"
+            },
+            en: {
+                title: "🐍 Python Basics Explorer",
+                subtitle: "Click cards to expand and discover the joy of programming",
+                placeholder: "Search concepts (e.g. Loop, Variables, AI...)",
+                noResults: "No concepts found 🥺 Try another keyword!",
+                fontFamily: "'Inter', sans-serif"
+            },
+            vi: {
+                title: "🐍 Hướng Dẫn Cơ Bản Python",
+                subtitle: "Nhấp vào thẻ để mở rộng và khám phá niềm vui lập trình",
+                placeholder: "Tìm kiếm khái niệm (VD: Biến, Vòng lặp, AI...)",
+                noResults: "Không tìm thấy khái niệm 🥺 Hãy thử từ khóa khác!",
+                fontFamily: "'Be Vietnam Pro', sans-serif"
+            }
+        };
+
+        // 核心概念多語系資料
         const data = [
-            { title: "變數", icon: "📦", desc: "就像是一個空盒子，用來記住資料。幫它取名字後，隨時可以拿回資料。", code: 'name = "小明"\nprint(name)' },
-            { title: "條件判斷", icon: "⚖️", desc: "讓電腦自己做選擇。設定規則，對的話做一件事，錯的話做另一件事。", code: 'age = 20\nif age >= 18:\n    print("成年")\nelse:\n    print("未成年")' },
-            { title: "迴圈", icon: "🔄", desc: "讓電腦幫你重複做事情。你只要告訴電腦要重複幾次就好。", code: 'for i in range(3):\n    print("哈囉")' },
-            { title: "資料型態", icon: "🔠", desc: "電腦處理資料的種類，像是文字與數字。處理的方法會不一樣。", code: 'number = 10 + 5\nword = "哈囉" + "小明"' },
-            { title: "串列", icon: "🗄️", desc: "像是有格子的抽屜。可以把很多筆資料放進同一個變數，並排好順序。", code: 'fruits = ["蘋果", "香蕉", "橘子"]\nprint(fruits[0])' },
-            { title: "函式", icon: "🛠️", desc: "把重複用到的程式碼打包起來，變成你自己發明的新指令。", code: 'def say_hi():\n    print("早安！")\nsay_hi()' },
-            { title: "字典", icon: "📖", desc: "使用文字標籤（鍵）來尋找資料的工具，而不是使用數字排序。", code: 'student = {"名字": "小明", "年紀": 20}\nprint(student["名字"])' },
-            { title: "模組", icon: "🧩", desc: "別人已經寫好的程式碼檔案。直接借來用，節省工作時間。", code: 'import random\nnumber = random.randint(1, 10)\nprint(number)' },
-            { title: "錯誤處理", icon: "🛡️", desc: "教電腦遇到問題時該怎麼辦，防止程式突然當機。", code: 'try:\n    print(10 / 0)\nexcept:\n    print("數字不能除以零")' },
-            { title: "檔案讀寫", icon: "📝", desc: "打開你硬碟裡的文字檔案，讀取內容或寫入新的文字。", code: 'with open("test.txt", "w") as file:\n    file.write("這是一本書")' },
-            { title: "外部套件", icon: "📥", desc: "從網路上下載別人寫好的強大工具來擴充電腦的能力。", code: 'import requests\nweb = requests.get("https://google.com")' },
-            { title: "類別與物件", icon: "🏗️", desc: "類別是設計圖，物件是做出來的實體。用來組合資料與功能。", code: 'class Dog:\n    def bark(self):\n        print("汪汪！")\nmy_dog = Dog()' },
-            { title: "資料庫", icon: "🗄️", desc: "專門安全地儲存與管理大量資料的超級大檔案櫃。", code: 'import sqlite3\nconn = sqlite3.connect("my_data.db")' },
-            { title: "圖形介面", icon: "🖼️", desc: "幫你製作有按鈕的視窗，讓程式可以用滑鼠直覺點擊。", code: 'import tkinter\nwindow = tkinter.Tk()\nwindow.mainloop()' },
-            { title: "網頁框架", icon: "🌐", desc: "幫你處理複雜網路連線的工具包，讓你專心設計網站內容。", code: 'from flask import Flask\napp = Flask(__name__)' },
-            { title: "資料分析", icon: "📊", desc: "整理龐大數據並找出規則，讓電腦自動幫你畫出圖表。", code: 'import pandas\ntable = pandas.DataFrame(data)\nprint(table.mean())' },
-            { title: "人工智慧", icon: "🧠", desc: "讓電腦模仿人類思考。從資料中學習規則，預測未來情況。", code: 'from sklearn.tree import DecisionTreeClassifier\nmodel = DecisionTreeClassifier()' },
-            { title: "網路爬蟲", icon: "🕷️", desc: "像虛擬機器蜘蛛，自動在網頁間爬行並幫你收集有用的資訊。", code: 'from bs4 import BeautifulSoup\nsoup = BeautifulSoup(web.text, "html.parser")' },
-            { title: "版本控制", icon: "⏱️", desc: "程式碼的專屬時光機。記錄每次修改，隨時能還原到過去狀態。", code: 'git add .\ngit commit -m "新增功能"' },
-            { title: "雲端部署", icon: "☁️", desc: "把寫好的程式安裝到永遠不關機的伺服器，讓全世界都能使用。", code: 'git push heroku main' },
-            { title: "資訊安全", icon: "🔒", desc: "保護程式不被破壞。使用環境變數來安全地隱藏重要密碼。", code: 'import os\npassword = os.getenv("MY_SECRET")' }
+            { 
+                icon: "📦",
+                title: { zh: "變數", en: "Variables", vi: "Biến số" },
+                desc: { 
+                    zh: "就像是一個空盒子，用來記住資料。幫它取名字後，隨時可以拿回資料。", 
+                    en: "Like an empty box to store data. Name it, and you can retrieve your data anytime.", 
+                    vi: "Giống như một chiếc hộp trống để lưu trữ dữ liệu. Đặt tên cho nó và lấy lại dữ liệu bất cứ lúc nào." 
+                },
+                code: { 
+                    zh: 'name = "小明"\nprint(name)', 
+                    en: 'name = "Alice"\nprint(name)', 
+                    vi: 'name = "Minh"\nprint(name)' 
+                }
+            },
+            { 
+                icon: "⚖️",
+                title: { zh: "條件判斷", en: "Conditionals", vi: "Câu lệnh điều kiện" },
+                desc: { 
+                    zh: "讓電腦自己做選擇。設定規則，對的話做一件事，錯的話做另一件事。", 
+                    en: "Let the computer make choices. If the rule is true, do one thing; if false, do another.", 
+                    vi: "Cho máy tính tự đưa ra lựa chọn. Nếu đúng quy tắc thì làm việc này, sai thì làm việc khác." 
+                },
+                code: { 
+                    zh: 'age = 20\nif age >= 18:\n    print("成年")\nelse:\n    print("未成年")', 
+                    en: 'age = 20\nif age >= 18:\n    print("Adult")\nelse:\n    print("Minor")', 
+                    vi: 'age = 20\nif age >= 18:\n    print("Người lớn")\nelse:\n    print("Trẻ vị thành niên")' 
+                }
+            },
+            { 
+                icon: "🔄",
+                title: { zh: "迴圈", en: "Loops", vi: "Vòng lặp" },
+                desc: { 
+                    zh: "讓電腦幫你重複做事情。你只要告訴電腦要重複幾次就好。", 
+                    en: "Make the computer repeat tasks. Just tell it how many times to repeat.", 
+                    vi: "Để máy tính lặp lại các thao tác. Bạn chỉ cần báo cho nó số lần lặp lại." 
+                },
+                code: { 
+                    zh: 'for i in range(3):\n    print("哈囉")', 
+                    en: 'for i in range(3):\n    print("Hello")', 
+                    vi: 'for i in range(3):\n    print("Xin chào")' 
+                }
+            },
+            { 
+                icon: "🔠",
+                title: { zh: "資料型態", en: "Data Types", vi: "Kiểu dữ liệu" },
+                desc: { 
+                    zh: "電腦處理資料的種類，像是文字與數字。處理的方法會不一樣。", 
+                    en: "Different kinds of data like text and numbers. The computer handles them differently.", 
+                    vi: "Các loại dữ liệu máy tính xử lý như văn bản và số. Cách xử lý chúng sẽ khác nhau." 
+                },
+                code: { 
+                    zh: 'number = 10 + 5\nword = "哈囉" + "小明"', 
+                    en: 'number = 10 + 5\nword = "Hello" + "Alice"', 
+                    vi: 'number = 10 + 5\nword = "Chào" + "Minh"' 
+                }
+            },
+            { 
+                icon: "🗄️",
+                title: { zh: "串列", en: "Lists", vi: "Danh sách (List)" },
+                desc: { 
+                    zh: "像是有格子的抽屜。可以把很多筆資料放進同一個變數，並排好順序。", 
+                    en: "Like a drawer with compartments. Store multiple items in one variable and keep them ordered.", 
+                    vi: "Giống như một ngăn kéo có nhiều ô. Lưu trữ nhiều dữ liệu trong một biến và sắp xếp theo thứ tự." 
+                },
+                code: { 
+                    zh: 'fruits = ["蘋果", "香蕉", "橘子"]\nprint(fruits[0])', 
+                    en: 'fruits = ["Apple", "Banana", "Orange"]\nprint(fruits[0])', 
+                    vi: 'fruits = ["Táo", "Chuối", "Cam"]\nprint(fruits[0])' 
+                }
+            },
+            { 
+                icon: "🛠️️",
+                title: { zh: "函式", en: "Functions", vi: "Hàm số" },
+                desc: { 
+                    zh: "把重複用到的程式碼打包起來，變成你自己發明的新指令。", 
+                    en: "Bundle reusable code blocks into your very own custom commands.", 
+                    vi: "Đóng gói các đoạn mã được dùng lặp đi lặp lại thành một lệnh mới do bạn tự tạo." 
+                },
+                code: { 
+                    zh: 'def say_hi():\n    print("早安！")\nsay_hi()', 
+                    en: 'def say_hi():\n    print("Good morning!")\nsay_hi()', 
+                    vi: 'def say_hi():\n    print("Chào buổi sáng!")\nsay_hi()' 
+                }
+            },
+            { 
+                icon: "📖",
+                title: { zh: "字典", en: "Dictionaries", vi: "Từ điển" },
+                desc: { 
+                    zh: "使用文字標籤（鍵）來尋找資料的工具，而不是使用數字排序。", 
+                    en: "Use text labels (keys) instead of numbers to find and organize your data.", 
+                    vi: "Sử dụng nhãn văn bản (khóa) để tìm kiếm dữ liệu, thay vì dùng số thứ tự." 
+                },
+                code: { 
+                    zh: 'student = {"名字": "小明", "年紀": 20}\nprint(student["名字"])', 
+                    en: 'student = {"name": "Alice", "age": 20}\nprint(student["name"])', 
+                    vi: 'student = {"tên": "Minh", "tuổi": 20}\nprint(student["tên"])' 
+                }
+            },
+            { 
+                icon: "🧩",
+                title: { zh: "模組", en: "Modules", vi: "Mô-đun" },
+                desc: { 
+                    zh: "別人已經寫好的程式碼檔案。直接借來用，節省工作時間。", 
+                    en: "Code files written by others. Borrow them directly to save your working time.", 
+                    vi: "Các tệp mã do người khác viết sẵn. Sử dụng trực tiếp để tiết kiệm thời gian." 
+                },
+                code: { 
+                    zh: 'import random\nnumber = random.randint(1, 10)', 
+                    en: 'import random\nnumber = random.randint(1, 10)', 
+                    vi: 'import random\nnumber = random.randint(1, 10)' 
+                }
+            },
+            { 
+                icon: "🛡️",
+                title: { zh: "錯誤處理", en: "Error Handling", vi: "Xử lý lỗi" },
+                desc: { 
+                    zh: "教電腦遇到問題時該怎麼辦，防止程式突然當機。", 
+                    en: "Teach the computer what to do when it faces a problem to prevent crashes.", 
+                    vi: "Dạy máy tính cách xử lý khi gặp sự cố, ngăn chương trình bị treo đột ngột." 
+                },
+                code: { 
+                    zh: 'try:\n    print(10 / 0)\nexcept:\n    print("數字不能除以零")', 
+                    en: 'try:\n    print(10 / 0)\nexcept:\n    print("Cannot divide by zero")', 
+                    vi: 'try:\n    print(10 / 0)\nexcept:\n    print("Không thể chia cho 0")' 
+                }
+            },
+            { 
+                icon: "📝",
+                title: { zh: "檔案讀寫", en: "File I/O", vi: "Đọc/Ghi tệp" },
+                desc: { 
+                    zh: "打開你硬碟裡的文字檔案，讀取內容或寫入新的文字。", 
+                    en: "Open text files on your hard drive to read content or write new text.", 
+                    vi: "Mở các tệp văn bản trong ổ cứng để đọc nội dung hoặc viết văn bản mới." 
+                },
+                code: { 
+                    zh: 'with open("test.txt", "w") as file:\n    file.write("這是一本書")', 
+                    en: 'with open("test.txt", "w") as file:\n    file.write("This is a book")', 
+                    vi: 'with open("test.txt", "w") as file:\n    file.write("Đây là một cuốn sách")' 
+                }
+            },
+            { 
+                icon: "📥",
+                title: { zh: "外部套件", en: "Packages", vi: "Gói mở rộng" },
+                desc: { 
+                    zh: "從網路上下載別人寫好的強大工具來擴充電腦的能力。", 
+                    en: "Download powerful tools written by others from the internet to expand capabilities.", 
+                    vi: "Tải xuống các công cụ mạnh mẽ do người khác viết để mở rộng khả năng của máy tính." 
+                },
+                code: { 
+                    zh: 'import requests\nweb = requests.get("https://google.com")', 
+                    en: 'import requests\nweb = requests.get("https://google.com")', 
+                    vi: 'import requests\nweb = requests.get("https://google.com")' 
+                }
+            },
+            { 
+                icon: "🏗️",
+                title: { zh: "類別與物件", en: "Classes & Objects", vi: "Lớp và Đối tượng" },
+                desc: { 
+                    zh: "類別是設計圖，物件是做出來的實體。用來組合資料與功能。", 
+                    en: "A Class is a blueprint; an Object is the real item. Used to combine data and functions.", 
+                    vi: "Lớp là bản thiết kế, Đối tượng là vật thể thực tế. Dùng để kết hợp dữ liệu và chức năng." 
+                },
+                code: { 
+                    zh: 'class Dog:\n    def bark(self):\n        print("汪汪！")\nmy_dog = Dog()', 
+                    en: 'class Dog:\n    def bark(self):\n        print("Woof!")\nmy_dog = Dog()', 
+                    vi: 'class Dog:\n    def bark(self):\n        print("Gâu gâu!")\nmy_dog = Dog()' 
+                }
+            },
+            { 
+                icon: "🗄️",
+                title: { zh: "資料庫", en: "Databases", vi: "Cơ sở dữ liệu" },
+                desc: { 
+                    zh: "專門安全地儲存與管理大量資料的超級大檔案櫃。", 
+                    en: "A super large file cabinet specifically for safely storing and managing massive data.", 
+                    vi: "Một tủ hồ sơ khổng lồ chuyên dùng để lưu trữ và quản lý an toàn dữ liệu lớn." 
+                },
+                code: { 
+                    zh: 'import sqlite3\nconn = sqlite3.connect("my_data.db")', 
+                    en: 'import sqlite3\nconn = sqlite3.connect("my_data.db")', 
+                    vi: 'import sqlite3\nconn = sqlite3.connect("my_data.db")' 
+                }
+            },
+            { 
+                icon: "🖼️",
+                title: { zh: "圖形介面", en: "GUI", vi: "Giao diện đồ họa" },
+                desc: { 
+                    zh: "幫你製作有按鈕的視窗，讓程式可以用滑鼠直覺點擊。", 
+                    en: "Create windows with buttons so your program can be clicked intuitively with a mouse.", 
+                    vi: "Tạo các cửa sổ có nút bấm, giúp chương trình có thể được nhấp chuột một cách trực quan." 
+                },
+                code: { 
+                    zh: 'import tkinter\nwindow = tkinter.Tk()\nwindow.mainloop()', 
+                    en: 'import tkinter\nwindow = tkinter.Tk()\nwindow.mainloop()', 
+                    vi: 'import tkinter\nwindow = tkinter.Tk()\nwindow.mainloop()' 
+                }
+            },
+            { 
+                icon: "🌐",
+                title: { zh: "網頁框架", en: "Web Frameworks", vi: "Web Framework" },
+                desc: { 
+                    zh: "幫你處理複雜網路連線的工具包，讓你專心設計網站內容。", 
+                    en: "Toolkits that handle complex network connections so you can focus on web content.", 
+                    vi: "Bộ công cụ xử lý kết nối mạng phức tạp, giúp bạn tập trung vào nội dung trang web." 
+                },
+                code: { 
+                    zh: 'from flask import Flask\napp = Flask(__name__)', 
+                    en: 'from flask import Flask\napp = Flask(__name__)', 
+                    vi: 'from flask import Flask\napp = Flask(__name__)' 
+                }
+            },
+            { 
+                icon: "📊",
+                title: { zh: "資料分析", en: "Data Analysis", vi: "Phân tích dữ liệu" },
+                desc: { 
+                    zh: "整理龐大數據並找出規則，讓電腦自動幫你畫出圖表。", 
+                    en: "Organize huge data and find patterns. Let the computer draw charts for you automatically.", 
+                    vi: "Sắp xếp dữ liệu lớn và tìm ra quy luật, để máy tính tự động vẽ biểu đồ cho bạn." 
+                },
+                code: { 
+                    zh: 'import pandas\ntable = pandas.DataFrame(data)\nprint(table.mean())', 
+                    en: 'import pandas\ntable = pandas.DataFrame(data)\nprint(table.mean())', 
+                    vi: 'import pandas\ntable = pandas.DataFrame(data)\nprint(table.mean())' 
+                }
+            },
+            { 
+                icon: "🧠",
+                title: { zh: "人工智慧", en: "AI", vi: "Trí tuệ nhân tạo" },
+                desc: { 
+                    zh: "讓電腦模仿人類思考。從資料中學習規則，預測未來情況。", 
+                    en: "Make computers mimic human thought. Learn rules from data to predict the future.", 
+                    vi: "Cho máy tính bắt chước tư duy con người. Học quy luật từ dữ liệu để dự đoán." 
+                },
+                code: { 
+                    zh: 'from sklearn.tree import DecisionTreeClassifier\nmodel = DecisionTreeClassifier()', 
+                    en: 'from sklearn.tree import DecisionTreeClassifier\nmodel = DecisionTreeClassifier()', 
+                    vi: 'from sklearn.tree import DecisionTreeClassifier\nmodel = DecisionTreeClassifier()' 
+                }
+            },
+            { 
+                icon: "🕷️️",
+                title: { zh: "網路爬蟲", en: "Web Crawling", vi: "Cào dữ liệu Web" },
+                desc: { 
+                    zh: "像虛擬機器蜘蛛，自動在網頁間爬行並幫你收集有用的資訊。", 
+                    en: "Like virtual spiders crawling between web pages to automatically collect useful info.", 
+                    vi: "Giống như nhện ảo bò trên các trang web để tự động thu thập thông tin hữu ích." 
+                },
+                code: { 
+                    zh: 'from bs4 import BeautifulSoup\nsoup = BeautifulSoup(web.text, "html.parser")', 
+                    en: 'from bs4 import BeautifulSoup\nsoup = BeautifulSoup(web.text, "html.parser")', 
+                    vi: 'from bs4 import BeautifulSoup\nsoup = BeautifulSoup(web.text, "html.parser")' 
+                }
+            },
+            { 
+                icon: "⏱️️",
+                title: { zh: "版本控制", en: "Version Control", vi: "Kiểm soát phiên bản" },
+                desc: { 
+                    zh: "程式碼的專屬時光機。記錄每次修改，隨時能還原到過去狀態。", 
+                    en: "A time machine for code. Records every change so you can revert to past states.", 
+                    vi: "Cỗ máy thời gian của mã nguồn. Ghi lại mọi sửa đổi để có thể khôi phục bất cứ lúc nào." 
+                },
+                code: { 
+                    zh: 'git add .\ngit commit -m "新增功能"', 
+                    en: 'git add .\ngit commit -m "Add feature"', 
+                    vi: 'git add .\ngit commit -m "Thêm tính năng"' 
+                }
+            },
+            { 
+                icon: "☁️",
+                title: { zh: "雲端部署", en: "Cloud Deployment", vi: "Triển khai Đám mây" },
+                desc: { 
+                    zh: "把寫好的程式安裝到永遠不關機的伺服器，讓全世界都能使用。", 
+                    en: "Install your program on servers that never turn off so the whole world can use it.", 
+                    vi: "Cài đặt chương trình lên máy chủ luôn hoạt động để cả thế giới có thể sử dụng." 
+                },
+                code: { 
+                    zh: 'git push heroku main', 
+                    en: 'git push heroku main', 
+                    vi: 'git push heroku main' 
+                }
+            },
+            { 
+                icon: "🔒",
+                title: { zh: "資訊安全", en: "Info Security", vi: "Bảo mật thông tin" },
+                desc: { 
+                    zh: "保護程式不被破壞。使用環境變數來安全地隱藏重要密碼。", 
+                    en: "Protect programs from being hacked. Use environment variables to hide passwords safely.", 
+                    vi: "Bảo vệ chương trình khỏi sự phá hoại. Dùng biến môi trường để ẩn mật khẩu an toàn." 
+                },
+                code: { 
+                    zh: 'import os\npassword = os.getenv("MY_SECRET")', 
+                    en: 'import os\npassword = os.getenv("MY_SECRET")', 
+                    vi: 'import os\npassword = os.getenv("MY_SECRET")' 
+                }
+            }
         ];
 
+        let currentLang = 'zh'; // 預設語言
         const container = document.getElementById('cardContainer');
         const searchInput = document.getElementById('searchInput');
         const noResults = document.getElementById('noResults');
 
+        // 切換語言功能
+        function setLang(lang) {
+            currentLang = lang;
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.lang-switch button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${lang}`).classList.add('active');
+
+            // 更新靜態 UI 文字
+            document.getElementById('ui-title').innerText = uiText[lang].title;
+            document.getElementById('ui-subtitle').innerText = uiText[lang].subtitle;
+            searchInput.placeholder = uiText[lang].placeholder;
+            noResults.innerText = uiText[lang].noResults;
+            document.body.style.fontFamily = uiText[lang].fontFamily;
+
+            // 重新渲染卡片
+            renderCards(searchInput.value.trim());
+        }
+
         // 渲染卡片
         function renderCards(filterText = '') {
+            // 清空目前畫面，但保留 no-results 節點
             container.innerHTML = '';
             let count = 0;
+            const filterLower = filterText.toLowerCase();
 
             data.forEach(item => {
-                if (item.title.includes(filterText) || item.desc.includes(filterText)) {
+                const titleText = item.title[currentLang];
+                const descText = item.desc[currentLang];
+
+                // 搜尋過濾 (比對當前語言的標題與說明)
+                if (titleText.toLowerCase().includes(filterLower) || descText.toLowerCase().includes(filterLower)) {
                     count++;
                     const card = document.createElement('div');
                     card.className = 'card';
                     card.innerHTML = `
                         <div class="card-header">
                             <div class="icon">${item.icon}</div>
-                            <div class="card-title">${item.title}</div>
+                            <div class="card-title">${titleText}</div>
                         </div>
                         <div class="card-body">
-                            <p class="description">${item.desc}</p>
-                            <pre><code>${item.code}</code></pre>
+                            <p class="description">${descText}</p>
+                            <pre><code>${item.code[currentLang]}</code></pre>
                         </div>
                     `;
                     
                     // 點擊展開/收合
                     card.addEventListener('click', () => {
                         const isActive = card.classList.contains('active');
-                        // 關閉其他卡片 (如果需要單獨展開的效果可以取消註解下方兩行)
+                        // 若要單獨展開可取消下方註解：
                         // document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
                         if (!isActive) card.classList.add('active');
                         else card.classList.remove('active');
@@ -255,12 +631,13 @@
                 }
             });
 
+            // 處理查無結果的顯示
             if (count === 0) {
                 container.appendChild(noResults);
                 noResults.style.display = 'block';
             } else {
                 noResults.style.display = 'none';
-                container.appendChild(noResults); // 保留節點
+                container.appendChild(noResults); 
             }
         }
 
@@ -269,8 +646,8 @@
             renderCards(e.target.value.trim());
         });
 
-        // 初始化渲染
-        renderCards();
+        // 啟動初始渲染
+        setLang(currentLang);
     </script>
 </body>
 </html>
