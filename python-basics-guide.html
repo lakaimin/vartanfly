@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python 基礎探索指南</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Fira+Code&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #F7F9FC;
+            --card-bg: #FFFFFF;
+            --text-main: #2D3748;
+            --text-muted: #718096;
+            --accent-color: #FF6B6B;
+            --accent-hover: #FF5252;
+            --code-bg: #1A202C;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            --radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            padding: 5vw;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        .search-container {
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 16px 24px;
+            font-size: 1.1rem;
+            border: 2px solid transparent;
+            border-radius: 50px;
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow);
+            outline: none;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.15);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .icon {
+            font-size: 2rem;
+            background: rgba(255, 107, 107, 0.1);
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            transition: var(--transition);
+        }
+
+        .card:hover .icon {
+            background: var(--accent-color);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .card-body {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .card.active .card-body {
+            max-height: 400px;
+            opacity: 1;
+            margin-top: 20px;
+        }
+
+        .description {
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        pre {
+            background: var(--code-bg);
+            color: #E2E8F0;
+            padding: 15px;
+            border-radius: 12px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        .no-results {
+            text-align: center;
+            grid-column: 1 / -1;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            padding: 40px;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 2rem; }
+            .grid { grid-template-columns: 1fr; }
+            body { padding: 5vw 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🐍 Python 基礎探索指南</h1>
+        <p class="subtitle">點擊卡片展開學習內容，發掘程式設計的樂趣</p>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="搜尋概念 (例如：迴圈, 變數, AI...)">
+        </div>
+    </header>
+
+    <main class="grid" id="cardContainer">
+        <!-- 卡片將由 JavaScript 動態生成 -->
+        <div class="no-results" id="noResults">找不到相關概念 🥺 換個關鍵字試試看吧！</div>
+    </main>
+
+    <script>
+        const data = [
+            { title: "變數", icon: "📦", desc: "就像是一個空盒子，用來記住資料。幫它取名字後，隨時可以拿回資料。", code: 'name = "小明"\nprint(name)' },
+            { title: "條件判斷", icon: "⚖️", desc: "讓電腦自己做選擇。設定規則，對的話做一件事，錯的話做另一件事。", code: 'age = 20\nif age >= 18:\n    print("成年")\nelse:\n    print("未成年")' },
+            { title: "迴圈", icon: "🔄", desc: "讓電腦幫你重複做事情。你只要告訴電腦要重複幾次就好。", code: 'for i in range(3):\n    print("哈囉")' },
+            { title: "資料型態", icon: "🔠", desc: "電腦處理資料的種類，像是文字與數字。處理的方法會不一樣。", code: 'number = 10 + 5\nword = "哈囉" + "小明"' },
+            { title: "串列", icon: "🗄️", desc: "像是有格子的抽屜。可以把很多筆資料放進同一個變數，並排好順序。", code: 'fruits = ["蘋果", "香蕉", "橘子"]\nprint(fruits[0])' },
+            { title: "函式", icon: "🛠️", desc: "把重複用到的程式碼打包起來，變成你自己發明的新指令。", code: 'def say_hi():\n    print("早安！")\nsay_hi()' },
+            { title: "字典", icon: "📖", desc: "使用文字標籤（鍵）來尋找資料的工具，而不是使用數字排序。", code: 'student = {"名字": "小明", "年紀": 20}\nprint(student["名字"])' },
+            { title: "模組", icon: "🧩", desc: "別人已經寫好的程式碼檔案。直接借來用，節省工作時間。", code: 'import random\nnumber = random.randint(1, 10)\nprint(number)' },
+            { title: "錯誤處理", icon: "🛡️", desc: "教電腦遇到問題時該怎麼辦，防止程式突然當機。", code: 'try:\n    print(10 / 0)\nexcept:\n    print("數字不能除以零")' },
+            { title: "檔案讀寫", icon: "📝", desc: "打開你硬碟裡的文字檔案，讀取內容或寫入新的文字。", code: 'with open("test.txt", "w") as file:\n    file.write("這是一本書")' },
+            { title: "外部套件", icon: "📥", desc: "從網路上下載別人寫好的強大工具來擴充電腦的能力。", code: 'import requests\nweb = requests.get("https://google.com")' },
+            { title: "類別與物件", icon: "🏗️", desc: "類別是設計圖，物件是做出來的實體。用來組合資料與功能。", code: 'class Dog:\n    def bark(self):\n        print("汪汪！")\nmy_dog = Dog()' },
+            { title: "資料庫", icon: "🗄️", desc: "專門安全地儲存與管理大量資料的超級大檔案櫃。", code: 'import sqlite3\nconn = sqlite3.connect("my_data.db")' },
+            { title: "圖形介面", icon: "🖼️", desc: "幫你製作有按鈕的視窗，讓程式可以用滑鼠直覺點擊。", code: 'import tkinter\nwindow = tkinter.Tk()\nwindow.mainloop()' },
+            { title: "網頁框架", icon: "🌐", desc: "幫你處理複雜網路連線的工具包，讓你專心設計網站內容。", code: 'from flask import Flask\napp = Flask(__name__)' },
+            { title: "資料分析", icon: "📊", desc: "整理龐大數據並找出規則，讓電腦自動幫你畫出圖表。", code: 'import pandas\ntable = pandas.DataFrame(data)\nprint(table.mean())' },
+            { title: "人工智慧", icon: "🧠", desc: "讓電腦模仿人類思考。從資料中學習規則，預測未來情況。", code: 'from sklearn.tree import DecisionTreeClassifier\nmodel = DecisionTreeClassifier()' },
+            { title: "網路爬蟲", icon: "🕷️", desc: "像虛擬機器蜘蛛，自動在網頁間爬行並幫你收集有用的資訊。", code: 'from bs4 import BeautifulSoup\nsoup = BeautifulSoup(web.text, "html.parser")' },
+            { title: "版本控制", icon: "⏱️", desc: "程式碼的專屬時光機。記錄每次修改，隨時能還原到過去狀態。", code: 'git add .\ngit commit -m "新增功能"' },
+            { title: "雲端部署", icon: "☁️", desc: "把寫好的程式安裝到永遠不關機的伺服器，讓全世界都能使用。", code: 'git push heroku main' },
+            { title: "資訊安全", icon: "🔒", desc: "保護程式不被破壞。使用環境變數來安全地隱藏重要密碼。", code: 'import os\npassword = os.getenv("MY_SECRET")' }
+        ];
+
+        const container = document.getElementById('cardContainer');
+        const searchInput = document.getElementById('searchInput');
+        const noResults = document.getElementById('noResults');
+
+        // 渲染卡片
+        function renderCards(filterText = '') {
+            container.innerHTML = '';
+            let count = 0;
+
+            data.forEach(item => {
+                if (item.title.includes(filterText) || item.desc.includes(filterText)) {
+                    count++;
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <div class="icon">${item.icon}</div>
+                            <div class="card-title">${item.title}</div>
+                        </div>
+                        <div class="card-body">
+                            <p class="description">${item.desc}</p>
+                            <pre><code>${item.code}</code></pre>
+                        </div>
+                    `;
+                    
+                    // 點擊展開/收合
+                    card.addEventListener('click', () => {
+                        const isActive = card.classList.contains('active');
+                        // 關閉其他卡片 (如果需要單獨展開的效果可以取消註解下方兩行)
+                        // document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+                        if (!isActive) card.classList.add('active');
+                        else card.classList.remove('active');
+                    });
+
+                    container.appendChild(card);
+                }
+            });
+
+            if (count === 0) {
+                container.appendChild(noResults);
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+                container.appendChild(noResults); // 保留節點
+            }
+        }
+
+        // 監聽搜尋輸入
+        searchInput.addEventListener('input', (e) => {
+            renderCards(e.target.value.trim());
+        });
+
+        // 初始化渲染
+        renderCards();
+    </script>
+</body>
+</html>
