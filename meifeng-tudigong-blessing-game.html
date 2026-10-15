@@ -1,0 +1,2280 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>美豐土地公｜美地生金 ‧ 豐土納福 3D 祈福互動遊戲 | GREEMA </title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Noto Serif TC & Noto Sans TC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600;700;900&display=swap" rel="stylesheet">
+
+    <!-- GEO / SEO JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "美豐土地公｜美地生金 ‧ 豐土納福 3D 祈福互動遊戲",
+      "description": "結合美豐福德祠土地公插畫、老街溪金波與黃色阿勃勒意象的 3D 互動祈福網頁遊戲，由 GREEMA 策展設計。",
+      "genre": ["Cultural Interactive Game", "3D Casual Game"],
+      "playMode": "SinglePlayer",
+      "applicationCategory": "Game",
+      "operatingSystem": "Web Browser (Mobile, Tablet, Desktop)",
+      "author": {
+        "@type": "Organization",
+        "name": "GREEMA"
+      }
+    }
+    </script>
+
+    <style>
+        /* ==========================================================================
+           Red Dot / Good Design Standard Design Tokens (Meifeng Exhibition System)
+           ========================================================================== */
+        :root {
+            --brand-temple-red: #a83f28;
+            --brand-temple-red-dark: #7d2b19;
+            --brand-gold: #c59b5f;
+            --brand-gold-bright: #f5cb42;
+            --bg-warm: #fdfbf7;
+            --text-primary: #2c2c2c;
+            --text-secondary: #666666;
+            --river-blue: #1d5fa7;
+            --font-serif: 'Noto Serif TC', serif;
+            --font-sans: 'Noto Sans TC', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-warm);
+            font-family: var(--font-sans);
+            color: var(--text-primary);
+            touch-action: none;
+        }
+
+        .font-serif-tc {
+            font-family: var(--font-serif);
+        }
+
+        /* ==========================================================================
+           Bilingual Switching Architecture (.lang-tw-only / .lang-en-only)
+           ========================================================================== */
+        body[data-lang="tw"] .lang-en-only { display: none !important; }
+        body[data-lang="en"] .lang-tw-only { display: none !important; }
+
+        /* ==========================================================================
+           3D Holographic Diorama Card (Start & Inspection Screen)
+           ========================================================================== */
+        .scene-3d-wrapper {
+            perspective: 1200px;
+            transform-style: preserve-3d;
+        }
+
+        .diorama-card-3d {
+            position: relative;
+            width: 270px;
+            height: 330px;
+            margin: 0 auto;
+            border-radius: 28px;
+            background: radial-gradient(circle at 50% 35%, rgba(255, 248, 225, 0.96), rgba(253, 251, 247, 0.9) 70%, rgba(197, 155, 95, 0.28) 100%);
+            border: 2px solid rgba(197, 155, 95, 0.6);
+            box-shadow: 
+                0 25px 50px -12px rgba(44, 44, 44, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.85) inset,
+                0 15px 35px rgba(168, 63, 40, 0.15);
+            transform-style: preserve-3d;
+            transition: transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+            cursor: grab;
+        }
+
+        .diorama-card-3d:active {
+            cursor: grabbing;
+        }
+
+        /* Multi-depth 3D planes inside the Diorama Card */
+        .layer-z-back {
+            transform: translateZ(-30px) scale(0.96);
+            transform-style: preserve-3d;
+        }
+        .layer-z-halo {
+            transform: translateZ(-12px);
+            animation: spinSlow 24s linear infinite;
+        }
+        .layer-z-character {
+            transform: translateZ(38px);
+            filter: drop-shadow(0 16px 18px rgba(44, 24, 16, 0.28));
+        }
+        .layer-z-front-props {
+            transform: translateZ(62px);
+            pointer-events: none;
+        }
+        .layer-z-glare {
+            transform: translateZ(68px);
+            border-radius: 26px;
+            background: linear-gradient(125deg, rgba(255,255,255,0) 20%, rgba(255,255,255,0.5) 48%, rgba(255,230,150,0.3) 52%, rgba(255,255,255,0) 80%);
+            mix-blend-mode: overlay;
+            pointer-events: none;
+            opacity: 0.75;
+        }
+
+        @keyframes spinSlow {
+            from { transform: translateZ(-12px) rotate(0deg); }
+            to { transform: translateZ(-12px) rotate(360deg); }
+        }
+
+        @keyframes float3D {
+            0%, 100% { transform: translateZ(38px) translateY(0px); }
+            50% { transform: translateZ(48px) translateY(-7px); }
+        }
+
+        .animate-float-3d {
+            animation: float3D 3.4s ease-in-out infinite;
+        }
+
+        /* ==========================================================================
+           Red Dot Curatorial Buttons & UI Components
+           ========================================================================== */
+        .btn-reddot-primary {
+            background: linear-gradient(135deg, #b8462d 0%, #8f321e 100%);
+            color: #fff;
+            border: 1px solid rgba(255, 225, 170, 0.45);
+            box-shadow: 0 10px 25px -5px rgba(168, 63, 40, 0.45), 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .btn-reddot-primary:hover {
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 16px 32px -5px rgba(168, 63, 40, 0.55);
+            background: linear-gradient(135deg, #c64e33 0%, #9e3822 100%);
+        }
+        .btn-reddot-primary:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        .btn-reddot-secondary {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--brand-temple-red);
+            border: 1px solid var(--brand-gold);
+            backdrop-filter: blur(8px);
+            transition: all 0.25s ease;
+        }
+        .btn-reddot-secondary:hover {
+            background: var(--brand-temple-red);
+            color: #fff;
+            border-color: var(--brand-temple-red);
+            transform: translateY(-2px);
+        }
+
+        .glass-hud {
+            background: rgba(253, 251, 247, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(197, 155, 95, 0.42);
+            box-shadow: 0 8px 30px rgba(44, 44, 44, 0.1);
+        }
+
+        /* Skill Button Pulse */
+        @keyframes pulseGold {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 203, 66, 0.75), 0 8px 25px rgba(168, 63, 40, 0.45); }
+            50% { box-shadow: 0 0 0 12px rgba(245, 203, 66, 0), 0 12px 30px rgba(168, 63, 40, 0.65); }
+        }
+        .skill-ready-glow {
+            animation: pulseGold 1.6s infinite;
+        }
+
+        /* Custom Scrollbar for Modals */
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(197, 155, 95, 0.1);
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(197, 155, 95, 0.5);
+            border-radius: 9999px;
+        }
+
+        @media (max-height: 700px) {
+            .diorama-card-3d {
+                width: 210px;
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body data-lang="tw" class="relative select-none">
+
+    <!-- ==========================================================================
+         HIDDEN FILE INPUT FOR USER ILLUSTRATION LOADING
+         ========================================================================== -->
+    <input type="file" id="customImgInput" accept="image/*" class="hidden" />
+
+    <!-- ==========================================================================
+         TOP CURATORIAL NAVIGATION & HUD BAR
+         ========================================================================== -->
+    <header class="fixed top-0 left-0 right-0 z-30 px-3 py-2.5 sm:px-6 sm:py-3 pointer-events-none">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+            <!-- Brand & Exhibition Title -->
+            <div class="glass-hud px-3.5 py-2 rounded-2xl flex items-center gap-2.5 pointer-events-auto">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-white font-serif-tc font-bold text-sm sm:text-base shadow-sm" style="background: linear-gradient(135deg, #a83f28, #c59b5f);">
+                    福
+                </div>
+                <div>
+                    <div class="text-[10px] sm:text-xs tracking-widest uppercase font-semibold" style="color: var(--brand-gold);">
+                        GREEMA × MEIFENG TUDIGONG
+                    </div>
+                    <h1 class="font-serif-tc text-xs sm:text-sm md:text-base font-bold leading-tight" style="color: var(--brand-temple-red);">
+                        <span class="lang-tw-only">美豐土地公 ‧ 3D 祈福互動展</span>
+                        <span class="lang-en-only">Meifeng Tudigong 3D Blessing</span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Live Game Stats HUD -->
+            <div id="liveStatsHud" class="hidden glass-hud px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-2xl items-center gap-3 sm:gap-6 pointer-events-auto transition-all duration-300">
+                <!-- Score -->
+                <div class="text-center">
+                    <div class="text-[10px] uppercase tracking-wider text-stone-500">
+                        <span class="lang-tw-only">福氣值</span>
+                        <span class="lang-en-only">BLESSING</span>
+                    </div>
+                    <div id="hudScore" class="font-serif-tc font-black text-base sm:text-xl text-[#a83f28] tabular-nums">0</div>
+                </div>
+                <div class="h-6 w-[1px] bg-amber-900/15"></div>
+                <!-- Combo -->
+                <div class="text-center">
+                    <div class="text-[10px] uppercase tracking-wider text-stone-500">
+                        <span class="lang-tw-only">連擊納福</span>
+                        <span class="lang-en-only">COMBO</span>
+                    </div>
+                    <div id="hudCombo" class="font-serif-tc font-bold text-sm sm:text-lg text-amber-600 tabular-nums">x1</div>
+                </div>
+                <div class="h-6 w-[1px] bg-amber-900/15"></div>
+                <!-- Timer -->
+                <div class="text-center">
+                    <div class="text-[10px] uppercase tracking-wider text-stone-500">
+                        <span class="lang-tw-only">祈福時辰</span>
+                        <span class="lang-en-only">TIME</span>
+                    </div>
+                    <div id="hudTime" class="font-serif-tc font-bold text-sm sm:text-lg text-stone-800 tabular-nums">60s</div>
+                </div>
+                <div class="h-6 w-[1px] bg-amber-900/15 hidden sm:block"></div>
+                <!-- Hearts -->
+                <div id="hudHearts" class="hidden sm:flex items-center gap-1 text-base" title="平安護心">
+                    <span>❤️</span><span>❤️</span><span>❤️</span>
+                </div>
+            </div>
+
+            <!-- Right Action Controls -->
+            <div class="flex items-center gap-1.5 sm:gap-2 pointer-events-auto">
+                <!-- 3D Inspection Button -->
+                <button id="btnOpenInspect" type="button" class="glass-hud px-2.5 py-2 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium text-stone-700 hover:text-[#a83f28] transition flex items-center gap-1.5 cursor-pointer" title="3D 立體鑑賞與插畫設定">
+                    <span class="text-base">✨</span>
+                    <span class="hidden md:inline lang-tw-only">3D 鑑賞</span>
+                    <span class="hidden md:inline lang-en-only">3D View</span>
+                </button>
+
+                <!-- Sound Toggle Button -->
+                <button id="btnSoundToggle" type="button" class="glass-hud w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-stone-700 hover:text-[#a83f28] transition cursor-pointer" title="音效開關 / Audio">
+                    <span id="soundIcon">🔊</span>
+                </button>
+
+                <!-- Language Switcher -->
+                <button id="btnLangToggle" type="button" class="glass-hud px-2.5 py-2 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-serif-tc font-bold text-[#a83f28] hover:bg-[#a83f28] hover:text-white transition cursor-pointer">
+                    <span class="lang-tw-only">EN</span>
+                    <span class="lang-en-only">繁中</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Hearts Sub-bar -->
+        <div id="mobileSubHud" class="hidden sm:hidden mt-1.5 flex justify-between items-center px-3 py-1 rounded-xl glass-hud max-w-xs mx-auto pointer-events-auto">
+            <span class="text-[11px] font-medium text-stone-600">
+                <span class="lang-tw-only">福德護佑：</span>
+                <span class="lang-en-only">Protection:</span>
+            </span>
+            <div id="hudHeartsMobile" class="flex items-center gap-1 text-xs">
+                <span>❤️</span><span>❤️</span><span>❤️</span>
+            </div>
+            <div id="hudStatusBadge" class="text-[11px] font-bold text-amber-700">
+                <span class="lang-tw-only">美地生金</span>
+                <span class="lang-en-only">Blessed</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==========================================================================
+         MAIN 3D INTERACTIVE CANVAS (60FPS Multi-Layer 2.5D/3D Perspective Stage)
+         ========================================================================== -->
+    <main class="relative w-full h-full overflow-hidden">
+        <canvas id="gameCanvas" class="block w-full h-full cursor-pointer"></canvas>
+
+        <!-- Bottom In-Game Interactive Controls (Touch Buttons + Skill Bar) -->
+        <div id="inGameBottomBar" class="hidden fixed bottom-3 sm:bottom-5 left-0 right-0 z-20 px-3 sm:px-6 pointer-events-none">
+            <div class="max-w-3xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+                <!-- Left Group: Menu + On-screen Left/Right Step Buttons for All Devices -->
+                <div class="flex items-center gap-1.5 sm:gap-2 pointer-events-auto">
+                    <button id="btnPauseHome" type="button" class="glass-hud px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-medium text-stone-700 hover:text-[#a83f28] flex items-center gap-1 shadow-md cursor-pointer active:scale-95 transition">
+                        <span>🏛️</span>
+                        <span class="hidden sm:inline lang-tw-only">展廳選單</span>
+                        <span class="hidden sm:inline lang-en-only">Menu</span>
+                    </button>
+
+                    <!-- Tactile Left / Right Move Buttons -->
+                    <button id="btnMoveLeft" type="button" class="glass-hud w-11 h-11 sm:w-12 sm:h-11 rounded-2xl flex items-center justify-center text-lg font-bold text-[#a83f28] hover:bg-amber-50 active:scale-90 shadow-md cursor-pointer" title="向左移動">
+                        ◀
+                    </button>
+                    <button id="btnMoveRight" type="button" class="glass-hud w-11 h-11 sm:w-12 sm:h-11 rounded-2xl flex items-center justify-center text-lg font-bold text-[#a83f28] hover:bg-amber-50 active:scale-90 shadow-md cursor-pointer" title="向右移動">
+                        ▶
+                    </button>
+                </div>
+
+                <!-- Center Touch / Mouse Guide -->
+                <div class="glass-hud px-3.5 py-2 rounded-full text-[11px] sm:text-xs text-stone-700 hidden md:flex items-center gap-2 shadow-sm">
+                    <span>✨</span>
+                    <span class="lang-tw-only">滑鼠直接移動 / 方向鍵 / 觸控滑動引導 3D 土地公接福</span>
+                    <span class="lang-en-only">Move Mouse, Arrow Keys, or Drag to guide 3D Tudigong</span>
+                </div>
+
+                <!-- Special 3D Staff Miracle Skill Button -->
+                <button id="btnCastMiracle" type="button" class="pointer-events-auto relative overflow-hidden rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3 font-serif-tc font-bold text-xs sm:text-sm text-white shadow-xl transition-all flex items-center gap-2 skill-ready-glow cursor-pointer active:scale-95" style="background: linear-gradient(135deg, #c59b5f 0%, #a83f28 100%);">
+                    <span class="text-base sm:text-lg">🦯</span>
+                    <div class="text-left leading-tight">
+                        <div>
+                            <span class="lang-tw-only">木杖點石成金</span>
+                            <span class="lang-en-only">Staff Miracle</span>
+                        </div>
+                        <div id="skillGaugeText" class="text-[10px] font-sans font-normal text-amber-100">
+                            100% 靈力滿載 (點擊施放)
+                        </div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- ==========================================================================
+         START / CURATORIAL EXHIBITION OVERLAY MODAL (Red Dot Museum Style)
+         ========================================================================== -->
+    <section id="startModal" class="fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-6 bg-stone-950/35 backdrop-blur-md overflow-y-auto">
+        <div class="relative w-full max-w-4xl rounded-3xl bg-[#fdfbf7] border-t-4 border-[#a83f28] shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col md:flex-row">
+            
+            <!-- Left Column: Interactive 3D Holographic Diorama Card -->
+            <div class="w-full md:w-5/12 bg-gradient-to-b from-[#f9f3e8] via-[#fdfbf7] to-[#f3e7d3] p-4 sm:p-6 flex flex-col items-center justify-between relative border-b md:border-b-0 md:border-r border-amber-900/10">
+                <!-- Top Curatorial Badge -->
+                <div class="w-full flex items-center justify-between text-[11px] text-amber-800/80 font-medium tracking-wider">
+                    <span>3D PARALLAX RIG</span>
+                    <span id="textureStatusBadge" class="px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-900 font-semibold">
+                        ✨ 3D 立體模型已就緒
+                    </span>
+                </div>
+
+                <!-- 3D Rotatable Diorama Stage -->
+                <div class="scene-3d-wrapper my-2 sm:my-4 flex-1 flex items-center justify-center w-full">
+                    <div id="dioramaCard" class="diorama-card-3d flex items-center justify-center select-none">
+                        <!-- Z-Layer -30px: Laojie River & Golden Shower Blossom Backdrop -->
+                        <div class="layer-z-back absolute inset-3 rounded-2xl overflow-hidden pointer-events-none flex flex-col justify-between p-3" style="background: radial-gradient(circle at 50% 25%, #fff5d6 0%, #f7e4b5 60%, #e7c888 100%);">
+                            <div class="flex justify-between items-start opacity-60 text-xs font-serif-tc text-[#a83f28] font-bold">
+                                <span>美地生金</span>
+                                <span>豐土納福</span>
+                            </div>
+                            <svg class="w-full h-16 opacity-35" viewBox="0 0 200 50" preserveAspectRatio="none">
+                                <path d="M0,25 Q25,5 50,25 T100,25 T150,25 T200,25 L200,50 L0,50 Z" fill="#1d5fa7"/>
+                                <path d="M0,35 Q25,18 50,35 T100,35 T150,35 T200,35 L200,50 L0,50 Z" fill="#c59b5f"/>
+                            </svg>
+                        </div>
+
+                        <!-- Z-Layer -12px: Spinning Auspicious Golden Halo -->
+                        <div class="layer-z-halo absolute w-52 h-52 pointer-events-none opacity-85">
+                            <svg viewBox="0 0 200 200" class="w-full h-full">
+                                <defs>
+                                    <linearGradient id="haloGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#f5cb42"/>
+                                        <stop offset="50%" stop-color="#c59b5f"/>
+                                        <stop offset="100%" stop-color="#a83f28"/>
+                                    </linearGradient>
+                                </defs>
+                                <circle cx="100" cy="100" r="86" fill="none" stroke="url(#haloGrad)" stroke-width="2.5" stroke-dasharray="8 6"/>
+                                <circle cx="100" cy="100" r="72" fill="none" stroke="#c59b5f" stroke-width="1.2" opacity="0.6"/>
+                                <g stroke="#c59b5f" stroke-width="1.5" opacity="0.45">
+                                    <line x1="100" y1="10" x2="100" y2="30"/><line x1="100" y1="170" x2="100" y2="190"/>
+                                    <line x1="10" y1="100" x2="30" y2="100"/><line x1="170" y1="100" x2="190" y2="100"/>
+                                    <line x1="36" y1="36" x2="50" y2="50"/><line x1="150" y1="150" x2="164" y2="164"/>
+                                    <line x1="164" y1="36" x2="150" y2="50"/><line x1="50" y1="150" x2="36" y2="164"/>
+                                </g>
+                            </svg>
+                        </div>
+
+                        <!-- Z-Layer +38px: 3D Tudigong Character Preview Canvas -->
+                        <div class="layer-z-character animate-float-3d relative w-56 h-64 flex items-center justify-center pointer-events-none">
+                            <canvas id="dioramaCharCanvas" width="360" height="400" class="w-full h-full object-contain"></canvas>
+                        </div>
+
+                        <!-- Z-Layer +62px: Floating 3D Foreground Badges -->
+                        <div class="layer-z-front-props absolute inset-0 flex flex-col justify-between p-3.5">
+                            <div class="flex justify-between items-center">
+                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-serif-tc font-bold bg-[#a83f28] text-amber-100 shadow-md">
+                                    水頭伯公 ‧ 正本清源
+                                </span>
+                                <span class="text-lg drop-shadow">🪙</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="inline-block px-3 py-1 rounded-full text-[11px] font-serif-tc font-bold bg-white/95 text-[#a83f28] border border-amber-500/40 shadow-sm">
+                                    <span class="lang-tw-only">👆 移動滑鼠或傾斜體驗 3D 立體感</span>
+                                    <span class="lang-en-only">👆 Move or Tilt for 3D Parallax</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Z-Layer +68px: Acrylic Specular Glare -->
+                        <div id="dioramaGlare" class="layer-z-glare absolute inset-0"></div>
+                    </div>
+                </div>
+
+                <!-- Custom Illustration File Loader -->
+                <div class="w-full flex flex-col items-center gap-1">
+                    <button id="btnLoadCustomImg" type="button" class="text-xs text-stone-600 hover:text-[#a83f28] underline underline-offset-4 flex items-center gap-1 transition cursor-pointer">
+                        
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column: Game Details, Cultural Concept & Mode Selection -->
+            <div class="w-full md:w-7/12 p-5 sm:p-8 flex flex-col justify-between overflow-y-auto custom-scroll">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-600/25 text-[#a83f28] text-xs font-medium mb-2">
+                        <span>🏆</span>
+                        <span class="lang-tw-only">美豐土地公互動體驗 ‧ LAOJIE RIVER × MEIFENG TUDIGONG</span>
+                        <span class="lang-en-only">Meifeng Tudigong Interactive Experience</span>
+                    </div>
+
+                    <h2 class="font-serif-tc text-2xl sm:text-3xl font-bold text-[#a83f28] tracking-wide leading-snug">
+                        <span class="lang-tw-only">美地生金 ‧ 豐土納福</span>
+                        <span class="lang-en-only">Golden Lands, Abundant Fortune</span>
+                    </h2>
+                    <p class="text-xs sm:text-sm text-stone-600 mt-2 leading-relaxed text-justify">
+                        <span class="lang-tw-only">
+                            以美豐土地公信仰與老街溪黃色阿勃勒景觀為核心。在 3D 立體透視的老街溪畔，引導手持「吉祥葫蘆木杖」與「金元寶」的土地公，接住從天而降的福氣與花瓣，體驗「祈願＋行動」的數位納福儀式。
+                        </span>
+                        <span class="lang-en-only">
+                            Inspired by Meifeng Tudigong and the blooming Golden Shower Trees along Laojie River. Guide the 3D animated Tudigong with his double-gourd staff and golden ingot to catch falling blessings and experience the "Prayer + Action" ritual.
+                        </span>
+                    </p>
+
+                    <!-- Interactive Item Legend Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 my-4">
+                        <div class="p-2.5 rounded-2xl bg-white border border-amber-900/10 shadow-sm flex items-center gap-2.5">
+                            <span class="text-2xl">🪙</span>
+                            <div class="text-xs">
+                                <div class="font-serif-tc font-bold text-stone-800">
+                                    <span class="lang-tw-only">黃金元寶</span>
+                                    <span class="lang-en-only">Gold Ingot</span>
+                                </div>
+                                <div class="text-[11px] text-amber-700 font-semibold">+100 福氣</div>
+                            </div>
+                        </div>
+                        <div class="p-2.5 rounded-2xl bg-white border border-amber-900/10 shadow-sm flex items-center gap-2.5">
+                            <span class="text-2xl">🌼</span>
+                            <div class="text-xs">
+                                <div class="font-serif-tc font-bold text-stone-800">
+                                    <span class="lang-tw-only">阿勃勒金花</span>
+                                    <span class="lang-en-only">Golden Blossom</span>
+                                </div>
+                                <div class="text-[11px] text-amber-700 font-semibold">+50 & 連擊加成</div>
+                            </div>
+                        </div>
+                        <div class="p-2.5 rounded-2xl bg-white border border-amber-900/10 shadow-sm flex items-center gap-2.5">
+                            <span class="text-2xl">🏺</span>
+                            <div class="text-xs">
+                                <div class="font-serif-tc font-bold text-stone-800">
+                                    <span class="lang-tw-only">吉祥金葫蘆</span>
+                                    <span class="lang-en-only">Lucky Golden Gourd</span>
+                                </div>
+                                <div class="text-[11px] text-emerald-700 font-semibold">磁場自動吸福 6秒</div>
+                            </div>
+                        </div>
+                        <div class="p-2.5 rounded-2xl bg-white border border-amber-900/10 shadow-sm flex items-center gap-2.5">
+                            <span class="text-2xl">🧧</span>
+                            <div class="text-xs">
+                                <div class="font-serif-tc font-bold text-stone-800">
+                                    <span class="lang-tw-only">美豐御守</span>
+                                    <span class="lang-en-only">Meifeng Amulet</span>
+                                </div>
+                                <div class="text-[11px] text-[#a83f28] font-semibold">金光護盾+元寶雨</div>
+                            </div>
+                        </div>
+                        <div class="p-2.5 rounded-2xl bg-white border border-amber-900/10 shadow-sm flex items-center gap-2.5">
+                            <span class="text-2xl">⛈️</span>
+                            <div class="text-xs">
+                                <div class="font-serif-tc font-bold text-stone-800">
+                                    <span class="lang-tw-only">晦氣烏雲</span>
+                                    <span class="lang-en-only">Dark Cloud</span>
+                                </div>
+                                <div class="text-[11px] text-stone-500">請閃避或用木杖點化</div>
+                            </div>
+                        </div>
+                        <div class="p-2.5 rounded-2xl bg-amber-50/90 border border-amber-500/30 shadow-sm flex items-center gap-2.5">
+                            <span class="text-2xl">🦯</span>
+                            <div class="text-xs">
+                                <div class="font-serif-tc font-bold text-[#a83f28]">
+                                    <span class="lang-tw-only">木杖點石成金</span>
+                                    <span class="lang-en-only">Staff Miracle</span>
+                                </div>
+                                <div class="text-[11px] text-amber-800">烏雲全化為大元寶</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons: 60s Ritual Mode vs. Endless Zen Mode -->
+                <div class="pt-2 border-t border-amber-900/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <button id="btnStartRitual" type="button" class="btn-reddot-primary flex-1 py-3.5 px-6 rounded-2xl font-serif-tc font-bold text-base sm:text-lg tracking-wider flex items-center justify-center gap-2 cursor-pointer">
+                        <span>✨</span>
+                        <span class="lang-tw-only">開始 60 秒祈福挑戰</span>
+                        <span class="lang-en-only">Start 60s Blessing Ritual</span>
+                    </button>
+                    <button id="btnStartZen" type="button" class="btn-reddot-secondary py-3.5 px-5 rounded-2xl font-serif-tc font-bold text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer">
+                        <span>🍃</span>
+                        <span class="lang-tw-only">無限禪意納福</span>
+                        <span class="lang-en-only">Endless Zen Mode</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================================================
+         3D INTERACTIVE DIORAMA & CULTURAL HOTSPOT INSPECTION MODAL
+         ========================================================================== -->
+    <section id="inspectModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/50 backdrop-blur-md">
+        <div class="w-full max-w-2xl rounded-3xl bg-[#fdfbf7] border-t-4 border-[#c59b5f] shadow-2xl p-5 sm:p-7 relative max-h-[90vh] overflow-y-auto custom-scroll">
+            <div class="flex items-center justify-between pb-3 border-b border-amber-900/10">
+                <div>
+                    <span class="text-[11px] uppercase tracking-widest text-[#c59b5f] font-bold">3D INTERACTIVE ARTIFACT</span>
+                    <h3 class="font-serif-tc text-xl sm:text-2xl font-bold text-[#a83f28]">
+                        <span class="lang-tw-only">美豐土地公 3D 結構與文化寓意解析</span>
+                        <span class="lang-en-only">3D Character & Symbolism Guide</span>
+                    </h3>
+                </div>
+                <button id="btnCloseInspect" type="button" class="w-9 h-9 rounded-full bg-stone-200/70 hover:bg-[#a83f28] hover:text-white transition flex items-center justify-center text-lg font-bold cursor-pointer">
+                    ✕
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-5">
+                <button type="button" data-part="hat" class="hotspot-btn text-left p-3.5 rounded-2xl bg-white border-2 border-[#a83f28] shadow-sm transition hover:shadow-md cursor-pointer">
+                    <div class="font-serif-tc font-bold text-[#a83f28] text-sm sm:text-base flex items-center justify-between">
+                        <span>👑 藍地金邊福德官帽</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-red-50 text-[#a83f28]">點擊高亮展示</span>
+                    </div>
+                    <p class="text-xs text-stone-600 mt-1.5 leading-relaxed">
+                        以寶藍、朱紅與翠綠交織，帽翅鑲嵌菱形吉紋與紅寶石，象徵「正本清源、財貴雙旺」的福德正神威儀。
+                    </p>
+                </button>
+
+                <button type="button" data-part="gourd" class="hotspot-btn text-left p-3.5 rounded-2xl bg-white border border-amber-900/15 shadow-sm transition hover:shadow-md cursor-pointer">
+                    <div class="font-serif-tc font-bold text-[#a83f28] text-sm sm:text-base flex items-center justify-between">
+                        <span>🦯 吉祥葫蘆桃木杖</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-800">獨立物理擺動</span>
+                    </div>
+                    <p class="text-xs text-stone-600 mt-1.5 leading-relaxed">
+                        右手持蜿蜒木杖並繫上桃紅絲帶與金葫蘆，寓意「福祿雙全、化煞納吉」，在遊戲中可施展點石成金神技。
+                    </p>
+                </button>
+
+                <button type="button" data-part="ingot" class="hotspot-btn text-left p-3.5 rounded-2xl bg-white border border-amber-900/15 shadow-sm transition hover:shadow-md cursor-pointer">
+                    <div class="font-serif-tc font-bold text-[#a83f28] text-sm sm:text-base flex items-center justify-between">
+                        <span>🪙 美地生金大元寶</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-800">3D 流光高光</span>
+                    </div>
+                    <p class="text-xs text-stone-600 mt-1.5 leading-relaxed">
+                        左手托舉飽滿金元寶，呼應美豐福德祠自大溪延伸至老街溪出水口的絕佳地理堪輿，庇佑百業興隆。
+                    </p>
+                </button>
+
+                <button type="button" data-part="robe" class="hotspot-btn text-left p-3.5 rounded-2xl bg-white border border-amber-900/15 shadow-sm transition hover:shadow-md cursor-pointer">
+                    <div class="font-serif-tc font-bold text-[#a83f28] text-sm sm:text-base flex items-center justify-between">
+                        <span>🌊 祥雲瑞蓮與老街溪水波袍</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-800">立體層次呼吸</span>
+                    </div>
+                    <p class="text-xs text-stone-600 mt-1.5 leading-relaxed">
+                        金黃錦袍綴以五彩祥雲與盛開蓮花，下擺融入老街溪藍色水波紋，象徵水源流長、福澤綿延。
+                    </p>
+                </button>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-amber-900/10">
+                <button id="btnModalUploadImg" type="button" class="btn-reddot-secondary px-0 py-0 rounded-xl text-xs sm:text-sm font-medium cursor-pointer">
+                    
+                </button>
+                <button id="btnResumeFromInspect" type="button" class="btn-reddot-primary px-6 py-2.5 rounded-xl font-serif-tc font-bold text-sm cursor-pointer">
+                    返回祈福舞台
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================================================
+         END-OF-ROUND ORACLE FORTUNE & 3D AMULET CARD MODAL (六步祈福法結緣籤)
+         ========================================================================== -->
+    <section id="resultModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-stone-950/55 backdrop-blur-md overflow-y-auto">
+        <div class="w-full max-w-xl rounded-3xl bg-[#fdfbf7] border-t-4 border-[#a83f28] shadow-2xl p-5 sm:p-8 my-auto relative overflow-hidden">
+            <div class="text-center">
+                <div class="inline-block px-3.5 py-1 rounded-full bg-[#a83f28]/10 text-[#a83f28] font-serif-tc font-bold text-xs tracking-widest mb-2">
+                    <span class="lang-tw-only">美豐土地公 ‧ 祈福圓滿靈籤</span>
+                    <span class="lang-en-only">MEIFENG TUDIGONG BLESSING ORACLE</span>
+                </div>
+                <h2 id="oracleTitle" class="font-serif-tc text-2xl sm:text-3xl font-black text-[#a83f28]">
+                    上上籤 ‧ 美地生金大吉
+                </h2>
+            </div>
+
+            <!-- Score & Stats Summary Box -->
+            <div class="grid grid-cols-3 gap-2.5 my-5 p-3.5 rounded-2xl bg-white border border-amber-900/15 shadow-inner text-center">
+                <div>
+                    <div class="text-[11px] text-stone-500">
+                        <span class="lang-tw-only">累積福氣值</span>
+                        <span class="lang-en-only">Total Score</span>
+                    </div>
+                    <div id="resultScore" class="font-serif-tc font-black text-xl sm:text-2xl text-[#a83f28] mt-0.5">0</div>
+                </div>
+                <div class="border-x border-amber-900/10">
+                    <div class="text-[11px] text-stone-500">
+                        <span class="lang-tw-only">最高連擊</span>
+                        <span class="lang-en-only">Max Combo</span>
+                    </div>
+                    <div id="resultCombo" class="font-serif-tc font-bold text-xl sm:text-2xl text-amber-600 mt-0.5">x1</div>
+                </div>
+                <div>
+                    <div class="text-[11px] text-stone-500">
+                        <span class="lang-tw-only">接獲寶物</span>
+                        <span class="lang-en-only">Treasures</span>
+                    </div>
+                    <div id="resultItems" class="font-serif-tc font-bold text-xl sm:text-2xl text-emerald-700 mt-0.5">0</div>
+                </div>
+            </div>
+
+            <!-- Six-Step Prayer Wisdom ("祈願＋行動") -->
+            <div class="p-4 rounded-2xl bg-amber-50/80 border-l-4 border-[#a83f28] text-left mb-6">
+                <div class="text-xs font-serif-tc font-bold text-[#a83f28] mb-1">
+                    <span class="lang-tw-only">📜 土地公六步祈福法｜一守一願（祈願＋行動）指引：</span>
+                    <span class="lang-en-only">📜 Tudigong Blessing Guidance (Prayer + Action):</span>
+                </div>
+                <p id="oraclePoem" class="text-xs sm:text-sm text-stone-700 leading-relaxed font-serif-tc">
+                    「祈求土地公保佑工作順利、貴人相助，我也會認真做好自己的工作，把握每一次機會。美地生金，福氣隨身！」
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button id="btnPlayAgain" type="button" class="btn-reddot-primary flex-1 py-3.5 px-6 rounded-2xl font-serif-tc font-bold text-base flex items-center justify-center gap-2 cursor-pointer">
+                    <span>🔄</span>
+                    <span class="lang-tw-only">再次誠心祈福</span>
+                    <span class="lang-en-only">Play Again</span>
+                </button>
+                <button id="btnBackToHall" type="button" class="btn-reddot-secondary py-3.5 px-5 rounded-2xl font-serif-tc font-bold text-sm flex items-center justify-center gap-2 cursor-pointer">
+                    <span>🏛️</span>
+                    <span class="lang-tw-only">返回 3D 鑑賞大廳</span>
+                    <span class="lang-en-only">Back to 3D Hall</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================================================
+         JAVASCRIPT ENGINE: 100% CRASH-PROOF 3D PARALLAX RIG & GAME LOOP
+         ========================================================================== -->
+    <script>
+        (function () {
+            "use strict";
+
+            // ======================================================================
+            // 0. UNIVERSAL CROSS-BROWSER ROUNDED RECTANGLE HELPER (Never fails)
+            // ======================================================================
+            function drawRoundedRectPath(ctx, x, y, w, h, r) {
+                const radius = Math.max(0, Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2));
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + w - radius, y);
+                ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+                ctx.lineTo(x + w, y + h - radius);
+                ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+                ctx.lineTo(x + radius, y + h);
+                ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+                ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+                ctx.closePath();
+            }
+
+            // ======================================================================
+            // 1. WEB AUDIO SYNTHESIZER (Pentatonic GuZheng / Temple Chimes)
+            // ======================================================================
+            class SoundEngine {
+                constructor() {
+                    this.ctx = null;
+                    this.muted = false;
+                    this.pentatonic = [293.66, 329.63, 369.99, 440.00, 493.88, 587.33, 659.25, 739.99, 880.00, 1174.66];
+                }
+
+                init() {
+                    try {
+                        if (!this.ctx) {
+                            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                            if (AudioCtx) this.ctx = new AudioCtx();
+                        }
+                        if (this.ctx && this.ctx.state === "suspended") {
+                            this.ctx.resume();
+                        }
+                    } catch (e) {}
+                }
+
+                playChime(comboIndex = 0, type = "ingot") {
+                    if (this.muted) return;
+                    try {
+                        this.init();
+                        if (!this.ctx) return;
+
+                        const now = this.ctx.currentTime;
+                        if (type === "ingot" || type === "blossom") {
+                            const osc = this.ctx.createOscillator();
+                            const gain = this.ctx.createGain();
+                            const freq = this.pentatonic[Math.min(Math.abs(comboIndex) % this.pentatonic.length, this.pentatonic.length - 1)];
+                            osc.type = type === "ingot" ? "triangle" : "sine";
+                            osc.frequency.setValueAtTime(freq, now);
+                            osc.frequency.exponentialRampToValueAtTime(freq * 1.01, now + 0.15);
+
+                            gain.gain.setValueAtTime(0.16, now);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+                            osc.connect(gain);
+                            gain.connect(this.ctx.destination);
+                            osc.start(now);
+                            osc.stop(now + 0.44);
+                        } else if (type === "amulet" || type === "miracle") {
+                            [587.33, 880.0, 1174.66].forEach((f, idx) => {
+                                const o = this.ctx.createOscillator();
+                                const g = this.ctx.createGain();
+                                o.type = "sine";
+                                o.frequency.setValueAtTime(f, now + idx * 0.05);
+                                g.gain.setValueAtTime(0.13, now + idx * 0.05);
+                                g.gain.exponentialRampToValueAtTime(0.0008, now + 0.85 + idx * 0.1);
+                                o.connect(g);
+                                g.connect(this.ctx.destination);
+                                o.start(now + idx * 0.05);
+                                o.stop(now + 1.0);
+                            });
+                        } else if (type === "cloud") {
+                            const osc = this.ctx.createOscillator();
+                            const gain = this.ctx.createGain();
+                            osc.type = "sawtooth";
+                            osc.frequency.setValueAtTime(140, now);
+                            osc.frequency.exponentialRampToValueAtTime(65, now + 0.28);
+                            gain.gain.setValueAtTime(0.14, now);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                            osc.connect(gain);
+                            gain.connect(this.ctx.destination);
+                            osc.start(now);
+                            osc.stop(now + 0.32);
+                        }
+                    } catch (e) {}
+                }
+            }
+
+            const sound = new SoundEngine();
+
+            // ======================================================================
+            // 2. HIGH-PRECISION 3D CHARACTER TEXTURE & MULTI-LAYER RIGGING SYSTEM
+            // ======================================================================
+            const externalImg = new Image();
+            let externalImgLoaded = false;
+
+            function updateBadgeStatus(textTW, isCustom = false) {
+                const badge = document.getElementById("textureStatusBadge");
+                if (badge) {
+                    badge.textContent = textTW;
+                    if (isCustom) {
+                        badge.className = "px-2.5 py-0.5 rounded-full bg-emerald-600/20 text-emerald-900 font-semibold";
+                    }
+                }
+            }
+
+            externalImg.onload = function () {
+                if (externalImg.naturalWidth > 0) {
+                    externalImgLoaded = true;
+                    updateBadgeStatus("✨ 美豐土地公賜福中", true);
+                }
+            };
+            externalImg.onerror = function () {
+                externalImgLoaded = false;
+            };
+            externalImg.src = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRL7hDoTQhj8-dTgeIPwTDSAOTnEBYJ0ZRqKGTKaXuPSKVzuQuFA_SQ6fKqnX5pllmClXtLrG3fmNxSMHc5Ff6vkSXYumK9ywzjY65jxZtK1e8pU-jgVxBNYzcdzgpufGcOKRDw0qBRXR0hdLdyeQp9hK2yJJN8j96-TRWyocFDf2TUnYUNwIbjSzp/s1600/%E7%BE%8E%E8%B1%90%E5%9C%9F%E5%9C%B0%E5%85%AC%E6%8F%92%E7%95%AB.webp.webp";
+
+            /**
+             * Renders the Meifeng Tudigong with 3D Volumetric Parallax Layers!
+             */
+            function draw3DTudigongRig(ctx, cx, cy, scale, rigState) {
+                try {
+                    const safeScale = Math.max(0.2, scale || 0.75);
+                    const {
+                        tiltX = 0,
+                        tiltY = 0,
+                        leanAngle = 0,
+                        breath = 0,
+                        squash = 1,
+                        gourdSwing = 0,
+                        ingotGlow = 0,
+                        shieldActive = false,
+                        magnetActive = false,
+                        highlightPart = null
+                    } = rigState || {};
+
+                    ctx.save();
+                    ctx.translate(cx, cy);
+
+                    // 1. 3D Perspective Ground Shadow
+                    ctx.save();
+                    ctx.translate(0, 140 * safeScale);
+                    const safeSquash = Math.max(0.82, Math.min(1.22, squash || 1));
+                    ctx.scale(1.15 - (1 - safeSquash) * 0.35, 0.28);
+                    const rOuter = Math.max(10, 108 * safeScale);
+                    const shadowGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, rOuter);
+                    shadowGrad.addColorStop(0, "rgba(44, 24, 16, 0.44)");
+                    shadowGrad.addColorStop(0.6, "rgba(44, 24, 16, 0.18)");
+                    shadowGrad.addColorStop(1, "rgba(44, 24, 16, 0)");
+                    ctx.fillStyle = shadowGrad;
+                    ctx.beginPath();
+                    ctx.arc(-tiltY * 10 * safeScale, 0, rOuter, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+
+                    // Apply overall 3D body bounce & velocity lean
+                    const stretchY = 1 / safeSquash;
+                    ctx.rotate(leanAngle);
+                    ctx.scale(safeSquash * safeScale, stretchY * safeScale);
+
+                    // Parallax offsets per Z-layer
+                    const pxBack = -tiltY * 14;
+                    const pyBack = -tiltX * 10;
+                    const pxMid = tiltY * 10;
+                    const pyMid = tiltX * 8 + Math.sin(breath) * 3.5;
+                    const pxFront = tiltY * 22;
+                    const pyFront = tiltX * 14 + Math.sin(breath + 0.6) * 4.5;
+
+                    // 2. Z-LAYER -2: Rotating Golden Auspicious Halo Behind Tudigong
+                    ctx.save();
+                    ctx.translate(pxBack, -25 + pyBack);
+                    ctx.rotate(ingotGlow * 0.4);
+                    const haloGrad = ctx.createRadialGradient(0, 0, 20, 0, 0, 128);
+                    haloGrad.addColorStop(0, "rgba(245, 203, 66, 0.48)");
+                    haloGrad.addColorStop(0.65, "rgba(197, 155, 95, 0.18)");
+                    haloGrad.addColorStop(1, "rgba(197, 155, 95, 0)");
+                    ctx.fillStyle = haloGrad;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 128, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.strokeStyle = "rgba(197, 155, 95, 0.5)";
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([10, 8]);
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 104, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // 3. IF USER IMAGE ("美豐土地公插畫.webp") IS LOADED:
+                    let drewExternal = false;
+                    if (externalImgLoaded && externalImg.complete && externalImg.naturalWidth > 0) {
+                        try {
+                            const imgW = 290;
+                            const imgH = 290 * (externalImg.naturalHeight / externalImg.naturalWidth);
+
+                            // 3D Extruded Faux-Thickness Rim Layer
+                            ctx.save();
+                            ctx.translate(pxMid - tiltY * 8, pyMid + 5);
+                            ctx.globalAlpha = 0.45;
+                            ctx.drawImage(externalImg, -imgW / 2, -imgH / 2, imgW, imgH);
+                            ctx.restore();
+
+                            // Main Parallax Character Layer
+                            ctx.save();
+                            ctx.translate(pxMid, pyMid);
+                            ctx.drawImage(externalImg, -imgW / 2, -imgH / 2, imgW, imgH);
+                            ctx.restore();
+
+                            // Foreground 3D Specular Shimmer on the Golden Ingot
+                            ctx.save();
+                            ctx.translate(48 + pxFront * 0.7, -5 + pyFront * 0.7);
+                            const shineRadius = Math.max(8, 26 + Math.sin(ingotGlow * 3) * 6);
+                            const ingotShine = ctx.createRadialGradient(0, 0, 2, 0, 0, shineRadius);
+                            ingotShine.addColorStop(0, "rgba(255, 255, 240, 0.85)");
+                            ingotShine.addColorStop(0.5, "rgba(245, 203, 66, 0.35)");
+                            ingotShine.addColorStop(1, "rgba(245, 203, 66, 0)");
+                            ctx.fillStyle = ingotShine;
+                            ctx.beginPath();
+                            ctx.arc(0, 0, shineRadius, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.restore();
+
+                            drewExternal = true;
+                        } catch (imgErr) {
+                            drewExternal = false;
+                        }
+                    }
+
+                    // 4. BUILT-IN MULTI-LAYER 3D PAINTERLY REPLICA OF "美豐土地公插畫.webp"
+                    if (!drewExternal) {
+                        // --- LAYER A: Shoes & Lower Wave Hem ---
+                        ctx.save();
+                        ctx.translate(pxMid * 0.7, pyMid * 0.5);
+                        [-48, 48].forEach((sx, idx) => {
+                            ctx.save();
+                            ctx.translate(sx, 124);
+                            ctx.rotate(idx === 0 ? -0.08 : 0.08);
+                            ctx.fillStyle = "#1d5fa7";
+                            drawRoundedRectPath(ctx, -28, -14, 56, 28, 14);
+                            ctx.fill();
+
+                            ctx.fillStyle = "#26a65b";
+                            ctx.beginPath();
+                            ctx.arc(idx === 0 ? -12 : 12, 2, 13, 0, Math.PI * 2);
+                            ctx.fill();
+
+                            ctx.fillStyle = "#e04875";
+                            ctx.beginPath();
+                            ctx.arc(idx === 0 ? -12 : 12, -2, 8, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.strokeStyle = "#f2c138";
+                            ctx.lineWidth = 3;
+                            ctx.stroke();
+                            ctx.restore();
+                        });
+                        ctx.restore();
+
+                        // --- LAYER B: Main Golden Robe with Auspicious Clouds & Laojie River Wave Hem ---
+                        ctx.save();
+                        ctx.translate(pxMid, pyMid);
+                        if (highlightPart === "robe") {
+                            ctx.shadowColor = "#f5cb42";
+                            ctx.shadowBlur = 25;
+                        }
+
+                        // Flowing Wide Sleeves
+                        ctx.fillStyle = "#f3bd38";
+                        ctx.beginPath();
+                        ctx.moveTo(-55, -28);
+                        ctx.quadraticCurveTo(-112, 10, -95, 78);
+                        ctx.quadraticCurveTo(-72, 92, -55, 65);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        ctx.beginPath();
+                        ctx.moveTo(55, -28);
+                        ctx.quadraticCurveTo(112, 10, 95, 78);
+                        ctx.quadraticCurveTo(72, 92, 55, 65);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        // Sleeve Trim (Blue & Pink Inner Lining)
+                        ctx.strokeStyle = "#1d5fa7";
+                        ctx.lineWidth = 7;
+                        ctx.beginPath();
+                        ctx.moveTo(-64, -5);
+                        ctx.quadraticCurveTo(-82, 42, -70, 82);
+                        ctx.stroke();
+                        ctx.strokeStyle = "#d93b6b";
+                        ctx.lineWidth = 5;
+                        ctx.beginPath();
+                        ctx.moveTo(-58, 0);
+                        ctx.quadraticCurveTo(-74, 42, -63, 79);
+                        ctx.stroke();
+
+                        ctx.strokeStyle = "#1d5fa7";
+                        ctx.lineWidth = 7;
+                        ctx.beginPath();
+                        ctx.moveTo(64, -5);
+                        ctx.quadraticCurveTo(82, 42, 70, 82);
+                        ctx.stroke();
+                        ctx.strokeStyle = "#d93b6b";
+                        ctx.lineWidth = 5;
+                        ctx.beginPath();
+                        ctx.moveTo(58, 0);
+                        ctx.quadraticCurveTo(74, 42, 63, 79);
+                        ctx.stroke();
+
+                        // Main Robe Skirt Body
+                        const robeGrad = ctx.createLinearGradient(0, -35, 0, 122);
+                        robeGrad.addColorStop(0, "#f7c945");
+                        robeGrad.addColorStop(0.7, "#eba828");
+                        robeGrad.addColorStop(1, "#d93b6b");
+                        ctx.fillStyle = robeGrad;
+                        ctx.beginPath();
+                        ctx.moveTo(-56, -32);
+                        ctx.quadraticCurveTo(-78, 55, -82, 110);
+                        ctx.quadraticCurveTo(0, 134, 82, 110);
+                        ctx.quadraticCurveTo(78, 55, 56, -32);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        // Blue Seigaiha (Laojie River Waves) along the bottom hem
+                        ctx.save();
+                        ctx.fillStyle = "#1d5fa7";
+                        [-55, -28, 0, 28, 55].forEach(wx => {
+                            ctx.beginPath();
+                            ctx.arc(wx, 98, 16, Math.PI, 0);
+                            ctx.fill();
+                            ctx.strokeStyle = "#99d5e8";
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                        });
+                        ctx.restore();
+
+                        // Central Royal Blue Panel with Pink Lotus & Green Clouds
+                        ctx.fillStyle = "#1d5fa7";
+                        ctx.beginPath();
+                        ctx.moveTo(-20, 12);
+                        ctx.lineTo(20, 12);
+                        ctx.lineTo(28, 116);
+                        ctx.quadraticCurveTo(0, 124, -28, 116);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.strokeStyle = "#f5cb42";
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+
+                        // Pink Lotus in Center Panel
+                        ctx.fillStyle = "#e04875";
+                        ctx.beginPath();
+                        ctx.arc(0, 62, 11, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = "#26a65b";
+                        ctx.beginPath();
+                        ctx.ellipse(0, 42, 10, 6, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.ellipse(0, 82, 12, 6, 0, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Royal Belt with Red Gem Buckle
+                        ctx.fillStyle = "#1d5fa7";
+                        drawRoundedRectPath(ctx, -48, 8, 96, 14, 7);
+                        ctx.fill();
+                        ctx.strokeStyle = "#f5cb42";
+                        ctx.lineWidth = 2.5;
+                        ctx.stroke();
+
+                        ctx.fillStyle = "#d93b6b";
+                        ctx.beginPath();
+                        ctx.arc(0, 15, 9, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.strokeStyle = "#26a65b";
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                        ctx.restore();
+
+                        // --- LAYER C: 3D Head, Rosy Cheeks, Smiling Eyes, Winged Hat & Flowing White Beard ---
+                        ctx.save();
+                        ctx.translate(pxMid * 1.25, pyMid * 1.15);
+
+                        // Big Auspicious Ears
+                        ctx.fillStyle = "#f4bfb0";
+                        ctx.beginPath();
+                        ctx.ellipse(-45, -52, 11, 20, -0.1, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.ellipse(45, -52, 11, 20, 0.1, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Face Base
+                        ctx.fillStyle = "#fad2c5";
+                        ctx.beginPath();
+                        ctx.arc(0, -56, 43, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Rosy Red-Pink Cheeks
+                        ctx.fillStyle = "rgba(229, 115, 115, 0.65)";
+                        ctx.beginPath();
+                        ctx.arc(-25, -48, 12, 0, Math.PI * 2);
+                        ctx.arc(25, -48, 12, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Happy Curved Smiling Eyes & Fluffy White Eyebrows
+                        ctx.strokeStyle = "#1f191a";
+                        ctx.lineWidth = 3.6;
+                        ctx.lineCap = "round";
+                        ctx.beginPath();
+                        ctx.arc(-17, -58, 7, Math.PI * 1.15, Math.PI * 1.85);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.arc(17, -58, 7, Math.PI * 1.15, Math.PI * 1.85);
+                        ctx.stroke();
+
+                        // White Eyebrows
+                        ctx.strokeStyle = "#ffffff";
+                        ctx.lineWidth = 5.5;
+                        ctx.beginPath();
+                        ctx.arc(-18, -66, 11, Math.PI * 1.15, Math.PI * 1.85);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.arc(18, -66, 11, Math.PI * 1.15, Math.PI * 1.85);
+                        ctx.stroke();
+
+                        // Rosy Nose & Joyful Smile
+                        ctx.fillStyle = "#e3827e";
+                        ctx.beginPath();
+                        ctx.arc(0, -52, 5.5, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        ctx.fillStyle = "#c94a4a";
+                        ctx.beginPath();
+                        ctx.arc(0, -41, 8, 0, Math.PI);
+                        ctx.fill();
+
+                        // Long Flowing White Beard (3D Layered with subtle sway)
+                        const beardSway = Math.sin(breath * 1.5) * 3 - leanAngle * 18;
+                        const beardGrad = ctx.createLinearGradient(0, -45, 0, 38);
+                        beardGrad.addColorStop(0, "#ffffff");
+                        beardGrad.addColorStop(0.75, "#f5f4f0");
+                        beardGrad.addColorStop(1, "#e2dfd7");
+                        ctx.fillStyle = beardGrad;
+                        ctx.beginPath();
+                        ctx.moveTo(-26, -42);
+                        ctx.quadraticCurveTo(-30, 0, 8 + beardSway, 38);
+                        ctx.quadraticCurveTo(28, -2, 26, -42);
+                        ctx.quadraticCurveTo(0, -34, -26, -42);
+                        ctx.fill();
+
+                        // Mustache Curves
+                        ctx.strokeStyle = "#ffffff";
+                        ctx.lineWidth = 6.5;
+                        ctx.beginPath();
+                        ctx.moveTo(-4, -43);
+                        ctx.quadraticCurveTo(-24, -42, -32, -22);
+                        ctx.moveTo(4, -43);
+                        ctx.quadraticCurveTo(24, -42, 32, -22);
+                        ctx.stroke();
+
+                        // --- Ornate Winged Official Hat (福德正神官帽) ---
+                        ctx.save();
+                        if (highlightPart === "hat") {
+                            ctx.shadowColor = "#f5cb42";
+                            ctx.shadowBlur = 25;
+                        }
+                        [-1, 1].forEach(dir => {
+                            ctx.save();
+                            ctx.translate(dir * 42, -88);
+                            ctx.rotate(dir * (0.12 + Math.sin(breath * 2) * 0.04));
+                            ctx.fillStyle = "#1d5fa7";
+                            ctx.strokeStyle = "#f2c138";
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.moveTo(0, 0);
+                            ctx.bezierCurveTo(dir * 28, -22, dir * 48, -8, dir * 44, 8);
+                            ctx.bezierCurveTo(dir * 38, 22, dir * 16, 16, 0, 8);
+                            ctx.closePath();
+                            ctx.fill();
+                            ctx.stroke();
+
+                            ctx.fillStyle = "#d93b6b";
+                            ctx.beginPath();
+                            ctx.arc(dir * 26, 2, 6, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.restore();
+                        });
+
+                        // Hat Main Crown
+                        ctx.fillStyle = "#d93b6b";
+                        drawRoundedRectPath(ctx, -34, -124, 68, 28, 12);
+                        ctx.fill();
+
+                        ctx.fillStyle = "#1d5fa7";
+                        ctx.strokeStyle = "#f2c138";
+                        ctx.lineWidth = 3.5;
+                        drawRoundedRectPath(ctx, -40, -110, 80, 32, 10);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        // Green Auspicious Crest & Center Red Gem
+                        ctx.fillStyle = "#26a65b";
+                        ctx.beginPath();
+                        ctx.arc(0, -95, 16, Math.PI, 0);
+                        ctx.fill();
+                        ctx.strokeStyle = "#f2c138";
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+
+                        ctx.fillStyle = "#d93b6b";
+                        ctx.beginPath();
+                        ctx.ellipse(0, -96, 5, 7, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+
+                        ctx.restore(); // End Head Layer
+
+                        // --- LAYER D (Z-FRONT): Left Hand Holding Gleaming 3D Golden Ingot (金元寶) ---
+                        ctx.save();
+                        ctx.translate(48 + pxFront, -4 + pyFront);
+                        if (highlightPart === "ingot") {
+                            ctx.shadowColor = "#f5cb42";
+                            ctx.shadowBlur = 28;
+                        }
+                        const ingotGrad = ctx.createLinearGradient(-28, -18, 28, 18);
+                        ingotGrad.addColorStop(0, "#fff3a1");
+                        ingotGrad.addColorStop(0.45, "#f5cb42");
+                        ingotGrad.addColorStop(1, "#d4941c");
+                        ctx.fillStyle = ingotGrad;
+
+                        ctx.beginPath();
+                        ctx.arc(0, -10, 14, Math.PI, 0);
+                        ctx.fill();
+
+                        ctx.beginPath();
+                        ctx.moveTo(-30, -8);
+                        ctx.quadraticCurveTo(0, 2, 30, -8);
+                        ctx.quadraticCurveTo(22, 18, 0, 18);
+                        ctx.quadraticCurveTo(-22, 18, -30, -8);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.strokeStyle = "#b87914";
+                        ctx.lineWidth = 1.8;
+                        ctx.stroke();
+
+                        ctx.fillStyle = "#fad2c5";
+                        drawRoundedRectPath(ctx, -14, 10, 28, 13, 6);
+                        ctx.fill();
+                        ctx.restore();
+
+                        // --- LAYER E (Z-FRONT): Right Hand Holding Wooden Staff & Swinging Double Gourds ---
+                        ctx.save();
+                        ctx.translate(-52 + pxFront, -8 + pyFront);
+                        if (highlightPart === "gourd") {
+                            ctx.shadowColor = "#f5cb42";
+                            ctx.shadowBlur = 28;
+                        }
+
+                        ctx.strokeStyle = "#693518";
+                        ctx.lineWidth = 9;
+                        ctx.lineCap = "round";
+                        ctx.beginPath();
+                        ctx.moveTo(-8, -75);
+                        ctx.bezierCurveTo(-26, -98, 8, -102, 2, -78);
+                        ctx.lineTo(16, 135);
+                        ctx.stroke();
+
+                        ctx.fillStyle = "#fad2c5";
+                        ctx.beginPath();
+                        ctx.arc(0, 2, 12, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Independent Pendulum Physics for Pink Ribbon & Double Golden Gourds
+                        ctx.save();
+                        ctx.translate(-6, -48);
+                        ctx.rotate(gourdSwing);
+
+                        ctx.strokeStyle = "#d9386a";
+                        ctx.lineWidth = 4.5;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.quadraticCurveTo(-24, 25, -18, 55);
+                        ctx.moveTo(0, 0);
+                        ctx.quadraticCurveTo(-8, 30, -12, 62);
+                        ctx.stroke();
+
+                        ctx.fillStyle = "#f2c335";
+                        ctx.strokeStyle = "#b88214";
+                        ctx.lineWidth = 1.8;
+                        ctx.beginPath();
+                        ctx.arc(-14, 16, 9, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.arc(-16, 32, 13, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        ctx.restore();
+                        ctx.restore();
+                    }
+
+                    // 5. Active Power-up Visual Auras
+                    if (shieldActive) {
+                        ctx.save();
+                        ctx.strokeStyle = "rgba(245, 203, 66, 0.85)";
+                        ctx.lineWidth = 4;
+                        ctx.shadowColor = "#f5cb42";
+                        ctx.shadowBlur = 20;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 145, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.fillStyle = "rgba(245, 203, 66, 0.09)";
+                        ctx.fill();
+                        ctx.restore();
+                    }
+
+                    if (magnetActive) {
+                        ctx.save();
+                        const magPulse = Math.abs((ingotGlow * 25) % 60);
+                        ctx.strokeStyle = `rgba(38, 166, 91, ${Math.max(0.1, 1 - magPulse / 60)})`;
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 110 + magPulse, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+
+                    ctx.restore();
+                } catch (err) {
+                    try { ctx.restore(); } catch (e) {}
+                }
+            }
+
+            // ======================================================================
+            // 3. 3D DIORAMA CARD PREVIEW & INTERACTIVE TILT CONTROLLER
+            // ======================================================================
+            const dioramaCanvas = document.getElementById("dioramaCharCanvas");
+            const dioramaCtx = dioramaCanvas.getContext("2d");
+            const dioramaCard = document.getElementById("dioramaCard");
+            const dioramaGlare = document.getElementById("dioramaGlare");
+
+            let cardTiltX = 0;
+            let cardTiltY = 0;
+            let targetCardTiltX = 0;
+            let targetCardTiltY = 0;
+            let activeHighlightPart = null;
+
+            function handleCardPointerMove(clientX, clientY) {
+                if (!dioramaCard) return;
+                const rect = dioramaCard.getBoundingClientRect();
+                if (rect.width <= 0 || rect.height <= 0) return;
+                const x = Math.max(-0.6, Math.min(0.6, (clientX - rect.left) / rect.width - 0.5));
+                const y = Math.max(-0.6, Math.min(0.6, (clientY - rect.top) / rect.height - 0.5));
+                targetCardTiltY = x * 28;
+                targetCardTiltX = -y * 24;
+
+                if (dioramaGlare) {
+                    const gx = 50 + x * 60;
+                    const gy = 50 + y * 60;
+                    dioramaGlare.style.background = `radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.65) 0%, rgba(255,230,150,0.25) 40%, rgba(255,255,255,0) 75%)`;
+                }
+            }
+
+            // ======================================================================
+            // 4. MAIN 3D PERSPECTIVE GAMEPLAY ENGINE
+            // ======================================================================
+            const canvas = document.getElementById("gameCanvas");
+            const ctx = canvas.getContext("2d");
+
+            let cw = Math.max(320, window.innerWidth);
+            let ch = Math.max(480, window.innerHeight);
+
+            const state = {
+                mode: "menu", // 'menu' | 'ritual' | 'zen' | 'gameover'
+                score: 0,
+                combo: 1,
+                maxCombo: 1,
+                caughtCount: 0,
+                hearts: 3,
+                timeLeft: 60,
+                skillGauge: 100,
+                feverTimer: 0,
+                magnetTimer: 0,
+                shieldTimer: 0,
+                miracleWaveRadius: 0,
+                miracleWaveActive: false,
+                clock: 0
+            };
+
+            const player = {
+                x: cw * 0.5,
+                targetX: cw * 0.5,
+                vx: 0,
+                y: ch * 0.76,
+                scale: 0.75,
+                squash: 1,
+                squashVel: 0,
+                gourdAngle: 0,
+                gourdVel: 0,
+                keys: { left: false, right: false }
+            };
+
+            function resizeCanvas() {
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                cw = Math.max(320, window.innerWidth);
+                ch = Math.max(480, window.innerHeight);
+                canvas.width = cw * dpr;
+                canvas.height = ch * dpr;
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                player.x = Math.max(70, Math.min(cw - 70, player.x || cw * 0.5));
+                player.targetX = Math.max(70, Math.min(cw - 70, player.targetX || cw * 0.5));
+                player.y = ch * 0.75;
+            }
+            window.addEventListener("resize", resizeCanvas);
+            resizeCanvas();
+
+            let items = [];
+            let particles = [];
+            let floatTexts = [];
+            let bgBlossoms = [];
+
+            for (let i = 0; i < 28; i++) {
+                bgBlossoms.push({
+                    x: Math.random() * 2000,
+                    y: Math.random() * 1200,
+                    z: 0.3 + Math.random() * 0.7,
+                    size: 4 + Math.random() * 7,
+                    speedY: 0.5 + Math.random() * 1.1,
+                    speedX: -0.3 + Math.random() * 0.6,
+                    angle: Math.random() * Math.PI * 2,
+                    spin: (Math.random() - 0.5) * 0.03
+                });
+            }
+
+            function spawnFallingItem(forceFever = false, initialZ = 0.15, forcedType = null) {
+                let type = forcedType || "ingot";
+                if (!forcedType) {
+                    const r = Math.random();
+                    if (forceFever || state.feverTimer > 0) {
+                        type = r < 0.7 ? "ingot" : "blossom";
+                    } else {
+                        if (r < 0.44) type = "ingot";
+                        else if (r < 0.74) type = "blossom";
+                        else if (r < 0.83) type = "gourd";
+                        else if (r < 0.89) type = "amulet";
+                        else type = "cloud";
+                    }
+                }
+
+                const laneOffset = (Math.random() - 0.5) * 0.72;
+                const z = Math.max(0.12, Math.min(0.75, initialZ));
+                const spreadFactor = 0.25 + z * 0.85;
+                items.push({
+                    type,
+                    laneOffset,
+                    z,
+                    zSpeed: 0.0055 + Math.random() * 0.0028 + (state.mode === "ritual" ? Math.max(0, 60 - state.timeLeft) * 0.00004 : 0),
+                    x: cw * 0.5 + laneOffset * cw * spreadFactor,
+                    y: ch * 0.2 + Math.pow(z, 1.45) * (player.y - ch * 0.18),
+                    rot: Math.random() * Math.PI * 2,
+                    rotSpeed: (Math.random() - 0.5) * 0.06,
+                    magnetized: false
+                });
+            }
+
+            function addParticleBurst(x, y, color, count = 16) {
+                for (let i = 0; i < count; i++) {
+                    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3;
+                    const speed = 2 + Math.random() * 6.5;
+                    particles.push({
+                        x,
+                        y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed - 1.5,
+                        size: 3 + Math.random() * 5,
+                        color,
+                        alpha: 1,
+                        decay: 0.022 + Math.random() * 0.02
+                    });
+                }
+            }
+
+            function addFloatingText(x, y, text, color = "#a83f28") {
+                floatTexts.push({
+                    x,
+                    y,
+                    text,
+                    color,
+                    alpha: 1,
+                    vy: -1.8
+                });
+            }
+
+            // ======================================================================
+            // 5. SPECIAL SKILL: 木杖點化 ‧ 點石成金 (3D Staff Miracle)
+            // ======================================================================
+            function triggerStaffMiracle() {
+                if (state.mode !== "ritual" && state.mode !== "zen") return;
+                if (state.skillGauge < 100) return;
+
+                state.skillGauge = 0;
+                state.miracleWaveActive = true;
+                state.miracleWaveRadius = 20;
+                sound.playChime(8, "miracle");
+
+                player.squash = 1.24;
+                player.gourdVel = 0.35;
+
+                items.forEach((item) => {
+                    if (item.type === "cloud") {
+                        item.type = "ingot";
+                        addParticleBurst(item.x, item.y, "#f5cb42", 16);
+                    }
+                    item.magnetized = true;
+                });
+
+                // Also spawn 3 bonus golden ingots magnetized to Tudigong!
+                for (let k = 0; k < 3; k++) {
+                    spawnFallingItem(true, 0.35 + k * 0.12, "ingot");
+                    items[items.length - 1].magnetized = true;
+                }
+
+                const msg = document.body.dataset.lang === "en"
+                    ? "✨ Staff Miracle! All Clouds Turned to Gold!"
+                    : "✨ 木杖點石成金！滿場福氣匯聚！";
+                addFloatingText(cw * 0.5, ch * 0.38, msg, "#a83f28");
+                updateHudDOM();
+            }
+
+            // ======================================================================
+            // 6. INPUT LISTENERS (Mouse, Touch Drag, On-Screen Buttons, Keyboard)
+            // ======================================================================
+            window.addEventListener("mousemove", (e) => {
+                if (!document.getElementById("startModal").classList.contains("hidden")) {
+                    handleCardPointerMove(e.clientX, e.clientY);
+                }
+                player.targetX = Math.max(70, Math.min(cw - 70, e.clientX));
+            });
+
+            window.addEventListener("touchmove", (e) => {
+                if (e.touches && e.touches.length > 0) {
+                    const tx = e.touches[0].clientX;
+                    const ty = e.touches[0].clientY;
+                    if (!document.getElementById("startModal").classList.contains("hidden")) {
+                        handleCardPointerMove(tx, ty);
+                    }
+                    if (state.mode === "ritual" || state.mode === "zen") {
+                        player.targetX = Math.max(60, Math.min(cw - 60, tx));
+                    }
+                }
+            }, { passive: true });
+
+            let lastTapTime = 0;
+            canvas.addEventListener("pointerdown", (e) => {
+                sound.init();
+                player.targetX = Math.max(60, Math.min(cw - 60, e.clientX));
+                if (state.mode === "ritual" || state.mode === "zen") {
+                    const now = performance.now();
+                    if (now - lastTapTime < 280) {
+                        triggerStaffMiracle();
+                    }
+                    lastTapTime = now;
+                }
+            });
+
+            // On-screen Left / Right Buttons
+            const btnLeft = document.getElementById("btnMoveLeft");
+            const btnRight = document.getElementById("btnMoveRight");
+            if (btnLeft) {
+                btnLeft.addEventListener("pointerdown", (e) => {
+                    e.stopPropagation();
+                    player.keys.left = true;
+                    player.targetX = Math.max(60, player.targetX - cw * 0.14);
+                });
+                btnLeft.addEventListener("pointerup", () => { player.keys.left = false; });
+                btnLeft.addEventListener("pointerleave", () => { player.keys.left = false; });
+            }
+            if (btnRight) {
+                btnRight.addEventListener("pointerdown", (e) => {
+                    e.stopPropagation();
+                    player.keys.right = true;
+                    player.targetX = Math.min(cw - 60, player.targetX + cw * 0.14);
+                });
+                btnRight.addEventListener("pointerup", () => { player.keys.right = false; });
+                btnRight.addEventListener("pointerleave", () => { player.keys.right = false; });
+            }
+
+            window.addEventListener("keydown", (e) => {
+                if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") player.keys.left = true;
+                if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") player.keys.right = true;
+                if (e.code === "Space") {
+                    e.preventDefault();
+                    triggerStaffMiracle();
+                }
+            });
+
+            window.addEventListener("keyup", (e) => {
+                if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") player.keys.left = false;
+                if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") player.keys.right = false;
+            });
+
+            // ======================================================================
+            // 7. ENVIRONMENT & 3D PERSPECTIVE STAGE RENDERER
+            // ======================================================================
+            function drawEnvironment(ctx) {
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, ch);
+                if (state.feverTimer > 0) {
+                    skyGrad.addColorStop(0, "#fff0c2");
+                    skyGrad.addColorStop(0.55, "#fde6a6");
+                    skyGrad.addColorStop(1, "#f5cf76");
+                } else {
+                    skyGrad.addColorStop(0, "#fdfbf7");
+                    skyGrad.addColorStop(0.6, "#f8f1e3");
+                    skyGrad.addColorStop(1, "#efe2c8");
+                }
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, cw, ch);
+
+                const horizonY = ch * 0.56;
+
+                // Giant Golden Auspicious Sun behind Meifeng Temple
+                ctx.save();
+                const sunRadius = Math.max(20, Math.min(cw, ch) * 0.22);
+                const sunGrad = ctx.createRadialGradient(
+                    cw * 0.5, horizonY - sunRadius * 0.4, 8,
+                    cw * 0.5, horizonY - sunRadius * 0.4, sunRadius * 1.4
+                );
+                sunGrad.addColorStop(0, "rgba(245, 203, 66, 0.55)");
+                sunGrad.addColorStop(0.6, "rgba(197, 155, 95, 0.2)");
+                sunGrad.addColorStop(1, "rgba(197, 155, 95, 0)");
+                ctx.fillStyle = sunGrad;
+                ctx.beginPath();
+                ctx.arc(cw * 0.5, horizonY - sunRadius * 0.4, sunRadius * 1.4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Distant Meifeng Fude Temple Swallowtail Roof Silhouette
+                ctx.save();
+                ctx.translate(cw * 0.5 - (player.x - cw * 0.5) * 0.05, horizonY);
+                ctx.fillStyle = "rgba(168, 63, 40, 0.15)";
+                ctx.beginPath();
+                ctx.moveTo(-180, 0);
+                ctx.lineTo(-140, -55);
+                ctx.quadraticCurveTo(-185, -75, -210, -105);
+                ctx.quadraticCurveTo(-90, -68, 0, -68);
+                ctx.quadraticCurveTo(90, -68, 210, -105);
+                ctx.quadraticCurveTo(185, -75, 140, -55);
+                ctx.lineTo(180, 0);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+
+                // 3D Perspective Courtyard & Laojie River Golden Wave Floor
+                ctx.save();
+                const floorGrad = ctx.createLinearGradient(0, horizonY, 0, ch);
+                floorGrad.addColorStop(0, "rgba(197, 155, 95, 0.2)");
+                floorGrad.addColorStop(0.35, "rgba(29, 95, 167, 0.12)");
+                floorGrad.addColorStop(1, "rgba(168, 63, 40, 0.2)");
+                ctx.fillStyle = floorGrad;
+                ctx.fillRect(0, horizonY, cw, ch - horizonY);
+
+                ctx.strokeStyle = "rgba(197, 155, 95, 0.3)";
+                ctx.lineWidth = 1;
+                const vanishX = cw * 0.5 - (player.x - cw * 0.5) * 0.08;
+                for (let i = -6; i <= 6; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(vanishX + i * 30, horizonY);
+                    ctx.lineTo(cw * 0.5 + i * (cw * 0.16), ch);
+                    ctx.stroke();
+                }
+
+                // Animated Perspective Depth Lines (moving gently toward viewer)
+                const flowOffset = (state.clock * 0.008) % 1;
+                for (let d = 0; d < 6; d++) {
+                    const normD = (d + flowOffset) / 6;
+                    const py = horizonY + Math.pow(normD, 1.7) * (ch - horizonY);
+                    ctx.beginPath();
+                    ctx.moveTo(0, py);
+                    ctx.lineTo(cw, py);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // Golden Shower Tree Blossoms (黃色阿勃勒花瓣)
+                bgBlossoms.forEach((p) => {
+                    p.y += p.speedY;
+                    p.x += p.speedX + Math.sin(state.clock * 0.02 + p.z * 5) * 0.45;
+                    p.angle += p.spin;
+                    if (p.y > ch + 20) {
+                        p.y = -20;
+                        p.x = Math.random() * cw;
+                    }
+                    if (p.x < 0) p.x += cw;
+                    ctx.save();
+                    ctx.translate(p.x % cw, p.y);
+                    ctx.rotate(p.angle);
+                    ctx.fillStyle = `rgba(244, 196, 48, ${0.38 + p.z * 0.4})`;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, Math.max(1, p.size), Math.max(1, p.size * 0.65), 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+            }
+
+            // ======================================================================
+            // 8. 3D FALLING TREASURES RENDERER
+            // ======================================================================
+            function draw3DItem(ctx, item) {
+                try {
+                    const scale = Math.max(0.25, 0.35 + item.z * 0.85);
+                    ctx.save();
+                    ctx.translate(item.x, item.y);
+                    ctx.scale(scale, scale);
+
+                    // Ground perspective shadow for each falling object
+                    const groundY = (ch * 0.83 - item.y) / scale;
+                    if (groundY > 0 && groundY < 600) {
+                        ctx.save();
+                        ctx.fillStyle = `rgba(44, 24, 16, ${Math.min(0.3, 0.05 + item.z * 0.18)})`;
+                        ctx.beginPath();
+                        ctx.ellipse(0, groundY, Math.max(2, 22 * item.z), Math.max(1, 6 * item.z), 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+
+                    ctx.rotate(item.rot * 0.25);
+
+                    if (item.type === "ingot") {
+                        ctx.shadowColor = "#f5cb42";
+                        ctx.shadowBlur = 15;
+                        const grad = ctx.createLinearGradient(-24, -14, 24, 16);
+                        grad.addColorStop(0, "#fff6b3");
+                        grad.addColorStop(0.5, "#f5cb42");
+                        grad.addColorStop(1, "#c98818");
+                        ctx.fillStyle = grad;
+                        ctx.beginPath();
+                        ctx.arc(0, -8, 12, Math.PI, 0);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.moveTo(-26, -6);
+                        ctx.quadraticCurveTo(0, 4, 26, -6);
+                        ctx.quadraticCurveTo(18, 16, 0, 16);
+                        ctx.quadraticCurveTo(-18, 16, -26, -6);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.strokeStyle = "#9e680e";
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+                    } else if (item.type === "blossom") {
+                        ctx.shadowColor = "#f4c430";
+                        ctx.shadowBlur = 12;
+                        for (let i = 0; i < 5; i++) {
+                            ctx.save();
+                            ctx.rotate((Math.PI * 2 * i) / 5);
+                            ctx.fillStyle = "#f5cb42";
+                            ctx.beginPath();
+                            ctx.ellipse(0, -11, 7, 10, 0, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.restore();
+                        }
+                        ctx.fillStyle = "#a83f28";
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 4.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else if (item.type === "gourd") {
+                        ctx.shadowColor = "#26a65b";
+                        ctx.shadowBlur = 16;
+                        ctx.fillStyle = "#f2c138";
+                        ctx.beginPath();
+                        ctx.arc(0, -10, 9, 0, Math.PI * 2);
+                        ctx.arc(0, 8, 14, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.strokeStyle = "#d9386a";
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.moveTo(-9, -2);
+                        ctx.lineTo(9, -2);
+                        ctx.stroke();
+                    } else if (item.type === "amulet") {
+                        ctx.shadowColor = "#a83f28";
+                        ctx.shadowBlur = 18;
+                        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+                        ctx.strokeStyle = "#c59b5f";
+                        ctx.lineWidth = 3;
+                        drawRoundedRectPath(ctx, -18, -24, 36, 48, 10);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        ctx.fillStyle = "#a83f28";
+                        drawRoundedRectPath(ctx, -13, -19, 26, 38, 6);
+                        ctx.fill();
+
+                        ctx.fillStyle = "#f5cb42";
+                        ctx.font = "bold 15px 'Noto Serif TC', serif";
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        ctx.fillText("美豐", 0, 0);
+                    } else if (item.type === "cloud") {
+                        ctx.fillStyle = "#4a4e58";
+                        ctx.beginPath();
+                        ctx.arc(-12, 2, 13, 0, Math.PI * 2);
+                        ctx.arc(12, 2, 13, 0, Math.PI * 2);
+                        ctx.arc(0, -7, 16, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.strokeStyle = "#fbbf24";
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(-2, 8);
+                        ctx.lineTo(-6, 16);
+                        ctx.lineTo(2, 16);
+                        ctx.lineTo(-2, 24);
+                        ctx.stroke();
+                    }
+
+                    ctx.restore();
+                } catch (e) {
+                    try { ctx.restore(); } catch (err) {}
+                }
+            }
+
+            // ======================================================================
+            // 9. HUD & MODAL UI CONTROLLER
+            // ======================================================================
+            function updateHudDOM() {
+                document.getElementById("hudScore").textContent = state.score.toLocaleString();
+                document.getElementById("hudCombo").textContent = `x${state.combo}`;
+                document.getElementById("hudTime").textContent = state.mode === "zen" ? "∞" : `${Math.ceil(state.timeLeft)}s`;
+
+                const heartsHtml = Array.from({ length: 3 }, (_, i) =>
+                    i < state.hearts ? "<span>❤️</span>" : "<span class='opacity-25'>🤍</span>"
+                ).join("");
+                document.getElementById("hudHearts").innerHTML = heartsHtml;
+                document.getElementById("hudHeartsMobile").innerHTML = heartsHtml;
+
+                const btnMiracle = document.getElementById("btnCastMiracle");
+                const gaugeText = document.getElementById("skillGaugeText");
+                const pct = Math.floor(Math.min(100, state.skillGauge));
+                if (pct >= 100) {
+                    btnMiracle.classList.add("skill-ready-glow");
+                    btnMiracle.style.opacity = "1";
+                    gaugeText.textContent = document.body.dataset.lang === "en" ? "100% READY (Tap/Space)" : "100% 靈力滿載 (點擊施放)";
+                } else {
+                    btnMiracle.classList.remove("skill-ready-glow");
+                    btnMiracle.style.opacity = "0.8";
+                    gaugeText.textContent = `${pct}% CHARGING...`;
+                }
+            }
+
+            function startGame(selectedMode) {
+                sound.init();
+                sound.playChime(5, "amulet");
+
+                state.mode = selectedMode;
+                state.score = 0;
+                state.combo = 1;
+                state.maxCombo = 1;
+                state.caughtCount = 0;
+                state.hearts = 3;
+                state.timeLeft = 60;
+                state.skillGauge = 100;
+                state.feverTimer = 0;
+                state.magnetTimer = 0;
+                state.shieldTimer = 0;
+                items = [];
+                particles = [];
+                floatTexts = [];
+
+                player.x = cw * 0.5;
+                player.targetX = cw * 0.5;
+                player.squash = 1.18;
+
+                // Pre-spawn 5 falling treasures at staggered heights so action starts in 0.1s!
+                spawnFallingItem(false, 0.22, "ingot");
+                spawnFallingItem(false, 0.36, "blossom");
+                spawnFallingItem(false, 0.48, "ingot");
+                spawnFallingItem(false, 0.60, "gourd");
+                spawnFallingItem(false, 0.30, "amulet");
+
+                addFloatingText(
+                    cw * 0.5,
+                    ch * 0.45,
+                    document.body.dataset.lang === "en" ? "✨ Move Tudigong to Catch Blessings!" : "✨ 祈福開始！左右引導土地公接住元寶與花瓣！",
+                    "#a83f28"
+                );
+
+                document.getElementById("startModal").classList.add("hidden");
+                document.getElementById("resultModal").classList.add("hidden");
+                document.getElementById("liveStatsHud").classList.remove("hidden");
+                document.getElementById("liveStatsHud").classList.add("flex");
+                document.getElementById("mobileSubHud").classList.remove("hidden");
+                document.getElementById("inGameBottomBar").classList.remove("hidden");
+
+                updateHudDOM();
+            }
+
+            function finishGame() {
+                state.mode = "gameover";
+                sound.playChime(7, "amulet");
+
+                document.getElementById("inGameBottomBar").classList.add("hidden");
+                document.getElementById("resultModal").classList.remove("hidden");
+
+                document.getElementById("resultScore").textContent = state.score.toLocaleString();
+                document.getElementById("resultCombo").textContent = `x${state.maxCombo}`;
+                document.getElementById("resultItems").textContent = state.caughtCount;
+
+                const isEn = document.body.dataset.lang === "en";
+                const titleEl = document.getElementById("oracleTitle");
+                const poemEl = document.getElementById("oraclePoem");
+
+                if (state.score >= 2500) {
+                    titleEl.textContent = isEn ? "Supreme Fortune ‧ Golden Lands" : "上上籤 ‧ 美地生金大吉";
+                    poemEl.textContent = isEn
+                        ? '"May Tudigong bless your endeavors with noble mentors and prosperity. Paired with your dedicated daily actions, golden fortune flows endlessly like the Laojie River!"'
+                        : "「老街溪畔阿勃勒盛開，水頭伯公賜福來。祈求土地公保佑事業順遂、貴人相助，我也會踏實做好每一份行動，把握良機，美地生金！」";
+                } else if (state.score >= 1200) {
+                    titleEl.textContent = isEn ? "Great Blessing ‧ Abundant Harvest" : "大吉籤 ‧ 豐土納福順遂";
+                    poemEl.textContent = isEn
+                        ? '"With a calm heart and sincere action, every step on this blessed land brings peace, harmony, and steady wealth."'
+                        : "「福德正神常伴行，一守一願定初心。感謝土地公護佑平安順遂，只要持續耕耘行動，必能豐土納福、滿載而歸！」";
+                } else {
+                    titleEl.textContent = isEn ? "Auspicious Peace ‧ Steady Blessings" : "上吉籤 ‧ 平安納福常伴";
+                    poemEl.textContent = isEn
+                        ? '"Purify your mind and carry this blessing forward. Peace and good fortune accompany every sincere step you take."'
+                        : "「靜心定念結善緣，美豐伯公保平安。將這份溫暖祝福隨身收藏，踏實前行，所求順遂、福氣隨身！」";
+                }
+            }
+
+            // ======================================================================
+            // 10. MAIN 60FPS ANIMATION LOOP (100% CRASH-PROOF)
+            // ======================================================================
+            let lastFrameTime = performance.now();
+            let spawnAccumulator = 0;
+
+            function animateLoop(now) {
+                // ALWAYS schedule next frame first so loop can never die!
+                requestAnimationFrame(animateLoop);
+
+                try {
+                    const safeNow = now || performance.now();
+                    const dt = Math.max(0.001, Math.min(0.05, (safeNow - lastFrameTime) / 1000));
+                    lastFrameTime = safeNow;
+                    state.clock += 1;
+
+                    // A. Update 3D Diorama Preview Card if Start Modal is open
+                    const startModalEl = document.getElementById("startModal");
+                    if (startModalEl && !startModalEl.classList.contains("hidden")) {
+                        // Gentle autonomous 3D sway when idle + user pointer tilt
+                        const idleY = Math.sin(state.clock * 0.03) * 8;
+                        const idleX = Math.cos(state.clock * 0.025) * 5;
+                        cardTiltX += ((targetCardTiltX || idleX) - cardTiltX) * 0.12;
+                        cardTiltY += ((targetCardTiltY || idleY) - cardTiltY) * 0.12;
+                        if (dioramaCard) {
+                            dioramaCard.style.transform = `rotateX(${cardTiltX.toFixed(2)}deg) rotateY(${cardTiltY.toFixed(2)}deg)`;
+                        }
+                        dioramaCtx.clearRect(0, 0, dioramaCanvas.width, dioramaCanvas.height);
+                        draw3DTudigongRig(dioramaCtx, 180, 210, 1.05, {
+                            tiltX: cardTiltX / 25,
+                            tiltY: cardTiltY / 25,
+                            leanAngle: cardTiltY * 0.004,
+                            breath: state.clock * 0.05,
+                            squash: 1,
+                            gourdSwing: Math.sin(state.clock * 0.06) * 0.18 + cardTiltY * 0.015,
+                            ingotGlow: state.clock * 0.03,
+                            highlightPart: activeHighlightPart
+                        });
+                    }
+
+                    // B. Render Main 3D Stage
+                    drawEnvironment(ctx);
+
+                    // Keyboard / Button Movement Update
+                    const moveSpeed = cw * 0.78 * dt;
+                    if (player.keys.left) player.targetX = Math.max(60, player.targetX - moveSpeed);
+                    if (player.keys.right) player.targetX = Math.min(cw - 60, player.targetX + moveSpeed);
+
+                    // Smooth Spring Physics for Tudigong Position & Secondary Gourd Pendulum
+                    const prevX = player.x;
+                    player.x += (player.targetX - player.x) * 0.2;
+                    player.vx = player.x - prevX;
+                    player.y = ch * 0.75;
+                    player.scale = Math.max(0.55, Math.min(0.88, Math.min(cw, ch) / 900));
+
+                    player.squashVel += (1 - player.squash) * 0.25;
+                    player.squashVel *= 0.78;
+                    player.squash += player.squashVel;
+
+                    const targetGourdAngle = Math.max(-0.55, Math.min(0.55, -player.vx * 0.025));
+                    player.gourdVel += (targetGourdAngle - player.gourdAngle) * 0.15;
+                    player.gourdVel *= 0.85;
+                    player.gourdAngle += player.gourdVel;
+
+                    // C. Active Gameplay Logic
+                    if (state.mode === "ritual" || state.mode === "zen") {
+                        if (state.mode === "ritual") {
+                            state.timeLeft -= dt;
+                            if (state.timeLeft <= 0) {
+                                state.timeLeft = 0;
+                                finishGame();
+                            }
+                        }
+
+                        if (state.feverTimer > 0) state.feverTimer = Math.max(0, state.feverTimer - dt);
+                        if (state.magnetTimer > 0) state.magnetTimer = Math.max(0, state.magnetTimer - dt);
+                        if (state.shieldTimer > 0) state.shieldTimer = Math.max(0, state.shieldTimer - dt);
+
+                        // Passive skill gauge recharge over time
+                        state.skillGauge = Math.min(100, state.skillGauge + dt * 4.5);
+
+                        const spawnInterval = state.feverTimer > 0 ? 0.22 : 0.52;
+                        spawnAccumulator += dt;
+                        if (spawnAccumulator >= spawnInterval) {
+                            spawnAccumulator = 0;
+                            spawnFallingItem();
+                        }
+
+                        // Update & Draw Falling 3D Items
+                        for (let i = items.length - 1; i >= 0; i--) {
+                            const it = items[i];
+                            it.z += it.zSpeed * (dt * 60);
+                            it.rot += it.rotSpeed;
+
+                            if (it.magnetized || (state.magnetTimer > 0 && it.type !== "cloud" && it.z > 0.35)) {
+                                it.x += (player.x - it.x) * 0.16;
+                                it.y += (player.y - 30 - it.y) * 0.16;
+                            } else {
+                                const spreadFactor = 0.25 + it.z * 0.85;
+                                it.x = cw * 0.5 + it.laneOffset * cw * spreadFactor;
+                                it.y = ch * 0.2 + Math.pow(Math.max(0.01, it.z), 1.45) * (player.y - ch * 0.18);
+                            }
+
+                            draw3DItem(ctx, it);
+
+                            // Generous Collision Check near Player Plane
+                            const dx = Math.abs(it.x - player.x);
+                            const dy = Math.abs(it.y - (player.y - 18));
+                            const hitRadiusX = 96 * player.scale;
+                            const hitRadiusY = 110 * player.scale;
+
+                            if (dx < hitRadiusX && dy < hitRadiusY && it.z >= 0.65) {
+                                player.squash = 0.84;
+                                if (it.type === "cloud") {
+                                    if (state.shieldTimer > 0) {
+                                        state.shieldTimer = 0;
+                                        sound.playChime(4, "amulet");
+                                        addFloatingText(it.x, it.y, "🛡️ 福德金光擋煞！", "#c59b5f");
+                                    } else {
+                                        state.hearts = Math.max(0, state.hearts - 1);
+                                        state.combo = 1;
+                                        sound.playChime(0, "cloud");
+                                        addParticleBurst(it.x, it.y, "#4a4e58", 14);
+                                        addFloatingText(it.x, it.y, "⛈️ 小心晦氣 (-1❤️)", "#4a4e58");
+                                        if (state.hearts <= 0 && state.mode === "ritual") {
+                                            finishGame();
+                                        }
+                                    }
+                                } else {
+                                    state.caughtCount++;
+                                    state.skillGauge = Math.min(100, state.skillGauge + 14);
+
+                                    if (it.type === "ingot") {
+                                        const pts = 100 * state.combo;
+                                        state.score += pts;
+                                        sound.playChime(state.combo, "ingot");
+                                        addParticleBurst(it.x, it.y, "#f5cb42", 16);
+                                        addFloatingText(it.x, it.y, `+${pts} 金元寶`, "#b87914");
+                                    } else if (it.type === "blossom") {
+                                        state.combo = Math.min(5, state.combo + 1);
+                                        state.maxCombo = Math.max(state.maxCombo, state.combo);
+                                        const pts = 50 * state.combo;
+                                        state.score += pts;
+                                        sound.playChime(state.combo + 2, "blossom");
+                                        addParticleBurst(it.x, it.y, "#f4c430", 14);
+                                        addFloatingText(it.x, it.y, `🌼 阿勃勒 x${state.combo}`, "#d97706");
+                                    } else if (it.type === "gourd") {
+                                        state.magnetTimer = 6.0;
+                                        state.score += 150 * state.combo;
+                                        sound.playChime(6, "amulet");
+                                        addParticleBurst(it.x, it.y, "#26a65b", 20);
+                                        addFloatingText(it.x, it.y, "🏺 吉祥葫蘆自動吸福 6秒！", "#15803d");
+                                    } else if (it.type === "amulet") {
+                                        state.shieldTimer = 8.0;
+                                        state.feverTimer = 5.0;
+                                        state.score += 300 * state.combo;
+                                        sound.playChime(8, "amulet");
+                                        addParticleBurst(it.x, it.y, "#a83f28", 24);
+                                        addFloatingText(it.x, it.y, "🧧 美豐御守 ‧ 美地生金 FEVER！", "#a83f28");
+                                    }
+                                }
+
+                                items.splice(i, 1);
+                                continue;
+                            }
+
+                            if (it.z > 1.2 || it.y > ch + 70) {
+                                items.splice(i, 1);
+                            }
+                        }
+
+                        updateHudDOM();
+                    }
+
+                    // D. Draw 3D Miracle Shockwave Ring
+                    if (state.miracleWaveActive) {
+                        state.miracleWaveRadius += 24;
+                        ctx.save();
+                        ctx.strokeStyle = `rgba(245, 203, 66, ${Math.max(0, 1 - state.miracleWaveRadius / Math.max(cw, ch))})`;
+                        ctx.lineWidth = 8;
+                        ctx.beginPath();
+                        ctx.arc(player.x, player.y - 30, Math.max(1, state.miracleWaveRadius), 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.restore();
+                        if (state.miracleWaveRadius > Math.max(cw, ch)) {
+                            state.miracleWaveActive = false;
+                        }
+                    }
+
+                    // E. Draw Main 3D Tudigong on the Courtyard Stage
+                    draw3DTudigongRig(ctx, player.x, player.y, player.scale, {
+                        tiltX: -0.06,
+                        tiltY: Math.max(-1, Math.min(1, player.vx * 0.045)),
+                        leanAngle: Math.max(-0.18, Math.min(0.18, player.vx * 0.008)),
+                        breath: state.clock * 0.06,
+                        squash: player.squash,
+                        gourdSwing: player.gourdAngle + Math.sin(state.clock * 0.07) * 0.08,
+                        ingotGlow: state.clock * 0.04,
+                        shieldActive: state.shieldTimer > 0,
+                        magnetActive: state.magnetTimer > 0,
+                        highlightPart: activeHighlightPart
+                    });
+
+                    // F. Update & Draw 3D Particles & Floating Blessing Text
+                    for (let i = particles.length - 1; i >= 0; i--) {
+                        const p = particles[i];
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += 0.18;
+                        p.alpha -= p.decay;
+                        if (p.alpha <= 0) {
+                            particles.splice(i, 1);
+                            continue;
+                        }
+                        ctx.save();
+                        ctx.globalAlpha = Math.max(0, p.alpha);
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, Math.max(1, p.size), 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+
+                    for (let i = floatTexts.length - 1; i >= 0; i--) {
+                        const ft = floatTexts[i];
+                        ft.y += ft.vy;
+                        ft.alpha -= 0.016;
+                        if (ft.alpha <= 0) {
+                            floatTexts.splice(i, 1);
+                            continue;
+                        }
+                        ctx.save();
+                        ctx.globalAlpha = Math.max(0, ft.alpha);
+                        ctx.font = "bold 18px 'Noto Serif TC', serif";
+                        ctx.fillStyle = ft.color;
+                        ctx.textAlign = "center";
+                        ctx.shadowColor = "rgba(255,255,255,0.95)";
+                        ctx.shadowBlur = 6;
+                        ctx.fillText(ft.text, ft.x, ft.y);
+                        ctx.restore();
+                    }
+                } catch (loopErr) {
+                    console.warn("Frame recovered:", loopErr);
+                }
+            }
+
+            // ======================================================================
+            // 11. UI BUTTON BINDINGS & DRAG-AND-DROP CUSTOM ILLUSTRATION LOADER
+            // ======================================================================
+            document.getElementById("btnStartRitual").addEventListener("click", () => startGame("ritual"));
+            document.getElementById("btnStartZen").addEventListener("click", () => startGame("zen"));
+            document.getElementById("btnPlayAgain").addEventListener("click", () => startGame("ritual"));
+
+            document.getElementById("btnBackToHall").addEventListener("click", () => {
+                state.mode = "menu";
+                document.getElementById("resultModal").classList.add("hidden");
+                document.getElementById("liveStatsHud").classList.add("hidden");
+                document.getElementById("mobileSubHud").classList.add("hidden");
+                document.getElementById("startModal").classList.remove("hidden");
+            });
+
+            document.getElementById("btnPauseHome").addEventListener("click", () => {
+                state.mode = "menu";
+                document.getElementById("inGameBottomBar").classList.add("hidden");
+                document.getElementById("liveStatsHud").classList.add("hidden");
+                document.getElementById("mobileSubHud").classList.add("hidden");
+                document.getElementById("startModal").classList.remove("hidden");
+            });
+
+            document.getElementById("btnCastMiracle").addEventListener("click", (e) => {
+                e.stopPropagation();
+                triggerStaffMiracle();
+            });
+
+            document.getElementById("btnLangToggle").addEventListener("click", () => {
+                const current = document.body.getAttribute("data-lang");
+                document.body.setAttribute("data-lang", current === "tw" ? "en" : "tw");
+                updateHudDOM();
+            });
+
+            document.getElementById("btnSoundToggle").addEventListener("click", () => {
+                sound.muted = !sound.muted;
+                document.getElementById("soundIcon").textContent = sound.muted ? "🔇" : "🔊";
+            });
+
+            document.getElementById("btnOpenInspect").addEventListener("click", () => {
+                document.getElementById("inspectModal").classList.remove("hidden");
+            });
+            document.getElementById("btnCloseInspect").addEventListener("click", () => {
+                activeHighlightPart = null;
+                document.getElementById("inspectModal").classList.add("hidden");
+            });
+            document.getElementById("btnResumeFromInspect").addEventListener("click", () => {
+                activeHighlightPart = null;
+                document.getElementById("inspectModal").classList.add("hidden");
+            });
+
+            document.querySelectorAll(".hotspot-btn").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    activeHighlightPart = btn.dataset.part;
+                    player.squash = 1.2;
+                    sound.playChime(6, "ingot");
+                    document.querySelectorAll(".hotspot-btn").forEach((b) => {
+                        b.classList.remove("border-2", "border-[#a83f28]");
+                        b.classList.add("border", "border-amber-900/15");
+                    });
+                    btn.classList.remove("border", "border-amber-900/15");
+                    btn.classList.add("border-2", "border-[#a83f28]");
+                });
+            });
+
+            const customImgInput = document.getElementById("customImgInput");
+            document.getElementById("btnLoadCustomImg").addEventListener("click", () => customImgInput.click());
+            document.getElementById("btnModalUploadImg").addEventListener("click", () => customImgInput.click());
+
+            function loadUserImageFile(file) {
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    externalImg.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            customImgInput.addEventListener("change", (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    loadUserImageFile(e.target.files[0]);
+                }
+            });
+
+            window.addEventListener("dragover", (e) => e.preventDefault());
+            window.addEventListener("drop", (e) => {
+                e.preventDefault();
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    loadUserImageFile(e.dataTransfer.files[0]);
+                }
+            });
+
+            // Start 60fps loop immediately!
+            resizeCanvas();
+            requestAnimationFrame(animateLoop);
+        })();
+    </script>
+</body>
+</html>
