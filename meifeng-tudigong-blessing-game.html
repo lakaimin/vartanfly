@@ -224,51 +224,51 @@
     <!-- ==========================================================================
          TOP CURATORIAL NAVIGATION & HUD BAR
          ========================================================================== -->
-    <header class="fixed top-0 left-0 right-0 z-30 px-3 py-2.5 sm:px-6 sm:py-3 pointer-events-none">
-        <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+    <header class="fixed top-0 left-0 right-0 z-30 px-2.5 py-2 sm:px-6 sm:py-3 pointer-events-none">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-1.5 sm:gap-2">
             <!-- Brand & Exhibition Title -->
-            <div class="glass-hud px-3.5 py-2 rounded-2xl flex items-center gap-2.5 pointer-events-auto">
-                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-white font-serif-tc font-bold text-sm sm:text-base shadow-sm" style="background: linear-gradient(135deg, #a83f28, #c59b5f);">
+            <div class="glass-hud px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-2xl flex items-center gap-2 pointer-events-auto shrink-0">
+                <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-white font-serif-tc font-bold text-xs sm:text-base shadow-sm shrink-0" style="background: linear-gradient(135deg, #a83f28, #c59b5f);">
                     福
                 </div>
-                <div>
-                    <div class="text-[10px] sm:text-xs tracking-widest uppercase font-semibold" style="color: var(--brand-gold);">
-                        GREEMA × MEIFENG TUDIGONG
+                <div class="hidden xs:block sm:block">
+                    <div class="text-[9px] sm:text-xs tracking-wider uppercase font-semibold leading-tight" style="color: var(--brand-gold);">
+                        GREEMA × MEIFENG
                     </div>
-                    <h1 class="font-serif-tc text-xs sm:text-sm md:text-base font-bold leading-tight" style="color: var(--brand-temple-red);">
-                        <span class="lang-tw-only">美豐土地公 ‧ 3D 祈福互動展</span>
-                        <span class="lang-en-only">Meifeng Tudigong 3D Blessing</span>
+                    <h1 class="font-serif-tc text-[11px] sm:text-sm md:text-base font-bold leading-tight whitespace-nowrap" style="color: var(--brand-temple-red);">
+                        <span class="lang-tw-only">美豐土地公 ‧ 3D 祈福展</span>
+                        <span class="lang-en-only">Meifeng Tudigong 3D</span>
                     </h1>
                 </div>
             </div>
 
-            <!-- Live Game Stats HUD -->
-            <div id="liveStatsHud" class="hidden glass-hud px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-2xl items-center gap-3 sm:gap-6 pointer-events-auto transition-all duration-300">
+            <!-- Live Game Stats HUD (Optimized for Mobile & Desktop without vertical text wrapping) -->
+            <div id="liveStatsHud" class="hidden glass-hud px-2.5 py-1 sm:px-5 sm:py-2 rounded-2xl items-center gap-2 sm:gap-6 pointer-events-auto transition-all duration-300 shrink-0">
                 <!-- Score -->
-                <div class="text-center">
-                    <div class="text-[10px] uppercase tracking-wider text-stone-500">
+                <div class="text-center whitespace-nowrap">
+                    <div class="text-[9px] sm:text-[10px] uppercase tracking-wider text-stone-500">
                         <span class="lang-tw-only">福氣值</span>
                         <span class="lang-en-only">BLESSING</span>
                     </div>
-                    <div id="hudScore" class="font-serif-tc font-black text-base sm:text-xl text-[#a83f28] tabular-nums">0</div>
+                    <div id="hudScore" class="font-serif-tc font-black text-sm sm:text-xl text-[#a83f28] tabular-nums">0</div>
                 </div>
-                <div class="h-6 w-[1px] bg-amber-900/15"></div>
+                <div class="h-5 sm:h-6 w-[1px] bg-amber-900/15"></div>
                 <!-- Combo -->
-                <div class="text-center">
-                    <div class="text-[10px] uppercase tracking-wider text-stone-500">
-                        <span class="lang-tw-only">連擊納福</span>
+                <div class="text-center whitespace-nowrap">
+                    <div class="text-[9px] sm:text-[10px] uppercase tracking-wider text-stone-500">
+                        <span class="lang-tw-only">連擊</span>
                         <span class="lang-en-only">COMBO</span>
                     </div>
-                    <div id="hudCombo" class="font-serif-tc font-bold text-sm sm:text-lg text-amber-600 tabular-nums">x1</div>
+                    <div id="hudCombo" class="font-serif-tc font-bold text-xs sm:text-lg text-amber-600 tabular-nums">x1</div>
                 </div>
-                <div class="h-6 w-[1px] bg-amber-900/15"></div>
+                <div class="h-5 sm:h-6 w-[1px] bg-amber-900/15"></div>
                 <!-- Timer -->
-                <div class="text-center">
-                    <div class="text-[10px] uppercase tracking-wider text-stone-500">
-                        <span class="lang-tw-only">祈福時辰</span>
+                <div class="text-center whitespace-nowrap">
+                    <div class="text-[9px] sm:text-[10px] uppercase tracking-wider text-stone-500">
+                        <span class="lang-tw-only">時辰</span>
                         <span class="lang-en-only">TIME</span>
                     </div>
-                    <div id="hudTime" class="font-serif-tc font-bold text-sm sm:text-lg text-stone-800 tabular-nums">60s</div>
+                    <div id="hudTime" class="font-serif-tc font-bold text-xs sm:text-lg text-stone-800 tabular-nums">60s</div>
                 </div>
                 <div class="h-6 w-[1px] bg-amber-900/15 hidden sm:block"></div>
                 <!-- Hearts -->
@@ -278,21 +278,21 @@
             </div>
 
             <!-- Right Action Controls -->
-            <div class="flex items-center gap-1.5 sm:gap-2 pointer-events-auto">
+            <div class="flex items-center gap-1 sm:gap-2 pointer-events-auto shrink-0">
                 <!-- 3D Inspection Button -->
-                <button id="btnOpenInspect" type="button" class="glass-hud px-2.5 py-2 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium text-stone-700 hover:text-[#a83f28] transition flex items-center gap-1.5 cursor-pointer" title="3D 立體鑑賞與插畫設定">
-                    <span class="text-base">✨</span>
+                <button id="btnOpenInspect" type="button" class="glass-hud px-2 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium text-stone-700 hover:text-[#a83f28] transition flex items-center gap-1 cursor-pointer" title="3D 立體鑑賞與插畫設定">
+                    <span class="text-sm sm:text-base">✨</span>
                     <span class="hidden md:inline lang-tw-only">3D 鑑賞</span>
                     <span class="hidden md:inline lang-en-only">3D View</span>
                 </button>
 
                 <!-- Sound Toggle Button -->
-                <button id="btnSoundToggle" type="button" class="glass-hud w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-stone-700 hover:text-[#a83f28] transition cursor-pointer" title="音效開關 / Audio">
-                    <span id="soundIcon">🔊</span>
+                <button id="btnSoundToggle" type="button" class="glass-hud w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-stone-700 hover:text-[#a83f28] transition cursor-pointer" title="音效開關 / Audio">
+                    <span id="soundIcon" class="text-sm sm:text-base">🔊</span>
                 </button>
 
                 <!-- Language Switcher -->
-                <button id="btnLangToggle" type="button" class="glass-hud px-2.5 py-2 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-serif-tc font-bold text-[#a83f28] hover:bg-[#a83f28] hover:text-white transition cursor-pointer">
+                <button id="btnLangToggle" type="button" class="glass-hud px-2 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-serif-tc font-bold text-[#a83f28] hover:bg-[#a83f28] hover:text-white transition cursor-pointer">
                     <span class="lang-tw-only">EN</span>
                     <span class="lang-en-only">繁中</span>
                 </button>
@@ -376,8 +376,8 @@
                 <!-- Top Curatorial Badge -->
                 <div class="w-full flex items-center justify-between text-[11px] text-amber-800/80 font-medium tracking-wider">
                     <span>3D PARALLAX RIG</span>
-                    <span id="textureStatusBadge" class="px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-900 font-semibold">
-                        ✨ 3D 立體模型已就緒
+                    <span id="textureStatusBadge" class="px-2.5 py-0.5 rounded-full bg-emerald-600/20 text-emerald-900 font-semibold">
+                        ✨ 美豐土地公賜福中
                     </span>
                 </div>
 
@@ -443,11 +443,9 @@
                     </div>
                 </div>
 
-                <!-- Custom Illustration File Loader -->
+                <!-- Custom Illustration File Loader (Preserved Empty as in User Template) -->
                 <div class="w-full flex flex-col items-center gap-1">
-                    <button id="btnLoadCustomImg" type="button" class="text-xs text-stone-600 hover:text-[#a83f28] underline underline-offset-4 flex items-center gap-1 transition cursor-pointer">
-                        
-                    </button>
+                    <button id="btnLoadCustomImg" type="button" class="text-xs text-stone-600 hover:text-[#a83f28] underline underline-offset-4 flex items-center gap-1 transition cursor-pointer"></button>
                 </div>
             </div>
 
@@ -616,9 +614,7 @@
             </div>
 
             <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-amber-900/10">
-                <button id="btnModalUploadImg" type="button" class="btn-reddot-secondary px-0 py-0 rounded-xl text-xs sm:text-sm font-medium cursor-pointer">
-                    
-                </button>
+                <button id="btnModalUploadImg" type="button" class="btn-reddot-secondary px-0 py-0 rounded-xl text-xs sm:text-sm font-medium cursor-pointer"></button>
                 <button id="btnResumeFromInspect" type="button" class="btn-reddot-primary px-6 py-2.5 rounded-xl font-serif-tc font-bold text-sm cursor-pointer">
                     返回祈福舞台
                 </button>
@@ -694,14 +690,14 @@
     </section>
 
     <!-- ==========================================================================
-         JAVASCRIPT ENGINE: 100% CRASH-PROOF 3D PARALLAX RIG & GAME LOOP
+         JAVASCRIPT ENGINE: 100% CRASH-PROOF 3D PARALLAX RIG & MOBILE ALPHA FIX
          ========================================================================== -->
     <script>
         (function () {
             "use strict";
 
             // ======================================================================
-            // 0. UNIVERSAL CROSS-BROWSER ROUNDED RECTANGLE HELPER (Never fails)
+            // 0. UNIVERSAL CROSS-BROWSER ROUNDED RECTANGLE HELPER
             // ======================================================================
             function drawRoundedRectPath(ctx, x, y, w, h, r) {
                 const radius = Math.max(0, Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2));
@@ -794,10 +790,14 @@
             const sound = new SoundEngine();
 
             // ======================================================================
-            // 2. HIGH-PRECISION 3D CHARACTER TEXTURE & MULTI-LAYER RIGGING SYSTEM
+            // 2. SMART PIXEL-LEVEL FLOOD-FILL BACKGROUND REMOVER FOR MOBILE WEBVIEW
+            //    Fixes the "Black Top-Left Gradient + White Box" Alpha Bug on Mobile!
             // ======================================================================
+            const BLOGGER_IMG_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRL7hDoTQhj8-dTgeIPwTDSAOTnEBYJ0ZRqKGTKaXuPSKVzuQuFA_SQ6fKqnX5pllmClXtLrG3fmNxSMHc5Ff6vkSXYumK9ywzjY65jxZtK1e8pU-jgVxBNYzcdzgpufGcOKRDw0qBRXR0hdLdyeQp9hK2yJJN8j96-TRWyocFDf2TUnYUNwIbjSzp/s1600/%E7%BE%8E%E8%B1%90%E5%9C%9F%E5%9C%B0%E5%85%AC%E6%8F%92%E7%95%AB.webp.webp";
+
             const externalImg = new Image();
             let externalImgLoaded = false;
+            let cleanedCharacterCanvas = null; // Offscreen canvas with guaranteed 100% transparent background
 
             function updateBadgeStatus(textTW, isCustom = false) {
                 const badge = document.getElementById("textureStatusBadge");
@@ -809,16 +809,167 @@
                 }
             }
 
-            externalImg.onload = function () {
-                if (externalImg.naturalWidth > 0) {
-                    externalImgLoaded = true;
-                    updateBadgeStatus("✨ 美豐土地公賜福中", true);
+            /**
+             * Scans the loaded image from all 4 outer borders inward using BFS Flood-Fill.
+             * If a mobile browser/WebView flattened the WebP transparency into a white box
+             * or a dark black/gray gradient at the top-left corner, this removes 100% of the
+             * exterior neutral background while preserving Tudigong's white beard & eyebrows!
+             */
+            function createCleanTransparentSprite(sourceImg) {
+                try {
+                    const w = sourceImg.naturalWidth || sourceImg.width;
+                    const h = sourceImg.naturalHeight || sourceImg.height;
+                    if (!w || !h) return null;
+
+                    const offCanvas = document.createElement("canvas");
+                    offCanvas.width = w;
+                    offCanvas.height = h;
+                    const offCtx = offCanvas.getContext("2d", { willReadFrequently: true });
+                    offCtx.clearRect(0, 0, w, h);
+                    offCtx.drawImage(sourceImg, 0, 0, w, h);
+
+                    const imgData = offCtx.getImageData(0, 0, w, h);
+                    const data = imgData.data;
+                    const totalPixels = w * h;
+                    const visited = new Uint8Array(totalPixels);
+                    const isBg = new Uint8Array(totalPixels);
+
+                    // Helper: Determines if a pixel connected to the outer border is part of the
+                    // unwanted rectangular box (transparent, white, light gray, or neutral black/gray gradient)
+                    function isExteriorBackgroundCandidate(idx) {
+                        const p = idx * 4;
+                        const r = data[p];
+                        const g = data[p + 1];
+                        const b = data[p + 2];
+                        const a = data[p + 3];
+
+                        // Already transparent or semi-transparent
+                        if (a < 235) return true;
+
+                        const maxC = Math.max(r, g, b);
+                        const minC = Math.min(r, g, b);
+                        const chroma = maxC - minC;
+
+                        // Protect Tudigong's warm brown wooden staff (R > G > B with warm brown chroma)
+                        const isWarmBrownStaff = (r > 38 && r > g && g >= b && (r - b) >= 18);
+                        if (isWarmBrownStaff) return false;
+
+                        // Pure white or near-white background
+                        if (r > 232 && g > 232 && b > 232) return true;
+
+                        // Neutral black / dark gray / mid gray gradient in top-left corner (low saturation)
+                        if (chroma <= 28) return true;
+
+                        // Slightly tinted compression artifacts in the bright white background
+                        if (minC > 210 && chroma <= 40) return true;
+
+                        return false;
+                    }
+
+                    // Queue for fast BFS Flood-Fill from all 4 outer edges
+                    const queue = new Int32Array(totalPixels);
+                    let head = 0;
+                    let tail = 0;
+
+                    function tryEnqueue(x, y) {
+                        if (x < 0 || x >= w || y < 0 || y >= h) return;
+                        const idx = y * w + x;
+                        if (visited[idx]) return;
+                        visited[idx] = 1;
+                        if (isExteriorBackgroundCandidate(idx)) {
+                            isBg[idx] = 1;
+                            queue[tail++] = idx;
+                        }
+                    }
+
+                    // Seed all 4 borders of the rectangle
+                    for (let x = 0; x < w; x++) {
+                        tryEnqueue(x, 0);
+                        tryEnqueue(x, h - 1);
+                    }
+                    for (let y = 0; y < h; y++) {
+                        tryEnqueue(0, y);
+                        tryEnqueue(w - 1, y);
+                    }
+
+                    // Flood-fill inward through connected background pixels
+                    while (head < tail) {
+                        const curr = queue[head++];
+                        const cx = curr % w;
+                        const cy = (curr - cx) / w;
+
+                        if (cx > 0) tryEnqueue(cx - 1, cy);
+                        if (cx < w - 1) tryEnqueue(cx + 1, cy);
+                        if (cy > 0) tryEnqueue(cx, cy - 1);
+                        if (cy < h - 1) tryEnqueue(cx, cy + 1);
+                    }
+
+                    // Apply alpha = 0 to all detected exterior background pixels,
+                    // plus 1px soft anti-aliased edge feathering to remove any white/gray halo
+                    for (let y = 0; y < h; y++) {
+                        for (let x = 0; x < w; x++) {
+                            const idx = y * w + x;
+                            const p = idx * 4;
+                            if (isBg[idx]) {
+                                data[p + 3] = 0;
+                            } else {
+                                // Check if this foreground pixel is on the immediate boundary touching background
+                                const touchesBg =
+                                    (x > 0 && isBg[idx - 1]) ||
+                                    (x < w - 1 && isBg[idx + 1]) ||
+                                    (y > 0 && isBg[idx - w]) ||
+                                    (y < h - 1 && isBg[idx + w]);
+
+                                if (touchesBg) {
+                                    const r = data[p];
+                                    const g = data[p + 1];
+                                    const b = data[p + 2];
+                                    const chroma = Math.max(r, g, b) - Math.min(r, g, b);
+                                    if (chroma < 36) {
+                                        // Smoothly feather the 1px edge halo
+                                        data[p + 3] = Math.min(data[p + 3], Math.max(0, chroma * 6));
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    offCtx.putImageData(imgData, 0, 0);
+                    return offCanvas;
+                } catch (err) {
+                    console.warn("Pixel cleanup skipped (fallback to raw image):", err);
+                    return null;
                 }
-            };
-            externalImg.onerror = function () {
-                externalImgLoaded = false;
-            };
-            externalImg.src = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRL7hDoTQhj8-dTgeIPwTDSAOTnEBYJ0ZRqKGTKaXuPSKVzuQuFA_SQ6fKqnX5pllmClXtLrG3fmNxSMHc5Ff6vkSXYumK9ywzjY65jxZtK1e8pU-jgVxBNYzcdzgpufGcOKRDw0qBRXR0hdLdyeQp9hK2yJJN8j96-TRWyocFDf2TUnYUNwIbjSzp/s1600/%E7%BE%8E%E8%B1%90%E5%9C%9F%E5%9C%B0%E5%85%AC%E6%8F%92%E7%95%AB.webp.webp";
+            }
+
+            function loadTudigongIllustration(url) {
+                // First attempt with crossOrigin = "anonymous" so Canvas can inspect & clean pixels on Mobile
+                const corsImg = new Image();
+                corsImg.crossOrigin = "anonymous";
+                corsImg.onload = function () {
+                    if (corsImg.naturalWidth > 0) {
+                        externalImgLoaded = true;
+                        cleanedCharacterCanvas = createCleanTransparentSprite(corsImg);
+                        externalImg.src = corsImg.src;
+                        updateBadgeStatus("✨ 美豐土地公賜福中", true);
+                    }
+                };
+                corsImg.onerror = function () {
+                    // Fallback without crossOrigin if server blocks CORS header
+                    externalImg.onload = function () {
+                        if (externalImg.naturalWidth > 0) {
+                            externalImgLoaded = true;
+                            cleanedCharacterCanvas = createCleanTransparentSprite(externalImg);
+                            updateBadgeStatus("✨ 美豐土地公賜福中", true);
+                        }
+                    };
+                    externalImg.src = url;
+                };
+                // Append cache-buster so Mobile WebView doesn't reuse a non-CORS cached response
+                corsImg.src = url + (url.indexOf("?") === -1 ? "?v=3d_alpha_fix" : "&v=3d_alpha_fix");
+            }
+
+            loadTudigongIllustration(BLOGGER_IMG_URL);
 
             /**
              * Renders the Meifeng Tudigong with 3D Volumetric Parallax Layers!
@@ -892,24 +1043,28 @@
                     ctx.stroke();
                     ctx.restore();
 
-                    // 3. IF USER IMAGE ("美豐土地公插畫.webp") IS LOADED:
+                    // 3. DRAW CLEANED TRANSPARENT CHARACTER SPRITE (100% Identical on Mobile & Desktop!)
                     let drewExternal = false;
-                    if (externalImgLoaded && externalImg.complete && externalImg.naturalWidth > 0) {
+                    const renderSource = cleanedCharacterCanvas || (externalImgLoaded && externalImg.complete && externalImg.naturalWidth > 0 ? externalImg : null);
+
+                    if (renderSource) {
                         try {
+                            const srcW = renderSource.naturalWidth || renderSource.width;
+                            const srcH = renderSource.naturalHeight || renderSource.height;
                             const imgW = 290;
-                            const imgH = 290 * (externalImg.naturalHeight / externalImg.naturalWidth);
+                            const imgH = 290 * (srcH / srcW);
 
                             // 3D Extruded Faux-Thickness Rim Layer
                             ctx.save();
                             ctx.translate(pxMid - tiltY * 8, pyMid + 5);
                             ctx.globalAlpha = 0.45;
-                            ctx.drawImage(externalImg, -imgW / 2, -imgH / 2, imgW, imgH);
+                            ctx.drawImage(renderSource, -imgW / 2, -imgH / 2, imgW, imgH);
                             ctx.restore();
 
                             // Main Parallax Character Layer
                             ctx.save();
                             ctx.translate(pxMid, pyMid);
-                            ctx.drawImage(externalImg, -imgW / 2, -imgH / 2, imgW, imgH);
+                            ctx.drawImage(renderSource, -imgW / 2, -imgH / 2, imgW, imgH);
                             ctx.restore();
 
                             // Foreground 3D Specular Shimmer on the Golden Ingot
@@ -932,7 +1087,7 @@
                         }
                     }
 
-                    // 4. BUILT-IN MULTI-LAYER 3D PAINTERLY REPLICA OF "美豐土地公插畫.webp"
+                    // 4. BUILT-IN MULTI-LAYER 3D PAINTERLY REPLICA FALLBACK
                     if (!drewExternal) {
                         // --- LAYER A: Shoes & Lower Wave Hem ---
                         ctx.save();
@@ -969,7 +1124,6 @@
                             ctx.shadowBlur = 25;
                         }
 
-                        // Flowing Wide Sleeves
                         ctx.fillStyle = "#f3bd38";
                         ctx.beginPath();
                         ctx.moveTo(-55, -28);
@@ -985,7 +1139,6 @@
                         ctx.closePath();
                         ctx.fill();
 
-                        // Sleeve Trim (Blue & Pink Inner Lining)
                         ctx.strokeStyle = "#1d5fa7";
                         ctx.lineWidth = 7;
                         ctx.beginPath();
@@ -1012,7 +1165,6 @@
                         ctx.quadraticCurveTo(74, 42, 63, 79);
                         ctx.stroke();
 
-                        // Main Robe Skirt Body
                         const robeGrad = ctx.createLinearGradient(0, -35, 0, 122);
                         robeGrad.addColorStop(0, "#f7c945");
                         robeGrad.addColorStop(0.7, "#eba828");
@@ -1026,7 +1178,6 @@
                         ctx.closePath();
                         ctx.fill();
 
-                        // Blue Seigaiha (Laojie River Waves) along the bottom hem
                         ctx.save();
                         ctx.fillStyle = "#1d5fa7";
                         [-55, -28, 0, 28, 55].forEach(wx => {
@@ -1039,7 +1190,6 @@
                         });
                         ctx.restore();
 
-                        // Central Royal Blue Panel with Pink Lotus & Green Clouds
                         ctx.fillStyle = "#1d5fa7";
                         ctx.beginPath();
                         ctx.moveTo(-20, 12);
@@ -1052,7 +1202,6 @@
                         ctx.lineWidth = 3;
                         ctx.stroke();
 
-                        // Pink Lotus in Center Panel
                         ctx.fillStyle = "#e04875";
                         ctx.beginPath();
                         ctx.arc(0, 62, 11, 0, Math.PI * 2);
@@ -1065,7 +1214,6 @@
                         ctx.ellipse(0, 82, 12, 6, 0, 0, Math.PI * 2);
                         ctx.fill();
 
-                        // Royal Belt with Red Gem Buckle
                         ctx.fillStyle = "#1d5fa7";
                         drawRoundedRectPath(ctx, -48, 8, 96, 14, 7);
                         ctx.fill();
@@ -1086,7 +1234,6 @@
                         ctx.save();
                         ctx.translate(pxMid * 1.25, pyMid * 1.15);
 
-                        // Big Auspicious Ears
                         ctx.fillStyle = "#f4bfb0";
                         ctx.beginPath();
                         ctx.ellipse(-45, -52, 11, 20, -0.1, 0, Math.PI * 2);
@@ -1095,20 +1242,17 @@
                         ctx.ellipse(45, -52, 11, 20, 0.1, 0, Math.PI * 2);
                         ctx.fill();
 
-                        // Face Base
                         ctx.fillStyle = "#fad2c5";
                         ctx.beginPath();
                         ctx.arc(0, -56, 43, 0, Math.PI * 2);
                         ctx.fill();
 
-                        // Rosy Red-Pink Cheeks
                         ctx.fillStyle = "rgba(229, 115, 115, 0.65)";
                         ctx.beginPath();
                         ctx.arc(-25, -48, 12, 0, Math.PI * 2);
                         ctx.arc(25, -48, 12, 0, Math.PI * 2);
                         ctx.fill();
 
-                        // Happy Curved Smiling Eyes & Fluffy White Eyebrows
                         ctx.strokeStyle = "#1f191a";
                         ctx.lineWidth = 3.6;
                         ctx.lineCap = "round";
@@ -1119,7 +1263,6 @@
                         ctx.arc(17, -58, 7, Math.PI * 1.15, Math.PI * 1.85);
                         ctx.stroke();
 
-                        // White Eyebrows
                         ctx.strokeStyle = "#ffffff";
                         ctx.lineWidth = 5.5;
                         ctx.beginPath();
@@ -1129,7 +1272,6 @@
                         ctx.arc(18, -66, 11, Math.PI * 1.15, Math.PI * 1.85);
                         ctx.stroke();
 
-                        // Rosy Nose & Joyful Smile
                         ctx.fillStyle = "#e3827e";
                         ctx.beginPath();
                         ctx.arc(0, -52, 5.5, 0, Math.PI * 2);
@@ -1140,7 +1282,6 @@
                         ctx.arc(0, -41, 8, 0, Math.PI);
                         ctx.fill();
 
-                        // Long Flowing White Beard (3D Layered with subtle sway)
                         const beardSway = Math.sin(breath * 1.5) * 3 - leanAngle * 18;
                         const beardGrad = ctx.createLinearGradient(0, -45, 0, 38);
                         beardGrad.addColorStop(0, "#ffffff");
@@ -1154,7 +1295,6 @@
                         ctx.quadraticCurveTo(0, -34, -26, -42);
                         ctx.fill();
 
-                        // Mustache Curves
                         ctx.strokeStyle = "#ffffff";
                         ctx.lineWidth = 6.5;
                         ctx.beginPath();
@@ -1164,7 +1304,6 @@
                         ctx.quadraticCurveTo(24, -42, 32, -22);
                         ctx.stroke();
 
-                        // --- Ornate Winged Official Hat (福德正神官帽) ---
                         ctx.save();
                         if (highlightPart === "hat") {
                             ctx.shadowColor = "#f5cb42";
@@ -1192,7 +1331,6 @@
                             ctx.restore();
                         });
 
-                        // Hat Main Crown
                         ctx.fillStyle = "#d93b6b";
                         drawRoundedRectPath(ctx, -34, -124, 68, 28, 12);
                         ctx.fill();
@@ -1204,7 +1342,6 @@
                         ctx.fill();
                         ctx.stroke();
 
-                        // Green Auspicious Crest & Center Red Gem
                         ctx.fillStyle = "#26a65b";
                         ctx.beginPath();
                         ctx.arc(0, -95, 16, Math.PI, 0);
@@ -1219,9 +1356,9 @@
                         ctx.fill();
                         ctx.restore();
 
-                        ctx.restore(); // End Head Layer
+                        ctx.restore();
 
-                        // --- LAYER D (Z-FRONT): Left Hand Holding Gleaming 3D Golden Ingot (金元寶) ---
+                        // --- LAYER D (Z-FRONT): Left Hand Holding Gleaming 3D Golden Ingot ---
                         ctx.save();
                         ctx.translate(48 + pxFront, -4 + pyFront);
                         if (highlightPart === "ingot") {
@@ -1276,7 +1413,6 @@
                         ctx.arc(0, 2, 12, 0, Math.PI * 2);
                         ctx.fill();
 
-                        // Independent Pendulum Physics for Pink Ribbon & Double Golden Gourds
                         ctx.save();
                         ctx.translate(-6, -48);
                         ctx.rotate(gourdSwing);
@@ -1378,7 +1514,7 @@
             let ch = Math.max(480, window.innerHeight);
 
             const state = {
-                mode: "menu", // 'menu' | 'ritual' | 'zen' | 'gameover'
+                mode: "menu",
                 score: 0,
                 combo: 1,
                 maxCombo: 1,
@@ -1521,7 +1657,6 @@
                     item.magnetized = true;
                 });
 
-                // Also spawn 3 bonus golden ingots magnetized to Tudigong!
                 for (let k = 0; k < 3; k++) {
                     spawnFallingItem(true, 0.35 + k * 0.12, "ingot");
                     items[items.length - 1].magnetized = true;
@@ -1570,7 +1705,6 @@
                 }
             });
 
-            // On-screen Left / Right Buttons
             const btnLeft = document.getElementById("btnMoveLeft");
             const btnRight = document.getElementById("btnMoveRight");
             if (btnLeft) {
@@ -1676,7 +1810,6 @@
                     ctx.stroke();
                 }
 
-                // Animated Perspective Depth Lines (moving gently toward viewer)
                 const flowOffset = (state.clock * 0.008) % 1;
                 for (let d = 0; d < 6; d++) {
                     const normD = (d + flowOffset) / 6;
@@ -1719,7 +1852,6 @@
                     ctx.translate(item.x, item.y);
                     ctx.scale(scale, scale);
 
-                    // Ground perspective shadow for each falling object
                     const groundY = (ch * 0.83 - item.y) / scale;
                     if (groundY > 0 && groundY < 600) {
                         ctx.save();
@@ -1876,7 +2008,6 @@
                 player.targetX = cw * 0.5;
                 player.squash = 1.18;
 
-                // Pre-spawn 5 falling treasures at staggered heights so action starts in 0.1s!
                 spawnFallingItem(false, 0.22, "ingot");
                 spawnFallingItem(false, 0.36, "blossom");
                 spawnFallingItem(false, 0.48, "ingot");
@@ -1934,13 +2065,12 @@
             }
 
             // ======================================================================
-            // 10. MAIN 60FPS ANIMATION LOOP (100% CRASH-PROOF)
+            // 10. MAIN 60FPS ANIMATION LOOP
             // ======================================================================
             let lastFrameTime = performance.now();
             let spawnAccumulator = 0;
 
             function animateLoop(now) {
-                // ALWAYS schedule next frame first so loop can never die!
                 requestAnimationFrame(animateLoop);
 
                 try {
@@ -1952,7 +2082,6 @@
                     // A. Update 3D Diorama Preview Card if Start Modal is open
                     const startModalEl = document.getElementById("startModal");
                     if (startModalEl && !startModalEl.classList.contains("hidden")) {
-                        // Gentle autonomous 3D sway when idle + user pointer tilt
                         const idleY = Math.sin(state.clock * 0.03) * 8;
                         const idleX = Math.cos(state.clock * 0.025) * 5;
                         cardTiltX += ((targetCardTiltX || idleX) - cardTiltX) * 0.12;
@@ -2011,7 +2140,6 @@
                         if (state.magnetTimer > 0) state.magnetTimer = Math.max(0, state.magnetTimer - dt);
                         if (state.shieldTimer > 0) state.shieldTimer = Math.max(0, state.shieldTimer - dt);
 
-                        // Passive skill gauge recharge over time
                         state.skillGauge = Math.min(100, state.skillGauge + dt * 4.5);
 
                         const spawnInterval = state.feverTimer > 0 ? 0.22 : 0.52;
@@ -2021,7 +2149,6 @@
                             spawnFallingItem();
                         }
 
-                        // Update & Draw Falling 3D Items
                         for (let i = items.length - 1; i >= 0; i--) {
                             const it = items[i];
                             it.z += it.zSpeed * (dt * 60);
@@ -2038,7 +2165,6 @@
 
                             draw3DItem(ctx, it);
 
-                            // Generous Collision Check near Player Plane
                             const dx = Math.abs(it.x - player.x);
                             const dy = Math.abs(it.y - (player.y - 18));
                             const hitRadiusX = 96 * player.scale;
@@ -2252,7 +2378,7 @@
                 if (!file) return;
                 const reader = new FileReader();
                 reader.onload = (ev) => {
-                    externalImg.src = ev.target.result;
+                    loadTudigongIllustration(ev.target.result);
                 };
                 reader.readAsDataURL(file);
             }
