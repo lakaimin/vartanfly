@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>18 堂小小實驗室</title><style>
-.audio-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;border-top:1px dashed #c8dbd3;margin-top:13px;padding-top:13px}.audio-status{margin:10px 0 2px;font-size:15px;color:#007f7a;font-weight:650}.voice-info{margin:2px 0 8px;font-size:13px;color:#526e72;overflow-wrap:anywhere}.voice-settings{font-size:14px}.voice-settings summary{padding-top:8px;cursor:pointer}.voice-settings div{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:6px 0 10px}.voice-settings select{max-width:100%;flex:1;min-width:150px}.transcript{margin:17px 0 0;padding:14px 18px;border-radius:14px;background:#d8efe5}.caption-language{font-size:13px;font-weight:750;color:#007f7a;letter-spacing:.05em}.transcript .live-caption{display:block;background:none;margin:5px 0 0;padding:0;font-size:20px;line-height:1.6;font-weight:600}.english-title{font-size:19px;color:#007f7a;margin:0 0 12px;line-height:1.4}
+.mobile-audio-note{margin-top:13px;padding:10px 13px;background:#fff0cc;border-radius:10px;font-size:14px;line-height:1.6}.sound-help{font-size:14px;margin:4px 0}.sound-help summary{cursor:pointer;padding-top:8px}.sound-help pre{white-space:pre-wrap;overflow-wrap:anywhere;background:white;border:1px solid #d5e3df;padding:12px;border-radius:10px;font:13px/1.7 system-ui,sans-serif}.sound-help p{font-size:14px}.audio-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;border-top:1px dashed #c8dbd3;margin-top:13px;padding-top:13px}.audio-status{margin:10px 0 2px;font-size:15px;color:#007f7a;font-weight:650}.voice-info{margin:2px 0 8px;font-size:13px;color:#526e72;overflow-wrap:anywhere}.voice-settings{font-size:14px}.voice-settings summary{padding-top:8px;cursor:pointer}.voice-settings div{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:6px 0 10px}.voice-settings select{max-width:100%;flex:1;min-width:150px}.transcript{margin:17px 0 0;padding:14px 18px;border-radius:14px;background:#d8efe5}.caption-language{font-size:13px;font-weight:750;color:#007f7a;letter-spacing:.05em}.transcript .live-caption{display:block;background:none;margin:5px 0 0;padding:0;font-size:20px;line-height:1.6;font-weight:600}.english-title{font-size:19px;color:#007f7a;margin:0 0 12px;line-height:1.4}
 :root{--ink:#173d4d;--teal:#007f7a;--cream:#fffaf0;--mint:#d8efe5;--line:#d5e3df}.live-caption{display:none}
 *{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:"Noto Sans CJK TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.65}
 button,select,input{font:inherit}button,select,summary{min-height:44px}button,select{border:1px solid #98b5b5;background:white;color:var(--ink);border-radius:12px;padding:9px 16px;cursor:pointer}button:hover,summary:hover{background:#e5f4ed}button:disabled{opacity:.45;cursor:default}:focus-visible{outline:3px solid #d8872d;outline-offset:3px}
@@ -14,7 +14,7 @@ main{max-width:1288px;margin:auto;padding:25px 24px 48px;display:grid;grid-templ
 <body class="collection"><header><div class="eyebrow">SCIENCE IN MOTION · 小小實驗室</div><h1>18 堂實驗，動起來看懂</h1><p>先觀察，再猜想，最後說出原因。</p></header>
 <main><nav id="course-nav" class="course-nav" aria-label="課程選單"><h2>選一堂來探索</h2><div class="nav-select"><label for="lesson-select">課程</label><select id="lesson-select" aria-label="選擇課程"></select></div><div id="course-list" class="course-list"></div></nav>
 <article><div class="topline"><div id="category" class="category"></div><div><button id="previous" type="button" aria-label="上一堂">← 上一堂</button> <button id="next" type="button" aria-label="下一堂">下一堂 →</button></div></div><h2 id="lesson-title"></h2><p id="english-title" class="english-title" lang="en" hidden></p><p id="goal" class="goal"></p>
-<section class="player" aria-label="動畫播放區"><div class="scene-wrap" id="scene-wrap"></div><div class="controls"><div class="buttons"><button class="primary" id="play-toggle" type="button" aria-pressed="false">播放</button><button id="restart" type="button">重播</button><label for="speed">速度</label><select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select><span id="play-status" class="status" role="status" aria-live="polite"></span></div><div class="audio-controls"><label for="audio-language">講解語言</label><select id="audio-language"><option value="zh-TW">繁體中文（國語）</option><option value="en-US">English</option></select><button id="speech-toggle" type="button" aria-pressed="true">旁白：開啟</button><button id="read-current" type="button">重聽本段</button></div><p id="narration-status" class="audio-status" role="status" aria-live="polite"></p><p id="voice-info" class="voice-info"></p><details class="voice-settings"><summary>更換聲音</summary><div><label for="voice-select">聲音</label><select id="voice-select"></select><button id="voice-refresh" type="button">重新載入聲音</button></div></details><div class="timeline"><label for="seek" class="reading">進度</label><input id="seek" type="range" min="0" max="30" step="0.1" value="0" aria-label="動畫時間，0 至 30 秒"><output id="time" for="seek">00 / 30 秒</output></div></div></section>
+<section class="player" aria-label="動畫播放區"><div class="scene-wrap" id="scene-wrap"></div><div class="controls"><div class="buttons"><button class="primary" id="play-toggle" type="button" aria-pressed="false">播放</button><button id="restart" type="button">重播</button><label for="speed">速度</label><select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select><span id="play-status" class="status" role="status" aria-live="polite"></span></div><div class="mobile-audio-note">手機先點「啟用／測試聲音」，聽到聲音後再按播放。若在 App 或檔案預覽內開啟，請改用手機的 Safari／Chrome。</div><div class="audio-controls"><button id="enable-sound" class="primary" type="button">啟用／測試聲音</button><label for="audio-language">講解語言</label><select id="audio-language"><option value="zh-TW">繁體中文（國語）</option><option value="en-US">English</option></select><button id="speech-toggle" type="button" aria-pressed="true">旁白：開啟</button><button id="read-current" type="button">重聽本段</button></div><p id="narration-status" class="audio-status" role="status" aria-live="polite"></p><p id="voice-info" class="voice-info"></p><details class="voice-settings"><summary>更換聲音</summary><div><label for="voice-select">聲音</label><select id="voice-select"></select><button id="voice-refresh" type="button">重新載入聲音</button></div></details><details class="sound-help"><summary>手機無聲？查看檢查狀態</summary><p>請確認媒體音量，並檢查藍牙耳機的輸出位置。若仍無聲，可提供下列「最近錯誤」與手機、瀏覽器名稱，以便進一步處理。</p><pre id="speech-diagnostics"></pre></details><div class="timeline"><label for="seek" class="reading">進度</label><input id="seek" type="range" min="0" max="30" step="0.1" value="0" aria-label="動畫時間，0 至 30 秒"><output id="time" for="seek">00 / 30 秒</output></div></div></section>
 <div class="transcript"><span id="caption-language" class="caption-language">繁體中文講解</span><p id="live-caption" class="live-caption"></p></div><ol id="steps" class="steps" aria-label="閱讀順序"></ol><p class="reading">點「播放」開始。中英文可隨時切換，切換後重講目前這一段；旁白未結束時會等講完再換幕。暫停後繼續會重講本段，切換分頁則暫停。語音需裝置提供相應聲音，部分聲音需要網路。</p>
 <h2 class="section-title">想一想，再看看答案</h2><div id="questions" class="questions"></div>
 <aside class="teacher"><details><summary>給家長與老師：模型、引導與參考</summary><h3>模型與範圍</h3><p id="model-note"></p><h3>教學提示</h3><p id="teacher-tip"></p><div id="source-section"><h3>概念參考</h3><ul id="sources" class="sources"></ul><p class="reading">教材本身可離線使用；點開參考連結才需要網路。</p></div></details></aside></article></main>
@@ -29,7 +29,8 @@ const speechSupported=!!synth&&typeof SpeechSynthesisUtterance==='function';
 const status=$('play-status'),toggle=$('play-toggle'),seek=$('seek');
 let scene,index=0,playing=false,currentTime=0,speed=1,lastStamp=null,holding=false;
 let language='zh-TW',speechEnabled=speechSupported,voices=[],speechBusy=false;
-let speechToken=0,utterance=null,speechTimer=null,attemptKey='',voiceWasMissing=false;
+let speechToken=0,utterance=null,speechTimer=null,attemptKey='';
+let speechNeedsTap=false,lastSpeechEvent='尚未開始',lastSpeechError='無',lastTrigger='尚未操作';
 const preferredVoice={'zh-TW':'','en-US':''};
 const say=(id,value)=>{if($(id).textContent!==value)$(id).textContent=value;};
 const phase=()=>Math.min(3,Math.floor(currentTime/7.5));
@@ -47,6 +48,7 @@ function voiceScore(v){
 }
 function choices(){return voices.filter(usableVoice).sort((a,b)=>voiceScore(b)-voiceScore(a));}
 function selectedVoice(){
+ if(preferredVoice[language]==='__system__')return null;
  const list=choices();
  return list.find(v=>voiceKey(v)===preferredVoice[language])||list[0]||null;
 }
@@ -54,30 +56,41 @@ function updateVoiceChoices(){
  const select=$('voice-select'),list=choices();select.innerHTML='';
  const auto=document.createElement('option');auto.value='';
  auto.textContent=language==='zh-TW'?'自動選擇（優先台灣國語）':'Auto select English voice';select.appendChild(auto);
+ const system=document.createElement('option');system.value='__system__';system.textContent='系統預設（不指定音色）';select.appendChild(system);
  list.forEach(v=>{const option=document.createElement('option');option.value=voiceKey(v);option.textContent=v.name+' · '+v.lang+(v.localService?' · 裝置語音':' · 可能需網路');select.appendChild(option);});
- if(preferredVoice[language]&&!list.some(v=>voiceKey(v)===preferredVoice[language]))preferredVoice[language]='';
- select.value=preferredVoice[language];select.disabled=!speechSupported||list.length===0;
+ if(preferredVoice[language]&&preferredVoice[language]!=='__system__'&&!list.some(v=>voiceKey(v)===preferredVoice[language]))preferredVoice[language]='';
+ select.value=preferredVoice[language];select.disabled=!speechSupported;
  $('voice-refresh').disabled=!speechSupported;
  $('speech-toggle').disabled=!speechSupported;$('read-current').disabled=!speechSupported;
+ $('enable-sound').disabled=!speechSupported;
  const voice=selectedVoice();
  if(!speechSupported)say('voice-info','此瀏覽器沒有提供語音朗讀，仍可觀看動畫與雙語字幕。');
- else if(!voice)say('voice-info','尚未找到'+(language==='zh-TW'?'中文國語':'英文')+'聲音。可按「重新載入聲音」，或在裝置安裝此語言的語音。');
+ else if(!voice)say('voice-info',(list.length===0?'聲音清單尚未列出此語言；':'已選系統預設；')+'會直接嘗試系統的'+(language==='zh-TW'?'中文國語':'英文')+'聲音，請點「啟用／測試聲音」。');
  else{
   const isTaiwan=/^zh-(?:tw|hant(?:-tw)?)$/i.test(voice.lang.replace(/_/g,'-'));
   say('voice-info',voice.name+' · '+voice.lang+' · '+(voice.localService?'裝置提供的語音':'此聲音可能需要網路')+(language==='zh-TW'&&!isTaiwan?'；目前未選到台灣國語口音。':''));
  }
+ updateDiagnostics();
+}
+function updateDiagnostics(){
+ const voice=selectedVoice();
+ say('speech-diagnostics','版本：手機語音相容修正版 2\n語音功能：'+(speechSupported?'可用':'此環境未提供')+'\n聲音清單：'+voices.length+' 個\n目前語言：'+language+'\n聲音選擇：'+(voice?voice.name:'系統依語言選擇')+'\n啟動方式：'+lastTrigger+'\n語音事件：'+lastSpeechEvent+'\n最近錯誤：'+lastSpeechError);
+}
+function readVoiceList(){
+ if(synth){try{voices=Array.from(synth.getVoices());}catch(error){voices=[];}}
 }
 function clearSpeechTimer(){if(speechTimer!==null){clearTimeout(speechTimer);speechTimer=null;}}
 function cancelSpeech(clearAttempt=true){
+ const needsCancel=speechBusy||!!(synth&&(synth.speaking||synth.pending||synth.paused));
  speechToken++;clearSpeechTimer();speechBusy=false;utterance=null;holding=false;
  if(clearAttempt)attemptKey='';
- if(synth){try{synth.cancel();}catch(error){/* animation remains usable */}}
+ if(synth&&needsCancel){try{synth.cancel();}catch(error){/* animation remains usable */}}
 }
 function refreshVoices(){
- const retry=voiceWasMissing;
- if(synth){try{voices=synth.getVoices();}catch(error){voices=[];}}
+ readVoiceList();
  updateVoiceChoices();
- if(retry&&selectedVoice()&&playing&&speechEnabled)requestNarration(true);
+ // Voice-list events only refresh choices. A delayed event must not be the
+ // first call to speak(): mobile engines may require a direct button gesture.
 }
 function updateStatus(){
  toggle.textContent=playing?'暫停':'播放';toggle.setAttribute('aria-pressed',String(playing));
@@ -91,44 +104,70 @@ function updateStatus(){
  seek.value=currentTime;
  document.querySelectorAll('[data-step]').forEach((el,k)=>el.classList.toggle('active',k===phase()));
 }
-function requestNarration(force=false){
+function requestNarration(force=false,fromGesture=false,testOnly=false){
  const key=index+':'+phase()+':'+language;
  if(!speechEnabled||!speechSupported||(!force&&attemptKey===key))return;
+ if(fromGesture){readVoiceList();updateVoiceChoices();speechNeedsTap=false;}
+ if(speechNeedsTap&&!fromGesture){say('narration-status','請點「啟用／測試聲音」，再按播放繼續講解。');return;}
  cancelSpeech();attemptKey=key;
- const voice=selectedVoice();voiceWasMissing=!voice;
- if(!voice){say('narration-status','此語言的聲音尚未就緒，動畫與字幕仍可繼續。');return;}
+ const voice=selectedVoice();
  const token=speechToken;
- const u=new SpeechSynthesisUtterance(script());utterance=u;
- u.lang=language;u.voice=voice;u.rate=Math.max(.5,Math.min(2,speed*.95));u.pitch=1;u.volume=1;
+ const speechText=testOnly?(language==='zh-TW'?'中文語音測試。聽得到嗎？我們一起來看科學實驗。':"English voice test. Can you hear me? Let's explore science together."):script();
+ const u=new SpeechSynthesisUtterance(speechText);utterance=u;
+ // An empty getVoices() list does not prove that synthesis is unavailable.
+ // Leave voice unset and let the engine select the default for this language.
+ u.lang=language;if(voice)u.voice=voice;
+ u.rate=Math.max(.5,Math.min(2,speed*.95));u.pitch=1;u.volume=1;
+ let started=false;
+ lastTrigger=fromGesture?'按鈕／觸控操作':'自動換段';lastSpeechError='無';lastSpeechEvent='已送出朗讀要求';updateDiagnostics();
  speechBusy=true;say('narration-status','準備講解第 '+(phase()+1)+' 段…');
  const finish=message=>{
   if(token!==speechToken)return;
   clearSpeechTimer();speechBusy=false;utterance=null;holding=false;
   say('narration-status',message);updateStatus();
  };
- const fail=message=>{if(token!==speechToken)return;cancelSpeech(false);say('narration-status',message);updateStatus();};
+ const fail=(message,errorCode='未收到啟動訊號')=>{if(token!==speechToken)return;cancelSpeech(false);lastSpeechError=errorCode;lastSpeechEvent='未成功播放';speechNeedsTap=true;updateDiagnostics();say('narration-status',message);updateStatus();};
  u.onstart=()=>{
-  if(token!==speechToken)return;clearSpeechTimer();say('narration-status','正在講解第 '+(phase()+1)+' 段');
+  if(token!==speechToken)return;clearSpeechTimer();started=true;speechNeedsTap=false;lastSpeechEvent='已收到開始播放訊號';updateDiagnostics();say('narration-status',testOnly?'正在測試聲音；聽到後可按播放。':'正在講解第 '+(phase()+1)+' 段');
   const estimatedSeconds=language==='zh-TW'?u.text.length*.32/u.rate:u.text.split(/\s+/).length*.55/u.rate;
   speechTimer=setTimeout(()=>fail('此聲音暫時沒有回應；動畫繼續，可更換聲音後重聽。'),Math.max(18000,(estimatedSeconds*2+5)*1000));
  };
- u.onend=()=>finish('第 '+(phase()+1)+' 段講解完成');
+ u.onend=()=>{
+  if(token!==speechToken)return;
+  if(!started){fail('語音未真正啟動，請點「啟用／測試聲音」再試。','未開始即結束');return;}
+  lastSpeechEvent='已收到播放結束訊號';updateDiagnostics();finish(testOnly?'聲音測試完成。若有聽到聲音，按「播放」開始本堂。':'第 '+(phase()+1)+' 段講解完成');
+ };
  u.onerror=event=>{
   if(token!==speechToken)return;
-  finish(event.error==='not-allowed'?'請點「重聽本段」啟用聲音。':'此聲音未能播放，可更換聲音或按「重聽本段」重試。');
+  const code=event.error||'未知錯誤';lastSpeechError=code;lastSpeechEvent='語音播放失敗';
+  if(code==='not-allowed')speechNeedsTap=true;
+  const explanations={
+   'not-allowed':'請直接點「啟用／測試聲音」。若在 App 或檔案預覽內，請改用 Safari／Chrome 開啟。',
+   'language-unavailable':'裝置目前沒有此語言的聲音，請換語言或安裝對應語音後再試。',
+   'voice-unavailable':'所選音色無法使用，可在「更換聲音」改選「系統預設」。',
+   'synthesis-unavailable':'此環境沒有可用語音引擎，請改用手機的 Safari／Chrome 開啟。',
+   'network':'此音色連線失敗，請連網或更換為裝置語音。',
+   'audio-busy':'音訊輸出正忙碌，請停止其他播放後再測試。',
+   'audio-hardware':'找不到音訊輸出，請檢查手機音量及藍牙耳機。'
+  };
+  updateDiagnostics();finish(explanations[code]||'此聲音未能播放，可按「啟用／測試聲音」重試；下方有無聲檢查狀態。');
  };
- speechTimer=setTimeout(()=>fail('聲音沒有開始播放；可更換聲音，或按「重聽本段」重試。'),8000);
- try{synth.resume();synth.speak(u);}catch(error){fail('此聲音未能播放，請選擇其他聲音再試。');}
+ speechTimer=setTimeout(()=>fail('聲音沒有啟動。請點「啟用／測試聲音」；手機請使用 Safari／Chrome，並檢查音量及耳機。'),8000);
+ try{
+  // Keep the first speak() synchronous inside the user's click, with no await.
+  synth.speak(u);
+  if(synth.paused&&typeof synth.resume==='function')synth.resume();
+ }catch(error){fail('此聲音未能播放，請以系統瀏覽器開啟後再試。',error.name||'朗讀呼叫失敗');}
 }
 function pausePlayback(message='已暫停；繼續播放時會重講目前這一段。'){
  playing=false;lastStamp=null;cancelSpeech();say('narration-status',message);updateStatus();
 }
 function startPlayback(restart=false){
  if(restart||currentTime>=30){currentTime=0;scene.setCurrentTime(0);cancelSpeech();}
- playing=true;lastStamp=null;requestNarration(true);updateStatus();
+ playing=true;lastStamp=null;requestNarration(true,true);updateStatus();
 }
 function load(n){
- cancelSpeech();voiceWasMissing=false;index=n;const d=data[n];playing=false;currentTime=0;lastStamp=null;
+ cancelSpeech();index=n;const d=data[n];playing=false;currentTime=0;lastStamp=null;
  $('scene-wrap').innerHTML=d.svg;scene=$('lesson-scene');
  const supported=typeof scene.pauseAnimations==='function'&&typeof scene.setCurrentTime==='function';
  ['play-toggle','restart','speed','seek'].forEach(id=>$(id).disabled=!supported);
@@ -165,30 +204,36 @@ if(data.length>1){
 }else $('course-nav').hidden=true;
 toggle.addEventListener('click',()=>playing?pausePlayback():startPlayback());
 $('restart').addEventListener('click',()=>startPlayback(true));
-$('speed').addEventListener('change',e=>{speed=Number(e.target.value);lastStamp=null;if(speechBusy||playing)requestNarration(true);updateStatus();});
+$('speed').addEventListener('change',e=>{speed=Number(e.target.value);lastStamp=null;if(speechBusy||playing)requestNarration(true,true);updateStatus();});
 seek.addEventListener('input',e=>{
  cancelSpeech();currentTime=Number(e.target.value);lastStamp=null;
  scene.setCurrentTime(currentTime);if(currentTime>=30)playing=false;
- if(playing)requestNarration(true);else say('narration-status','已選擇第 '+(phase()+1)+' 段；按「播放」或「重聽本段」。');
+ if(playing)requestNarration(true,true);else say('narration-status','已選擇第 '+(phase()+1)+' 段；按「播放」或「重聽本段」。');
  updateStatus();
 });
 $('audio-language').addEventListener('change',e=>{
  const active=playing||speechBusy;cancelSpeech();language=e.target.value;
- voiceWasMissing=false;updateVoiceChoices();updateStatus();
- if(active)requestNarration(true);else say('narration-status','已切換語言；播放或重聽時會使用目前語言。');
+ updateVoiceChoices();updateStatus();
+ if(active)requestNarration(true,true);else say('narration-status','已切換語言；播放或重聽時會使用目前語言。');
 });
 $('speech-toggle').addEventListener('click',()=>{
  speechEnabled=!speechEnabled;cancelSpeech();
  say('narration-status',speechEnabled?'旁白已開啟。':'旁白已關閉。');
- if(playing&&speechEnabled)requestNarration(true);updateStatus();
+ if(playing&&speechEnabled)requestNarration(true,true);updateStatus();
 });
-$('read-current').addEventListener('click',()=>{speechEnabled=true;requestNarration(true);updateStatus();});
+$('read-current').addEventListener('click',()=>{speechEnabled=true;requestNarration(true,true);updateStatus();});
+$('enable-sound').addEventListener('click',()=>{
+ pausePlayback('準備測試目前語言的聲音。');speechEnabled=true;
+ requestNarration(true,true,true);updateStatus();
+});
 $('voice-select').addEventListener('change',e=>{
  const active=playing||speechBusy;preferredVoice[language]=e.target.value;cancelSpeech();updateVoiceChoices();
- if(active)requestNarration(true);else say('narration-status','已更換聲音；可按「重聽本段」試聽。');
+ if(active)requestNarration(true,true);else say('narration-status','已更換聲音；可按「啟用／測試聲音」試聽。');
 });
-$('voice-refresh').addEventListener('click',()=>{refreshVoices();if(playing)requestNarration(true);});
-preference.addEventListener('change',e=>{if(e.matches)pausePlayback('已依減少動態偏好暫停。');});
+$('voice-refresh').addEventListener('click',()=>{refreshVoices();if(playing)requestNarration(true,true);});
+const preferenceChanged=e=>{if(e.matches)pausePlayback('已依減少動態偏好暫停。');};
+if(typeof preference.addEventListener==='function')preference.addEventListener('change',preferenceChanged);
+else if(typeof preference.addListener==='function')preference.addListener(preferenceChanged);
 document.addEventListener('visibilitychange',()=>{lastStamp=null;if(document.hidden&&(playing||speechBusy))pausePlayback('已暫停；回到這裡後按播放即可繼續。');});
 if(typeof addEventListener==='function')addEventListener('pagehide',()=>cancelSpeech());
 function frame(stamp){
@@ -207,6 +252,7 @@ function frame(stamp){
 }
 refreshVoices();load(0);
 if(synth&&typeof synth.addEventListener==='function')synth.addEventListener('voiceschanged',refreshVoices);
+else if(synth)synth.onvoiceschanged=refreshVoices;
 // Some engines populate their installed-voice list shortly after page load.
 if(speechSupported){setTimeout(refreshVoices,500);setTimeout(refreshVoices,1500);}
 requestAnimationFrame(frame);
